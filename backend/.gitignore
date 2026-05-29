@@ -1,0 +1,6 @@
+node_modules/
+.env
+dist/
+/PayGate_Build_Plan.md
+/plan.md
+/readme.md  

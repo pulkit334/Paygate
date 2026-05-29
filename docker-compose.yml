@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:alpine
+    container_name: paygate-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+
+  backend1:
+    build: ./backend1 
+    ports:
+      - "3000:3000"
+    environment:
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - redis
+
+  backend2:
+    build: ./backend2  
+    environment:
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - redis

@@ -1,0 +1,13 @@
+# Ignore dependency folders
+**/node_modules/
+**/dist/
+**/build/
+
+# Ignore sensitive config
+**/.env
+**/.env.local
+
+# Ignore OS and Git meta-data
+.DS_Store
+Thumbs.db
+.git/

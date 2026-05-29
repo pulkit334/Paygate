@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package authpackage;
+
+service MerchantAuth {
+    rpc Auth (AuthRegisterReq) returns (AuthRegisterRes);
+    rpc Login (AuthLoginReq) returns (AuthLoginRes);
+}
+
+message UserData {
+    string id = 1;
+    string name = 2;
+    string ownerEmail = 3;
+    string callbackUrl = 4;
+}
+
+message AuthRegisterReq {
+    string name = 1;
+    string ownerEmail = 2;
+    string password = 3;
+    string callbackUrl = 4;
+}
+
+message AuthRegisterRes {
+    bool success = 1; 
+    UserData data = 2;
+}
+
+message AuthLoginReq {
+    string ownerEmail = 1;
+    string password = 2;
+}
+
+message AuthLoginRes {
+    string token = 1;
+}
