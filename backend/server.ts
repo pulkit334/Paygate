@@ -26,11 +26,6 @@ server.addService(authPackage.MerchantAuth.service, {
   Login: LoginController,
 });
 
-server.addService()
-
-
-
-
 // 4. SERVER BOOTSTRAP WITH DATABASE
 const startServer = async () => {
   await ConnectDb();

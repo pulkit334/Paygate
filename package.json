@@ -17,6 +17,10 @@
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.14.4",
-    "@grpc/proto-loader": "^0.8.1"
+    "@grpc/proto-loader": "^0.8.1",
+    "dotenv": "^17.4.2",
+    "experss": "^0.0.1-security",
+    "morgan": "^1.10.1",
+    "xss": "^1.0.15"
   }
 }
