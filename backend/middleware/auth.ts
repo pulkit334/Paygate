@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import crypto from "crypto";
-import jwt from "jsonwebtoken"
-import appSchema from "../models/app";
+import jwt from "jsonwebtoken";
+import appSchema from "../models/app"
 const Middleware = async (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
 
@@ -25,33 +25,4 @@ const Middleware = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const ApiKeyMiddleware = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  const apiKey = req.headers["x-api-key"] as string;
-  if (!apiKey || !apiKey.toLowerCase().startsWith("sk_live_")) {
-    return res
-      .status(401)
-      .json({ success: false, message: "Missing or invalid API key" });
-  }
-  const hashedIncoming = crypto
-    .createHash("sha256")
-    .update(apiKey)
-    .digest("hex");
-
-  const app = await appSchema.findOne({
-    hashedSecret: hashedIncoming,
-    isActive: true,
-  });
-
-  if (!app) {
-    return res.status(401).json({ success: false, message: "Invalid API key" });
-  }
-
-  (req as any).app = app;
-  next();
-};
-
-export { Middleware, ApiKeyMiddleware };
+export { Middleware};

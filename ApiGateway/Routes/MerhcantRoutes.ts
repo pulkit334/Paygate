@@ -13,7 +13,7 @@ router.post("/login", async (req: Request, res: Response) => {
     if (err) {
       return res.status(401).json({ success: false, error: err.message });
     }
-
+3
     // Step 4: Get Back and Send the Response Back
     res.status(200).json(Response);
   });
@@ -30,6 +30,7 @@ router.post("/register", (req: Request, res: Response) => {
     if (err) {
       return res.status(500).json({ success: false, error: err.message });
     }
+     console.log("gRPC response:", response);
     res.status(201).json(response);
   });
 });

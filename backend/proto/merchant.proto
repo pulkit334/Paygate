@@ -5,6 +5,7 @@ package authpackage;
 service MerchantAuth {
     rpc Auth (AuthRegisterReq) returns (AuthRegisterRes);
     rpc Login (AuthLoginReq) returns (AuthLoginRes);
+      rpc ValidateApiKey (ValidateRequest) returns (ValidateResponse);
 }
 
 message UserData {
@@ -22,8 +23,12 @@ message AuthRegisterReq {
 }
 
 message AuthRegisterRes {
-    bool success = 1; 
-    UserData data = 2;
+  bool success = 1;
+  string message = 2;
+  string appId = 3;
+  string name = 4;       
+  string publicKey = 5;
+  string secretKey = 6;
 }
 
 message AuthLoginReq {
@@ -33,4 +38,17 @@ message AuthLoginReq {
 
 message AuthLoginRes {
     string token = 1;
+}
+
+
+
+message ValidateRequest {
+  string apiKey = 1;
+}
+
+message ValidateResponse {
+  bool valid = 1;
+  string appId = 2;
+  string merchantId = 3;
+  string message = 4;
 }
