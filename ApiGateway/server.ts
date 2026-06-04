@@ -9,6 +9,8 @@ const app = experes();
 import MerchantRoutes from "./Routes/MerhcantRoutes";
 import PaymentRoutes from "./Routes/PaymentRoutes";
 import helmet from "helmet";
+import { merchantClient } from "./GrpcRef/Grpc";
+import { JwtAuthMiddleware } from "./Middleware/jwtAuth";
 // import { METHODS } from "http";
 
 app.use(experes.urlencoded({ extended: true }));
@@ -24,6 +26,6 @@ app.use("/webhook/razorpay", experes.raw({ type: "application/json" }));
 //   }),
 // );
 app.use("/api/v1", MerchantRoutes);
-app.use("/api/v2", PaymentRoutes);
+app.use("/api/v2", JwtAuthMiddleware, PaymentRoutes);
 const PORT = process.env.PORT || 6283;
 app.listen(PORT, () => [console.log(`Server is listening on port ${PORT}`)]);

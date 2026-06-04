@@ -5,7 +5,8 @@ package authpackage;
 service MerchantAuth {
     rpc Auth (AuthRegisterReq) returns (AuthRegisterRes);
     rpc Login (AuthLoginReq) returns (AuthLoginRes);
-      rpc ValidateApiKey (ValidateRequest) returns (ValidateResponse);
+    rpc ValidateApiKey (ValidateRequest) returns (ValidateResponse);
+    rpc MiddlewareAuth (ValidateIncomingRequest) returns (ValidateOutgoingResponse);
 }
 
 message UserData {
@@ -40,8 +41,6 @@ message AuthLoginRes {
     string token = 1;
 }
 
-
-
 message ValidateRequest {
   string apiKey = 1;
 }
@@ -51,4 +50,15 @@ message ValidateResponse {
   string appId = 2;
   string merchantId = 3;
   string message = 4;
+}
+
+
+message ValidateIncomingRequest {
+  string token = 1;     
+}
+
+message ValidateOutgoingResponse {
+  bool valid = 1;
+  string appId = 2;         
+  string message = 3;
 }

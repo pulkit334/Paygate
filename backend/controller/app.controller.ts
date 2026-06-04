@@ -8,7 +8,7 @@ import crypto from "crypto";
 import appservice from "../service/app.service";
 import appSchema from "../models/app";
 import { redisClient } from "../config/redis";
-import Redis from "ioredis";
+
 export const RegisterAppController = async (
   call: ServerUnaryCall<any, any>,
   callback: sendUnaryData<any>,
@@ -65,11 +65,10 @@ export const LoginController = async (
     const cached = await redisClient.get(`user:${ownerEmail}`);
 
     if (cached) {
-      //  Cache hit — no DB call needed
       app = JSON.parse(cached);
     } else {
       //  Cache miss — fetch from DB
-      app = await appSchema.findOne({ ownerEmail });
+      app = await appSchema.findOne({ ownerEmail }).select("_id passwordHash")
 
       if (app) {
         //  Store in cache for 5 minutes
@@ -100,6 +99,7 @@ export const LoginController = async (
     }
 
     //  Step 4: Generate token
+    console.log(process.env.JWT_SECRET);
     const token = jwt.sign(
       { appId: app._id },
       process.env.JWT_SECRET as string,
@@ -122,6 +122,7 @@ export const ValidateApiKey = async (
   try {
     const { apiKey } = call.request;
     console.log("ValidateApiKey called with:", apiKey);
+
     // Step 1 - check prefix
     if (!apiKey || !apiKey.toLowerCase().startsWith("sk_live_")) {
       return callback(null, {
@@ -137,17 +138,19 @@ export const ValidateApiKey = async (
       .digest("hex");
     console.log("Hashed:", hashedIncoming);
     // Step 3 - find in DB
-    const cached = await redisClient.get(`apikey:${hashedIncoming}`);
+    console.log("the  cached part Would be");
+    const cached: any = await redisClient.get(`apikey:${hashedIncoming}`);
+    console.log(
+      "the  cached part Would be",
+      cached ? JSON.parse(cached) : null,
+    );
     if (cached) {
       return callback(null, JSON.parse(cached));
     }
-    await redisClient.set(
-      `apikey:${hashedIncoming}`,
-      JSON.stringify(hashedIncoming),
-      "EX",
-      300,
-    );
 
+    console.log(
+      "the request is after hasing and befoe just the appschema  service",
+    );
     const app = await appSchema.findOne({
       hashedSecret: hashedIncoming,
       isActive: true,
@@ -157,26 +160,60 @@ export const ValidateApiKey = async (
     if (!app) {
       return callback(null, {
         valid: false,
-        message: "Invalid API key",
+        message:
+          "Invalid API key  Invalid API keybackedn contorller  Validate middleware me hai ye hiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii",
       });
     }
-    console.log("Returning:", {
-      valid: true,
-      appId: app._id.toString(),
-      merchantId: app._id.toString(),
-      message: "Valid",
-    });
 
-    return callback(null, {
+    const result = {
       valid: true,
       appId: app._id.toString(),
       merchantId: app._id.toString(),
       message: "Valid",
-    });
+    };
+
+    //  Cache the result not the hash
+    await redisClient.set(
+      `apikey:${hashedIncoming}`,
+      JSON.stringify(result),
+      "EX",
+      300,
+    );
+
+    console.log("Returning:", result);
+    return callback(null, result);
   } catch (error: any) {
     return callback({
       code: status.INTERNAL,
       message: error.message || "Internal server error",
+    });
+  }
+};
+
+export const MiddlewareAuth = (
+  call: ServerUnaryCall<any, any>,
+  callback: sendUnaryData<any>,
+) => {
+  const token = call.request.token;
+  if (!token) {
+    return callback({
+      code: status.UNAUTHENTICATED,
+      message: "No token provided",
+    });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as any;
+
+    return callback(null, {
+      valid: true,
+      appId: decoded.appId,
+      message: "Valid",
+    });
+  } catch {
+    return callback({
+      code: status.UNAUTHENTICATED,
+      message: "Invalid token",
     });
   }
 };
