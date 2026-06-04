@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+package paymentpackage;
+
+service PaymentService {
+  rpc CreateOrder (CreateOrderRequest) returns (CreateOrderResponse);
+    rpc VerifyOrder (VerifyOrderRequest) returns (VerifyOrderResponse);
+    rpc WebhookBody (PayWebhookRequest) returns (PayWebhookResponse);
+    
+}
+
+message CreateOrderRequest {
+  string appId = 1;
+  double amount = 2;
+  string currency = 3;
+  string receipt = 4;
+  string notes = 5;
+  string customerName = 6;
+  string idempotencyKey = 7;
+  string Provider = 8;
+  string customoreEmail = 9;
+  string metadata = 10;
+}
+
+message CreateOrderResponse {
+  bool success = 1;
+  string orderId = 2;      
+  double amount = 3;
+  string currency = 4;
+  string receipt = 5;
+  string status = 6;     
+  string createdAt = 7;
+  string error = 8;      
+}
+message VerifyOrderRequest {
+  string appId = 1;
+  string razorpay_order_id = 2;
+  string razorpay_payment_id = 3;
+  string razorpay_signature = 4;
+}
+
+message VerifyOrderResponse {
+  bool success = 1;
+  string status = 2;     
+  string message = 3;
+  string error = 4;       
+}
+// Webhook messages
+message WebhookPaymentEntity {
+  string order_id = 1;
+  string id = 2;
+  double amount = 3;
+  string currency = 4;
+}
+
+message WebhookPayload {
+  WebhookPaymentEntity payment = 1;
+}
+
+message WebhookBody {
+  string event = 1;
+  WebhookPayload payload = 2;
+}
+
+message PayWebhookRequest {
+  string signature = 1;
+  WebhookBody body = 2;
+}
+
+message PayWebhookResponse {
+  bool success = 1;
+  string message = 2;
+  string error = 3;
+}
+
