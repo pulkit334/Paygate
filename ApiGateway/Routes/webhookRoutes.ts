@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 import { PaymentClient } from "../GrpcRef/Grpc";
 const router = express.Router();
 
-router.post("/webhook/razorpay", async (req: Request, res: Response) => {
+router.post("/razorpay", async (req: Request, res: Response) => {
   try {
     const result = await PaymentClient.payWebhook({
       signature: req.headers["x-razorpay-signature"],
@@ -14,3 +14,5 @@ router.post("/webhook/razorpay", async (req: Request, res: Response) => {
     res.status(500).json({ error: "Webhook failed" });
   }
 });
+
+export default  router

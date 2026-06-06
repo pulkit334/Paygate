@@ -23,7 +23,55 @@
 // Wrap everything in a master try/catch. If the Redis database drops offline, the worker pauses for 2 seconds and retries instead of shutting down.
 
 
-
+START
+  │
+  ├─ 1. Try to create consumer group "webhook-group" on stream "payment.stream"
+  │     • If group exists → ignore error (BUSYGROUP)
+  │     • If other error → log it
+  │
+  └─ 2. Enter infinite loop (while true)
+       │
+       ├─ 3. Call XREADGROUP to get new messages (with '>')
+       │     • Wait up to 5 seconds if no messages
+       │     • Get up to 20 messages at once
+       │
+       ├─ 4. If no messages → go back to step 3
+       │
+       └─ 5. For each message received:
+            │
+            ├─ 5.1 Convert Redis field array into a JavaScript object (data)
+            │
+            ├─ 5.2 If data.callbackUrl is missing:
+            │       • XACK (acknowledge) the message immediately
+            │       • Skip to next message
+            │
+            ├─ 5.3 Log "Processing transaction: {transactionId}"
+            │
+            ├─ 5.4 Build webhook payload object
+            │
+            ├─ 5.5 Generate HMAC‑SHA256 signature of payload using WEBHOOK_SIGNING_SECRET
+            │
+            ├─ 5.6 Initialize:
+            │       • attempt = 0
+            │       • maxRetries = 3
+            │       • responseStatus = 500
+            │       • deliveryStatus = "failed"
+            │
+            ├─ 5.7 RETRY LOOP (while attempt < maxRetries):
+            │       • attempt +1
+            │       • POST payload to callbackUrl with signature header
+            │       • If HTTP 2xx → set deliveryStatus = "success", break out of retry loop
+            │       • If error → set responseStatus (or 500), log failure
+            │         • If more attempts left → wait delay = attempt * 2000 ms, then retry
+            │         • If no attempts left → exit retry loop, deliveryStatus stays "failed"
+            │
+            ├─ 5.8 Save delivery attempt to MongoDB (WebhookDelivery collection)
+            │       • Include appId, transactionId, targetUrl, payload, signature, responseCode, status, attempt count, sentAt
+            │       • If DB save fails → log error but continue (do not block)
+            │
+            ├─ 5.9 XACK the message in Redis (confirm successful processing)
+            │
+            └─ 5.10 Log "XACK complete"
 
 import { redisClient } from '../config/redis';
 import axios from 'axios';

@@ -25,9 +25,10 @@ const merchantClient = new protoDescriptor.authpackage.MerchantAuth(
   grpc.credentials.createInsecure(),
 );
 const PaymentClient =
-  new protoDescriptorPaymentone.paymentpackage.PaymentService(
+  new protoDescriptorPaymentone.paymentpackage.PaymentService(  
     "localhost:50051",
     grpc.credentials.createInsecure(),
   );
 
 export { merchantClient, PaymentClient };
+  

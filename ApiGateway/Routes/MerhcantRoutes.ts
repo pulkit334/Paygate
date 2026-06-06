@@ -11,10 +11,9 @@ router.post("/login", async (req: Request, res: Response) => {
 
   merchantClient.Login(grpcPayload, (err: any, Response: any) => {
     if (err) {
-      return res.status(401).json({ success: false, error: err.message });
+      return res.status(500).json({ success: false, error: err.message });
     }
-3
-    // Step 4: Get Back and Send the Response Back
+
     res.status(200).json(Response);
   });
 });

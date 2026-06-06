@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import { merchantClient, PaymentClient } from "../GrpcRef/Grpc";
-import { ApiKeyMiddleware } from "../Middleware/validation_middlware";
+import { ApiKeyMiddleware } from "../Middleware/validate_APi_Key";
 const router = express.Router();
 
 router.post(
