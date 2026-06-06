@@ -1,33 +1,38 @@
-// api-gateway/middleware/auth.ts
 import { NextFunction, Request, Response } from "express";
 import { merchantClient } from "../GrpcRef/Grpc";
+import AppError from "../utils/Error";
 
 const ApiKeyMiddleware = (req: Request, res: Response, next: NextFunction) => {
-  const apiKey = req.headers["x-api-key"] as string;
+  try {
+    const apiKey = req.headers["x-api-key"] as string;
 
-  if (!apiKey || !apiKey.toLowerCase().startsWith("sk_live_")) {
-    return res.status(401).json({ message: "Invalid API key Invalid API key  starting me   Validate middleware me hai ye Invalid API key hiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii   middleware validation one " });
+    if (!apiKey) {
+      throw AppError.Validation("API key is required");
+    }
+    if (!apiKey.toLowerCase().startsWith("sk_live_")) {
+      throw AppError.Validation("Invalid API key format");
+    }
+
+    console.log("Validating API key:", apiKey);
+
+    merchantClient.ValidateApiKey({ apiKey }, (err: any, response: any) => {
+      if (err) {
+        return next(AppError.Service("Auth service unavailable"));
+      }
+      if (!response?.valid) {
+        return next(AppError.Auth("Invalid API key", 401));
+      }
+      
+      (req as any).app = {
+        _id: response.appId,
+        merchantId: response.merchantId,
+      };
+      
+      next();
+    });
+  } catch (error) {
+    next(error);
   }
-  console.log("Raw API key received:", apiKey);
-  console.log("Type:", typeof apiKey);
-  console.log("Length:", apiKey?.length);
-
-  merchantClient.ValidateApiKey({ apiKey }, (err: any, response: any) => {
-    console.log("Gateway received:", err, response); // ADD THIS
-    console.log("response:", response); // is this null?
-
-    if (err) {
-      return res.status(500).json({ message: "Auth service unavailable" });
-    }
-    if (!response?.valid) {
-      return res.status(401).json({ message: "Invalid API key Invalid API key ending me   Validate middleware me hai ye  Invalid API key hiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii " });
-    }
-(req as any).app = {
-  _id: response.appId,
-  merchantId: response.merchantId
-}
-    next();
-  });
 };
 
 export { ApiKeyMiddleware };

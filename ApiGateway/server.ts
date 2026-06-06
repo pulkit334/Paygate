@@ -5,15 +5,13 @@ import helmet from "helmet";
 import { RedisStore } from "rate-limit-redis";
 import rateLimit from "express-rate-limit";
 dotenv.config();
-
+import AppError from "./utils/Error";
 import MerchantRoutes from "./Routes/MerhcantRoutes";
 import PaymentRoutes from "./Routes/PaymentRoutes";
 import WebhookRoutes from "./Routes/webhookRoutes";
 import { JwtAuthMiddleware } from "./Middleware/jwtAuth";
 import { redisClient } from "./config/redis";
-
 const app = express();
-
 
 app.use("/webhook/razorpay", express.raw({ type: "application/json" }));
 
@@ -22,7 +20,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 app.use(helmet());
-
 
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -58,7 +55,22 @@ app.use("/webhook", WebhookRoutes);
 
 // Error handler
 app.use((err: any, req: any, res: any, next: any) => {
-  res.status(500).json({ success: false, message: err.message });
+  if (err instanceof AppError) {
+    return res.status(err.statusCode).json({
+      error: err.message,
+      type: err.type,
+    });
+  }
+  res.status(500).json({ error: "Internal server error" }); 
+});
+
+process.on("uncaughtException", (err) => {
+  console.error("UNCAUGHT EXCEPTION:", err.message);
+  process.exit(1);
+});
+
+process.on("unhandledRejection", (reason) => {
+  console.error("UNHANDLED REJECTION:", reason);
 });
 
 const PORT = process.env.PORT || 6283;
