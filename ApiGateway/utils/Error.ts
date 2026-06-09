@@ -1,14 +1,20 @@
+
+
+
+
+
+
 class AppError extends Error {
   constructor(
     message: string,
-    public type: string,
+    public type: string,  
     public statusCode: number
   ) {
     super(message);
     this.name = type;
   }
 
-  // General
+
   static Validation(message: string) {
     return new AppError(message, "ValidationError", 400);
   }
@@ -16,7 +22,7 @@ class AppError extends Error {
   static Auth(message: string, statusCode: number = 401) {
     return new AppError(message, "AuthError", statusCode);
   }
-
+  
   static Payment(message: string) {
     return new AppError(message, "PaymentError", 400);
   }
@@ -29,7 +35,6 @@ class AppError extends Error {
     return new AppError(message, "ServiceError", 503);
   }
 
-  // Database (MongoDB)
   static DatabaseConnection(message: string = "Database connection failed") {
     return new AppError(message, "DatabaseConnectionError", 503);
   }

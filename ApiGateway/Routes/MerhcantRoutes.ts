@@ -1,16 +1,17 @@
 import express, { Request, Response } from "express";
 import { merchantClient } from "../GrpcRef/Grpc";
 import AppError from "../utils/Error";
-AppError
+AppError;
 const router = express.Router();
 
 router.post("/login", async (req: Request, res: Response, next) => {
   try {
-    // ← ADD VALIDATION
     if (!req.body.email) {
+      //  res.status(400).json({ message: "Email is required" }); return;
       throw AppError.Validation("Email is required");
     }
     if (!req.body.password) {
+      // res.status(400).json({ message: "Password is required" }); return;
       throw AppError.Validation("Password is required");
     }
 
@@ -19,21 +20,20 @@ router.post("/login", async (req: Request, res: Response, next) => {
       password: req.body.password,
     };
 
-    // ← USE AppError.Auth()
     merchantClient.Login(grpcPayload, (err: any, Response: any) => {
       if (err) {
-        return next(AppError.Auth(err.message, 401)); // 401 for invalid credentials
+        //  res.status(500).json({ error: "Login failed" }); return;
+        return next(AppError.Auth(err.message, 401));
       }
       res.status(200).json(Response);
     });
   } catch (error) {
-    next(error); // ← PASS TO GLOBAL HANDLER
+    next(error);
   }
 });
 
 router.post("/register", (req: Request, res: Response, next) => {
   try {
-    // ← ADD VALIDATION
     if (!req.body.name) {
       throw AppError.Validation("Name is required");
     }
@@ -63,3 +63,15 @@ router.post("/register", (req: Request, res: Response, next) => {
 });
 
 export default router;
+
+
+
+
+
+
+
+
+
+
+
+

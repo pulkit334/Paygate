@@ -10,7 +10,7 @@ export const createOrder = async (
   call: ServerUnaryCall<any, any>,
   callback: sendUnaryData<any>,
 ) => {
-  // Step 1: Validation
+  
   console.log("the data inside the createOrder will be ", call.request);
   const result = CreateOrderSchema.safeParse(call.request);
   if (!result.success) {
@@ -21,7 +21,6 @@ export const createOrder = async (
     });
   }
 
-  // Step 2: Get appId from gRPC request
   const appId = call.request.appId; // from proto request, not req
 
   try {
@@ -30,7 +29,6 @@ export const createOrder = async (
       appId,
     );
 
-    console.log("==== DEBUG: SERVICE RESULT ====");
     console.log(PaymentResponse);
 
     if (!PaymentResponse) {

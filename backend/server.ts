@@ -32,7 +32,6 @@ server.addService(authPackage.MerchantAuth.service, {
   MiddlewareAuth: MiddlewareAuth,
 });
 
-// 4. SERVER BOOTSTRAP WITH DATABASE
 const startServer = async () => {
   await ConnectDb();
 

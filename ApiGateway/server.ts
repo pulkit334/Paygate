@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import morgan from "morgan";
 import helmet from "helmet";
+import cors from "cors";
 import { RedisStore } from "rate-limit-redis";
 import rateLimit from "express-rate-limit";
 dotenv.config();
@@ -14,6 +15,12 @@ import { redisClient } from "./config/redis";
 const app = express();
 
 app.use("/webhook/razorpay", express.raw({ type: "application/json" }));
+
+// CORS
+app.use(cors({
+  origin: ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175'],
+  credentials: true,
+}));
 
 // Global middleware
 app.use(express.json());
@@ -43,17 +50,15 @@ const paymentLimiter = rateLimit({
   message: { success: false, message: "Too many payment requests" },
 });
 
-// Health check
 app.get("/health", (req, res) => {
-  res.status(200).json({ status: "ok" });
+  res.status(200).json({ status: "sahi hai bhi" });
 });
 
-// Routes
+
 app.use("/api/v1", generalLimiter, MerchantRoutes);
 app.use("/api/v2", paymentLimiter, JwtAuthMiddleware, PaymentRoutes);
 app.use("/webhook", WebhookRoutes);
 
-// Error handler
 app.use((err: any, req: any, res: any, next: any) => {
   if (err instanceof AppError) {
     return res.status(err.statusCode).json({
@@ -61,16 +66,16 @@ app.use((err: any, req: any, res: any, next: any) => {
       type: err.type,
     });
   }
-  res.status(500).json({ error: "Internal server error" }); 
+  res.status(500).json({ error: "Internal server error" });
 });
 
 process.on("uncaughtException", (err) => {
-  console.error("UNCAUGHT EXCEPTION:", err.message);
+  console.error("Uncaught exception:", err.message);
   process.exit(1);
 });
 
-process.on("unhandledRejection", (reason) => {
-  console.error("UNHANDLED REJECTION:", reason);
+process.on("unhandledRejection", (message) => {
+  console.error("unhandeld exception:", message);
 });
 
 const PORT = process.env.PORT || 6283;

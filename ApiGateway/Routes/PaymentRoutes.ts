@@ -10,7 +10,7 @@ router.post(
   ApiKeyMiddleware,
   async (req: Request, res: Response, next) => {
     try {
-      // ← ADD VALIDATION
+     
       if (!req.body.amount) {
         throw AppError.Validation("Amount is required");
       }
@@ -34,7 +34,6 @@ router.post(
 
       console.log("gRPC payload:", Grpcpayload);
       
-      // ← USE AppError.Payment()
       PaymentClient.CreateOrder(Grpcpayload, (err: any, Response: any) => {
         if (err) {
           return next(AppError.Payment(err.message));
@@ -42,7 +41,7 @@ router.post(
         res.status(200).json(Response);
       });
     } catch (error) {
-      next(error); // ← PASS TO GLOBAL HANDLER
+      next(error); 
     }
   }
 );
