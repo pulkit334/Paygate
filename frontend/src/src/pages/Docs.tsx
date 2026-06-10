@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   ArrowRight, ArrowLeft, Code, BookOpen, Terminal, Package,
-  Settings, Shield, ChevronRight, Copy, Check,
+  Settings as SettingsIcon, Shield, ChevronRight, Copy, Check, Menu, X,
 } from 'lucide-react'
 
 const sections = [
@@ -11,12 +11,11 @@ const sections = [
   { id: 'payments', label: 'Payments API', icon: Terminal },
   { id: 'sdk', label: 'React SDK', icon: Package },
   { id: 'webhooks', label: 'Webhooks', icon: Code },
-  { id: 'errors', label: 'Error Codes', icon: Settings },
+  { id: 'errors', label: 'Error Codes', icon: SettingsIcon },
 ]
 
 interface CodeBlockProps {
   code: string
-  language?: string
 }
 
 const CodeBlock = ({ code }: CodeBlockProps) => {
@@ -310,72 +309,62 @@ function verifyWebhook(payload, signature, secretKey) {
 const Docs = () => {
   const [activeSection, setActiveSection] = useState('getting-started')
   const [mobileNav, setMobileNav] = useState(false)
+  const token = localStorage.getItem('token')
 
   const activeContent = content[activeSection as keyof typeof content]
 
   return (
     <div className="min-h-screen bg-bg-primary">
-      <nav className="glass border-b border-border/50 px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-gradient-to-br from-accent to-purple-500 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">P</span>
-            </div>
-            <span className="text-xl font-bold text-text-primary tracking-tight">PayGate</span>
-          </Link>
-          <div className="flex items-center gap-4">
-            <Link to="/login" className="text-sm font-medium text-text-secondary hover:text-text-primary transition-colors">Sign in</Link>
-            <Link to="/register" className="px-5 py-2 bg-accent hover:bg-accent-hover text-white rounded-xl text-sm font-medium transition-all shadow-lg shadow-accent/20 inline-flex items-center gap-2">
-              Get Started <ArrowRight size={14} />
+      <div className="flex">
+        <aside className="hidden lg:flex flex-col w-64 shrink-0 border-r border-border/50 min-h-screen">
+          <div className="p-5 border-b border-border/50">
+            <Link to={token ? '/dashboard' : '/'} className="flex items-center gap-2.5">
+              <div className="w-8 h-8 bg-gradient-to-br from-accent to-purple-500 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">P</span>
+              </div>
+              <span className="text-lg font-bold text-text-primary tracking-tight">PayGate</span>
             </Link>
           </div>
-        </div>
-      </nav>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-text-muted hover:text-text-secondary mb-8 transition-colors">
-          <ArrowLeft size={14} /> Back to home
-        </Link>
-
-        <div className="flex items-center gap-3 mb-8">
-          <div className="w-10 h-10 bg-accent/20 rounded-xl flex items-center justify-center">
-            <BookOpen size={20} className="text-accent" />
+          <nav className="flex-1 overflow-y-auto p-4 space-y-1">
+            <p className="text-xs font-semibold text-text-muted uppercase tracking-wider px-3 mb-3">API Reference</p>
+            {sections.map((section) => (
+              <button key={section.id} onClick={() => setActiveSection(section.id)}
+                className={`w-full px-3 py-2.5 rounded-lg text-left text-sm flex items-center gap-3 transition-colors ${
+                  activeSection === section.id
+                    ? 'text-accent bg-accent/10 font-medium'
+                    : 'text-text-secondary hover:text-text-primary hover:bg-white/5'
+                }`}>
+                <section.icon size={16} />
+                {section.label}
+              </button>
+            ))}
+          </nav>
+          <div className="p-4 border-t border-border/50">
+            <Link to={token ? '/dashboard' : '/'}
+              className="flex items-center gap-2 text-sm text-text-muted hover:text-text-secondary transition-colors">
+              <ArrowLeft size={14} /> Back to {token ? 'Dashboard' : 'Home'}
+            </Link>
           </div>
-          <div>
-            <h1 className="text-2xl font-bold text-text-primary">Documentation</h1>
-            <p className="text-sm text-text-muted">Everything you need to integrate PayGate</p>
-          </div>
-        </div>
+        </aside>
 
-        <div className="lg:hidden mb-6">
-          <button onClick={() => setMobileNav(!mobileNav)}
-            className="w-full px-4 py-3 bg-surface border border-border rounded-xl text-left text-text-secondary text-sm flex items-center justify-between">
-            <span>{sections.find(s => s.id === activeSection)?.label}</span>
-            <ChevronRight size={14} className={`transition-transform ${mobileNav ? 'rotate-90' : ''}`} />
-          </button>
+        <div className="flex-1 min-w-0">
+          <div className="lg:hidden glass border-b border-border/50 px-4 py-3 flex items-center justify-between">
+            <Link to={token ? '/dashboard' : '/'} className="flex items-center gap-2.5">
+              <div className="w-7 h-7 bg-gradient-to-br from-accent to-purple-500 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-xs">P</span>
+              </div>
+              <span className="text-base font-bold text-text-primary tracking-tight">PayGate</span>
+            </Link>
+            <button onClick={() => setMobileNav(!mobileNav)} className="p-1.5 text-text-secondary hover:text-text-primary">
+              {mobileNav ? <X size={20} /> : <Menu size={20} />}
+            </button>
+          </div>
+
           {mobileNav && (
-            <div className="mt-2 bg-surface border border-border rounded-xl overflow-hidden">
+            <div className="lg:hidden bg-surface border-b border-border/50 px-4 py-3 space-y-1">
               {sections.map((section) => (
                 <button key={section.id} onClick={() => { setActiveSection(section.id); setMobileNav(false) }}
-                  className={`w-full px-4 py-3 text-left text-sm flex items-center gap-3 transition-colors ${
-                    activeSection === section.id
-                      ? 'text-accent bg-accent/10'
-                      : 'text-text-secondary hover:text-text-primary hover:bg-white/5'
-                  }`}>
-                  <section.icon size={16} />
-                  {section.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="flex gap-10">
-          <aside className="hidden lg:block w-56 shrink-0">
-            <nav className="sticky top-24 space-y-1">
-              {sections.map((section) => (
-                <button key={section.id} onClick={() => setActiveSection(section.id)}
-                  className={`w-full px-4 py-2.5 rounded-lg text-left text-sm flex items-center gap-3 transition-colors ${
+                  className={`w-full px-3 py-2.5 rounded-lg text-left text-sm flex items-center gap-3 transition-colors ${
                     activeSection === section.id
                       ? 'text-accent bg-accent/10 font-medium'
                       : 'text-text-secondary hover:text-text-primary hover:bg-white/5'
@@ -384,10 +373,10 @@ const Docs = () => {
                   {section.label}
                 </button>
               ))}
-            </nav>
-          </aside>
+            </div>
+          )}
 
-          <main className="flex-1 min-w-0 max-w-3xl">
+          <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
             <div className="animate-fade-in">
               <h2 className="text-3xl font-bold text-text-primary mb-6">{activeContent.title}</h2>
               {activeContent.body}
@@ -418,19 +407,18 @@ const Docs = () => {
               </button>
             </div>
           </main>
+
+          <footer className="border-t border-border/50 py-6 mt-8">
+            <div className="max-w-3xl mx-auto px-4 sm:px-6 flex items-center justify-between">
+              <span className="text-sm text-text-muted">&copy; {new Date().getFullYear()} PayGate</span>
+              <div className="flex items-center gap-4">
+                <Link to="/features" className="text-sm text-text-muted hover:text-text-secondary transition-colors">Features</Link>
+                <Link to="/docs" className="text-sm text-text-muted hover:text-text-secondary transition-colors">API Reference</Link>
+              </div>
+            </div>
+          </footer>
         </div>
       </div>
-
-      <footer className="border-t border-border/50 py-8 mt-16">
-        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-          <span className="text-sm text-text-muted">&copy; {new Date().getFullYear()} PayGate.</span>
-          <div className="flex items-center gap-4">
-            <Link to="/" className="text-sm text-text-muted hover:text-text-secondary transition-colors">Home</Link>
-            <Link to="/features" className="text-sm text-text-muted hover:text-text-secondary transition-colors">Features</Link>
-            <Link to="/pricing" className="text-sm text-text-muted hover:text-text-secondary transition-colors">Pricing</Link>
-          </div>
-        </div>
-      </footer>
     </div>
   )
 }

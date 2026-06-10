@@ -1,9 +1,30 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import Navbar from '../components/Navbar'
 import WebhookTable from '../components/WebhookTable'
 import { getDeliveries, retryDelivery } from '../api/webhooks'
-import { RefreshCw, CheckCircle, XCircle, Clock, Activity } from 'lucide-react'
+import { RefreshCw, CheckCircle, XCircle, Clock, Activity, Download } from 'lucide-react'
+
+const REFRESH_INTERVAL = 60 * 60 * 1000
+
+const exportCSV = (deliveries: any[], date: string) => {
+  const headers = ['Date', 'Target URL', 'Status', 'Attempt', 'HTTP Code']
+  const rows = deliveries.map(d => [
+    new Date(d.createdAt).toISOString(),
+    d.targetUrl,
+    d.status,
+    d.attemptNumber,
+    d.httpResponseCode,
+  ])
+  const csv = [headers.join(','), ...rows.map(r => r.map(v => `"${v}"`).join(','))].join('\n')
+  const blob = new Blob([csv], { type: 'text/csv' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `webhook-deliveries-${date || 'all'}.csv`
+  a.click()
+  URL.revokeObjectURL(url)
+}
 
 const Webhooks = () => {
   useAuth()
@@ -11,17 +32,27 @@ const Webhooks = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [retryingId, setRetryingId] = useState<string | null>(null)
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
+  const [lastRefreshed, setLastRefreshed] = useState<Date>(new Date())
 
-  const fetchDeliveries = () => {
+  const fetchDeliveries = useCallback(() => {
     setLoading(true)
     setError('')
-    getDeliveries()
-      .then(setDeliveries)
+    getDeliveries({ date: selectedDate })
+      .then((data) => {
+        setDeliveries(data)
+        setLastRefreshed(new Date())
+      })
       .catch((err) => setError(err.response?.data?.error || 'Failed to load webhook deliveries'))
       .finally(() => setLoading(false))
-  }
+  }, [selectedDate])
 
-  useEffect(() => { fetchDeliveries() }, [])
+  useEffect(() => { fetchDeliveries() }, [fetchDeliveries])
+
+  useEffect(() => {
+    const interval = setInterval(fetchDeliveries, REFRESH_INTERVAL)
+    return () => clearInterval(interval)
+  }, [fetchDeliveries])
 
   const handleRetry = async (id: string) => {
     setRetryingId(id)
@@ -50,10 +81,22 @@ const Webhooks = () => {
               {loading ? 'Loading...' : `${deliveries.length} deliveries logged`}
             </p>
           </div>
-          <button onClick={fetchDeliveries}
-            className="flex items-center gap-2 px-4 py-2 bg-surface border border-border rounded-xl text-sm text-text-secondary hover:text-text-primary hover:bg-white/5 transition-all mt-3 sm:mt-0">
-            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Refresh
-          </button>
+          <div className="flex items-center gap-3 mt-3 sm:mt-0">
+            <input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)}
+              className="bg-slate-900 border border-border/50 rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-accent" />
+            <button onClick={fetchDeliveries}
+              className="flex items-center gap-2 px-4 py-2 bg-surface border border-border rounded-xl text-sm text-text-secondary hover:text-text-primary hover:bg-white/5 transition-all">
+              <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Refresh
+            </button>
+            <button onClick={() => exportCSV(deliveries, selectedDate)}
+              className="flex items-center gap-2 px-4 py-2 bg-accent hover:bg-accent-hover text-white rounded-xl text-sm font-medium transition-all">
+              <Download size={14} /> Export CSV
+            </button>
+          </div>
+        </div>
+
+        <div className="text-xs text-text-muted mb-2 text-right">
+          Auto-refreshes every 60 min &middot; Last refreshed: {lastRefreshed.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
         </div>
 
         {error && (
@@ -67,7 +110,7 @@ const Webhooks = () => {
                 <Activity size={18} className="text-blue-400" />
               </div>
               <div>
-                <p className="text-xs text-text-muted">Total</p>
+                <p className="text-xs text-text-muted">Total Today</p>
                 <p className="text-xl font-bold text-text-primary">{deliveries.length}</p>
               </div>
             </div>

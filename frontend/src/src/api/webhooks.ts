@@ -9,8 +9,8 @@ export interface WebhookDelivery {
   createdAt: string
 }
 
-export const getDeliveries = async (): Promise<WebhookDelivery[]> => {
-  const response = await client.get('/webhooks/deliveries')
+export const getDeliveries = async (params?: { date?: string }): Promise<WebhookDelivery[]> => {
+  const response = await client.get('/webhooks/deliveries', { params })
   return response.data
 }
 

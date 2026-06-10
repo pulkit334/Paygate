@@ -19,7 +19,7 @@ router.post(
       }
       if (!req.body.currency) {
         throw AppError.Validation("Currency is required");
-      }
+      } 
 
       const Grpcpayload = {
         appId: (req as any).app._id,
