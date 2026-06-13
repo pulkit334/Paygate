@@ -1,111 +1,447 @@
 import { Link } from 'react-router-dom'
 import {
-  ArrowRight, BookOpen, Code, Shield, ArrowUpRight,
+  ArrowRight, Code, Shield, ArrowUpRight,
+  Zap, RefreshCw, BarChart3, Webhook, Key, Database,
+  CheckCircle, Globe,
 } from 'lucide-react'
 
 const Landing = () => {
-  const token = localStorage.getItem('token')
+  const hasToken = document.cookie.split('; ').some(c => c.startsWith('token='))
 
   return (
     <div className="min-h-screen bg-bg-primary">
-      <nav className="glass border-b border-border/50">
+      {/* ── NAVBAR ── */}
+      <nav className="sticky top-0 z-40 border-b border-border/50 bg-bg-primary/85 backdrop-blur-2xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-16">
             <Link to="/" className="flex items-center gap-2.5">
-              <div className="w-8 h-8 bg-gradient-to-br from-accent to-purple-500 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">P</span>
+              <div className="relative w-8 h-8 flex items-center justify-center">
+                <div className="absolute inset-0 bg-text-primary rotate-45 rounded-sm" />
+                <span className="relative text-white font-bold text-sm font-[family-name:var(--font-display)]">P</span>
               </div>
-              <span className="text-lg font-bold text-text-primary tracking-tight">PayGate</span>
+              <span className="text-lg font-bold text-text-primary tracking-tight font-[family-name:var(--font-display)]">PayGate</span>
             </Link>
-            <div className="flex items-center gap-4">
-              <Link to="/docs" className="text-sm font-medium text-text-secondary hover:text-text-primary transition-colors">Docs</Link>
-              <Link to="/features" className="text-sm font-medium text-text-secondary hover:text-text-primary transition-colors">Features</Link>
-              {token ? (
-                <Link to="/dashboard"
-                  className="px-5 py-2 bg-accent hover:bg-accent-hover text-white rounded-xl text-sm font-medium transition-all shadow-lg shadow-accent/20 inline-flex items-center gap-2">
-                  Dashboard <ArrowRight size={14} />
-                </Link>
-              ) : (
-                <Link to="/login"
-                  className="px-5 py-2 bg-accent hover:bg-accent-hover text-white rounded-xl text-sm font-medium transition-all shadow-lg shadow-accent/20">
-                  Sign in
-                </Link>
-              )}
+            <div className="hidden md:flex items-center gap-1">
+              <Link to="/docs" className="px-4 py-2 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors rounded-lg hover:bg-black/[0.03]">
+                API Docs
+              </Link>
+              <Link to="/features" className="px-4 py-2 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors rounded-lg hover:bg-black/[0.03]">
+                Integrations
+              </Link>
+              <span className="px-4 py-2 text-sm font-medium text-text-muted/50 cursor-default">Pricing</span>
+              <span className="px-4 py-2 text-sm font-medium text-text-muted/50 cursor-default">Changelog</span>
+              <span className="px-4 py-2 text-sm font-medium text-text-muted/50 cursor-default">Status</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Link to="/contact"
+                className="hidden sm:inline-flex px-4 py-2 border border-accent/40 bg-accent/5 rounded-md text-sm font-medium text-accent transition-all">
+                Contact Sales
+              </Link>
+              <Link to={hasToken ? '/dashboard' : '#contact'}
+                className="px-5 py-2 bg-accent hover:bg-accent-hover rounded-md text-sm font-semibold text-white transition-all active:scale-[0.97]">
+                Get API Access
+              </Link>
             </div>
           </div>
         </div>
       </nav>
 
-      <section className="py-20 md:py-28 hero-gradient">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center">
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-text-primary tracking-tight mb-6">
-            Internal Payment <span className="gradient-text">Infrastructure</span>
-          </h1>
-          <p className="text-lg sm:text-xl text-text-secondary max-w-2xl mx-auto mb-10">
-            One integration. One dashboard. One set of keys. Every product in your ecosystem.
+      {/* ── HERO ── */}
+      <section className="min-h-[calc(100vh-64px)] flex items-center py-20 md:py-28 relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 w-full">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-accent-soft border border-accent/20 rounded-full text-xs font-semibold tracking-wider text-accent uppercase mb-7">
+                <span className="w-1.5 h-1.5 rounded-full bg-accent" />
+                Payment Orchestration · Now in GA
+              </div>
+              <h1 className="text-4xl sm:text-5xl lg:text-[68px] font-bold text-text-primary tracking-[-0.04em] leading-[1.05] mb-6 font-[family-name:var(--font-display)]">
+                Route. Retry.<br />
+                <span className="text-accent">Reconcile.</span><br />
+                One API for every payment provider.
+              </h1>
+              <p className="text-lg text-text-secondary max-w-lg mb-10 leading-relaxed">
+                PayGate sits between your app and your payment providers. Intelligent routing, automatic failover, and a unified dashboard — without rebuilding your stack.
+              </p>
+              <div className="flex flex-col sm:flex-row items-start gap-4 mb-10">
+                <Link to={hasToken ? '/dashboard' : '#contact'}
+                  className="inline-flex items-center gap-2 px-8 py-4 bg-accent hover:bg-accent-hover text-white rounded-md font-semibold transition-all active:scale-[0.97]">
+                  Get API Access
+                </Link>
+                <Link to="/docs"
+                  className="inline-flex items-center gap-2 px-8 py-4 text-text-muted hover:text-text-secondary font-medium transition-colors">
+                  Read the Docs <ArrowRight size={16} />
+                </Link>
+              </div>
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+                {[
+                  { icon: Shield, label: 'SOC 2 Certified' },
+                  { icon: CheckCircle, label: '99.99% Uptime' },
+                  { icon: Zap, label: 'Sub-200ms Routing' },
+                  { icon: Globe, label: 'GDPR Ready' },
+                ].map(({ icon: Icon, label }) => (
+                  <span key={label} className="inline-flex items-center gap-1.5 text-xs font-medium text-text-muted">
+                    <Icon size={14} className="text-accent" />
+                    {label}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Hero Diagram */}
+            <div className="hidden lg:flex justify-center" aria-hidden="true">
+              <div className="w-full max-w-md bg-surface border border-border rounded-[10px] p-8 relative">
+
+                <div className="flex items-center gap-3">
+                  <div className="flex-1 bg-bg-elevated border border-border rounded-lg p-4 text-center">
+                    <div className="text-sm font-semibold text-text-primary">Your App</div>
+                    <div className="text-[10px] text-text-muted mt-0.5">REST / SDK</div>
+                  </div>
+                  <div className="w-16 h-0.5 bg-border relative">
+                    <div className="absolute w-2 h-2 rounded-full bg-accent top-[-3px] animate-pulse-dot" />
+                    <div className="absolute w-2 h-2 rounded-full bg-accent top-[-3px] animate-pulse-dot-delay" />
+                  </div>
+                  <div className="flex-1 bg-accent-soft border border-accent/30 rounded-lg p-4 text-center">
+                    <div className="text-sm font-semibold text-text-primary">PayGate</div>
+                    <div className="text-[10px] text-text-muted mt-0.5">Route · Retry</div>
+                  </div>
+                </div>
+                <div className="flex justify-center my-4">
+                  <div className="w-24 h-0.5 bg-border relative">
+                    <div className="absolute w-2 h-2 rounded-full bg-accent top-[-3px] animate-pulse-dot" />
+                    <div className="absolute w-2 h-2 rounded-full bg-accent top-[-3px] animate-pulse-dot-delay" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2.5">
+                  {['Stripe', 'Razorpay', 'PayU', 'Braintree'].map((p) => (
+                    <div key={p} className="bg-bg-elevated border border-border rounded-md px-4 py-3 text-center text-xs font-semibold text-text-secondary hover:border-border-accent transition-colors">
+                      {p}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── INTEGRATION STRIP ── */}
+      <section className="border-y border-accent/20 bg-accent-soft py-5 overflow-hidden">
+        <div className="flex items-center gap-10">
+          <span className="text-xs font-semibold tracking-wider uppercase text-accent whitespace-nowrap pl-6 shrink-0">Works with</span>
+          <div className="overflow-hidden flex-1 relative">
+
+            <div className="flex gap-12 animate-marquee whitespace-nowrap">
+              {['Stripe', 'Razorpay', 'PayU', 'Braintree', 'PayPal', 'Square', 'Adyen', 'Cashfree',
+                'Stripe', 'Razorpay', 'PayU', 'Braintree', 'PayPal', 'Square', 'Adyen', 'Cashfree'].map((name, i) => (
+                <span key={i} className="text-sm font-semibold text-text-primary/60 hover:text-text-primary transition-colors cursor-default">{name}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── FEATURES ── */}
+      <section className="py-24 md:py-32">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <h2 className="text-3xl sm:text-[44px] font-bold text-text-primary text-center tracking-[-0.02em] font-[family-name:var(--font-display)]">
+            Built for both sides of the table
+          </h2>
+          <p className="text-center text-text-secondary mt-3 mb-16 max-w-xl mx-auto">
+            Whether you're shipping the integration or signing off the reports.
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            {token ? (
-              <Link to="/dashboard"
-                className="inline-flex items-center gap-2 px-8 py-4 bg-accent hover:bg-accent-hover text-white rounded-xl font-semibold transition-all shadow-xl shadow-accent/25 group">
-                Go to Dashboard <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-              </Link>
-            ) : (
-              <Link to="/login"
-                className="inline-flex items-center gap-2 px-8 py-4 bg-accent hover:bg-accent-hover text-white rounded-xl font-semibold transition-all shadow-xl shadow-accent/25">
-                Sign in to Dashboard
-              </Link>
-            )}
-            <Link to="/docs"
-              className="inline-flex items-center gap-2 px-8 py-4 border border-border hover:border-accent/50 text-text-primary rounded-xl font-medium transition-all">
-              <BookOpen size={16} /> API Reference
+
+          <div className="grid md:grid-cols-2 gap-12 max-w-5xl mx-auto">
+            {/* Developers */}
+            <div>
+              <div className="flex items-center gap-2.5 mb-6">
+                <span className="w-4 h-0.5 bg-info rounded-full" />
+                <span className="text-xs font-semibold tracking-wider uppercase text-info">For Developers</span>
+              </div>
+              {[
+                { icon: Code, title: 'Unified REST API', desc: 'One endpoint, all providers. No more juggling multiple SDKs and authentication flows.' },
+                { icon: Database, title: 'SDK for Node, Python, Go, PHP', desc: 'Official client libraries with full type support. Install in seconds, not hours.' },
+                { icon: Webhook, title: 'Webhook Inspector', desc: 'View, debug, and replay webhook events. Retry failed deliveries with one click.' },
+                { icon: Key, title: 'Live API Key Rotation', desc: 'Rotate keys without downtime. Zero-interruption key management for production.' },
+              ].map(({ icon: Icon, title, desc }) => (
+                <div key={title} className="bg-surface border border-border rounded-[10px] p-6 mb-4 card-hover group">
+                  <div className="w-10 h-10 rounded-lg bg-info-soft flex items-center justify-center mb-4">
+                    <Icon size={20} className="text-info" />
+                  </div>
+                  <h4 className="text-base font-semibold text-text-primary mb-1.5">{title}</h4>
+                  <p className="text-sm text-text-secondary leading-relaxed">{desc}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Finance & Ops */}
+            <div>
+              <div className="flex items-center gap-2.5 mb-6">
+                <span className="w-4 h-0.5 bg-success rounded-full" />
+                <span className="text-xs font-semibold tracking-wider uppercase text-success">For Finance & Ops</span>
+              </div>
+              {[
+                { icon: BarChart3, title: 'Real-time Transaction Dashboard', desc: 'Every transaction, every provider, one view. Filter, search, and drill into any payment.' },
+                { icon: RefreshCw, title: 'Multi-provider Reconciliation', desc: 'Automated reports across Stripe, Razorpay, PayU — no more spreadsheets.' },
+                { icon: Shield, title: 'Failure Rate Breakdown', desc: 'See exactly which providers are failing and why. Pinpoint issues before they cascade.' },
+                { icon: ArrowUpRight, title: 'Exportable Ledger', desc: 'Download CSV or PDF exports for any date range. Ready for audits and board meetings.' },
+              ].map(({ icon: Icon, title, desc }) => (
+                <div key={title} className="bg-surface border border-border rounded-[10px] p-6 mb-4 card-hover group">
+                  <div className="w-10 h-10 rounded-lg bg-success-soft flex items-center justify-center mb-4">
+                    <Icon size={20} className="text-success" />
+                  </div>
+                  <h4 className="text-base font-semibold text-text-primary mb-1.5">{title}</h4>
+                  <p className="text-sm text-text-secondary leading-relaxed">{desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="text-center mt-12">
+            <Link to="/features" className="inline-flex items-center gap-2 px-6 py-3 border border-border rounded-md text-sm font-semibold text-text-secondary hover:border-border-accent hover:text-text-primary transition-all">
+              View All Features <ArrowRight size={14} />
             </Link>
           </div>
         </div>
       </section>
 
-      <section className="py-16 md:py-20">
+      {/* ── HOW IT WORKS ── */}
+      <section className="py-24 md:py-32 border-t border-border/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            {[
-              {
-                icon: BookOpen, title: 'Documentation',
-                desc: 'Quick-start guides, API references, SDK docs, and integration tutorials.',
-                link: '/docs', color: 'from-accent to-purple-500',
-              },
-              {
-                icon: Code, title: 'API Reference',
-                desc: 'Complete API reference for payments, webhooks, authentication, and more.',
-                link: '/docs', color: 'from-purple-500 to-pink-500',
-              },
-              {
-                icon: Shield, title: 'Features',
-                desc: 'API key auth, double-entry ledger, webhooks, multi-app isolation, and more.',
-                link: '/features', color: 'from-cyan-500 to-blue-500',
-              },
-            ].map((item) => (
-              <Link key={item.title} to={item.link}
-                className="group glass-light rounded-2xl p-8 card-hover">
-                <div className={`w-14 h-14 bg-gradient-to-br ${item.color} rounded-xl flex items-center justify-center mb-5 shadow-lg`}>
-                  <item.icon size={24} className="text-white" />
+          <h2 className="text-3xl sm:text-[44px] font-bold text-text-primary text-center tracking-[-0.02em] font-[family-name:var(--font-display)]">
+            How it works
+          </h2>
+          <p className="text-center text-text-secondary mt-3 mb-20 max-w-xl mx-auto">
+            Three steps from zero to fully orchestrated payments.
+          </p>
+
+          {[
+            {
+              num: '01', title: 'Install PayGate',
+              desc: 'Connect via REST API or drop in our SDK. 5 lines of code to go live.',
+              visual: (
+                <div className="code-block">
+                  <div className="header">
+                    <div className="dots"><div className="dot" /><div className="dot" /><div className="dot" /></div>
+                    <span className="text-xs text-text-muted font-mono">index.js</span>
+                  </div>
+                  <pre className="p-5 text-sm font-mono text-text-secondary overflow-x-auto leading-relaxed">
+{`import { PayGate } from '@paygate/sdk';
+
+const pg = new PayGate('pk_live_...');
+
+const charge = await pg.charges.create({
+  amount: 499900,
+  currency: 'INR',
+  provider: 'auto'
+});`}
+                  </pre>
                 </div>
-                <h3 className="text-xl font-semibold text-text-primary mb-2">{item.title}</h3>
-                <p className="text-sm text-text-secondary leading-relaxed mb-5">{item.desc}</p>
-                <span className="inline-flex items-center gap-1.5 text-sm font-medium text-accent group-hover:gap-2.5 transition-all">
-                  Learn more <ArrowUpRight size={14} />
-                </span>
+              ),
+            },
+            {
+              num: '02', title: 'Connect Your Providers',
+              desc: 'Add Stripe, Razorpay, PayU — any combination. Set routing rules per currency, region, or transaction value.',
+              visual: (
+                <div className="grid grid-cols-2 gap-3">
+                  {['Stripe', 'Razorpay', 'PayU', 'Braintree'].map((p, i) => (
+                    <div key={p} className="bg-surface border border-border rounded-lg px-4 py-3.5 flex items-center justify-between">
+                      <span className="text-sm font-semibold text-text-primary">{p}</span>
+                      <div className={`w-10 h-[22px] rounded-full relative cursor-pointer transition-colors ${i < 2 || i === 3 ? 'bg-accent' : 'bg-border'}`}>
+                        <div className={`absolute w-4 h-4 rounded-full bg-white top-[3px] transition-transform ${i < 2 || i === 3 ? 'translate-x-[18px]' : 'translate-x-[3px]'}`} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ),
+            },
+            {
+              num: '03', title: 'Go Live & Monitor',
+              desc: 'Every transaction is logged, routed, and trackable. Retries happen automatically.',
+              visual: (
+                <div className="bg-surface border border-border rounded-[10px] p-5">
+                  <div className="flex items-end gap-2 h-24 mb-4">
+                    {[40, 65, 55, 80, 70, 90, 85].map((h, i) => (
+                      <div key={i} className="flex-1 bg-accent rounded-t opacity-60 hover:opacity-100 transition-opacity" style={{ height: `${h}%` }} />
+                    ))}
+                  </div>
+                  <div className="space-y-2">
+                    {[
+                      { label: 'Success Rate', value: '97.4%', color: 'text-success' },
+                      { label: 'Avg Latency', value: '142ms', color: 'text-text-primary' },
+                      { label: 'Active Providers', value: '4', color: 'text-text-primary' },
+                    ].map(({ label, value, color }) => (
+                      <div key={label} className="flex items-center justify-between text-xs">
+                        <span className="text-text-muted">{label}</span>
+                        <span className={`font-mono font-medium ${color}`}>{value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ),
+            },
+          ].map(({ num, title, desc, visual }, i) => (
+            <div key={num} className={`grid lg:grid-cols-2 gap-12 items-center mb-24 last:mb-0`}>
+              <div className={i % 2 === 1 ? 'lg:order-2' : ''}>
+                <h3 className="text-2xl font-bold text-text-primary mb-3 font-[family-name:var(--font-display)]">{title}</h3>
+                <p className="text-base text-text-secondary leading-relaxed">{desc}</p>
+              </div>
+              <div className={i % 2 === 1 ? 'lg:order-1' : ''}>
+                {visual}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── API DOCS PREVIEW ── */}
+      <section className="py-24 md:py-32 border-t border-border/30">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6">
+          <div className="bg-surface border border-border rounded-[10px] overflow-hidden grid lg:grid-cols-[200px_1fr]">
+            <nav className="border-r border-border p-5 hidden lg:block">
+              {['Quickstart', 'Authentication', 'Endpoints', 'Webhooks', 'Errors'].map((s, i) => (
+                <div key={s} className={`block px-3 py-2.5 rounded-md text-sm font-medium mb-1 ${i === 0 ? 'text-accent bg-accent/5 border-l-2 border-accent' : 'text-text-muted'}`}>
+                  {s}
+                </div>
+              ))}
+            </nav>
+            <div className="p-8">
+              <h3 className="text-xl font-bold text-text-primary font-[family-name:var(--font-display)] mb-1">Create a Charge</h3>
+              <code className="text-xs font-mono text-accent mb-5 inline-block">POST /v1/charges</code>
+              <div className="code-block">
+                <pre className="p-5 text-sm font-mono text-text-secondary overflow-x-auto leading-relaxed">
+{`curl -X POST https://api.paygate.dev/v1/charges \\
+  -H "Authorization: Bearer pk_live_..." \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "amount": 499900,
+    "currency": "INR",
+    "description": "Order #1234"
+  }'`}
+                </pre>
+              </div>
+              <Link to="/docs" className="inline-flex items-center gap-1.5 mt-5 text-sm font-semibold text-accent hover:gap-2.5 transition-all">
+                View Full Documentation <ArrowRight size={14} />
               </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── TESTIMONIALS ── */}
+      <section className="py-24 md:py-32 border-t border-border/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <h2 className="text-3xl sm:text-[44px] font-bold text-text-primary text-center tracking-[-0.02em] font-[family-name:var(--font-display)]">
+            Trusted by engineering teams
+          </h2>
+          <p className="text-center text-text-secondary mt-3 mb-16">Companies that moved to PayGate and never looked back.</p>
+          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {[
+              { company: 'FinStack', role: 'Priya S., VP Engineering', quote: 'PayGate cut our payment failure rate by 34% in the first month. The intelligent retry logic alone justified the switch.' },
+              { company: 'Kredify', role: 'Arjun M., CTO', quote: 'Our finance team finally stopped asking me for transaction exports. The reconciliation dashboard does it all.' },
+              { company: 'Movo', role: 'Sarah L., Lead Developer', quote: 'We went from 3 payment integrations to 1 in a weekend. The SDK is clean, the docs are excellent.' },
+            ].map(({ company, role, quote }) => (
+              <div key={company} className="bg-surface border border-border rounded-[10px] p-7 card-hover">
+                <div className="text-base font-bold text-text-primary mb-1">{company}</div>
+                <div className="text-xs text-text-muted mb-5">{role}</div>
+                <p className="text-sm text-text-secondary leading-relaxed italic">"{quote}"</p>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      <footer className="border-t border-border/50 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
-          <span className="text-sm text-text-muted">&copy; {new Date().getFullYear()} PayGate</span>
-          <div className="flex items-center gap-4">
-            <Link to="/docs" className="text-sm text-text-muted hover:text-text-secondary transition-colors">Docs</Link>
-            <Link to="/features" className="text-sm text-text-muted hover:text-text-secondary transition-colors">Features</Link>
+
+
+      {/* ── CONTACT FORM ── */}
+      <section className="py-24 md:py-32 border-t border-border/30" id="contact">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 grid lg:grid-cols-2 gap-16 items-start">
+          <div>
+            <h2 className="text-3xl sm:text-[36px] font-bold text-text-primary tracking-[-0.02em] font-[family-name:var(--font-display)] mb-4">
+              Ready to orchestrate your payments?
+            </h2>
+            <p className="text-base text-text-secondary leading-relaxed mb-4">
+              Get API access, talk to our team, or request a demo. We respond within 1 business day.
+            </p>
+            <p className="text-sm text-text-muted">No sales pressure. Just a conversation about your stack.</p>
+          </div>
+          <div>
+            <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); alert('Thank you! We will be in touch.') }}>
+              <div>
+                <label className="text-xs font-medium text-text-muted mb-1.5 block">Full Name</label>
+                <input type="text" required placeholder="Priya Sharma"
+                  className="w-full px-4 py-2.5 bg-surface border border-border rounded-md text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-text-muted mb-1.5 block">Work Email</label>
+                <input type="email" required placeholder="priya@company.com"
+                  className="w-full px-4 py-2.5 bg-surface border border-border rounded-md text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-text-muted mb-1.5 block">Company</label>
+                <input type="text" required placeholder="Acme Corp"
+                  className="w-full px-4 py-2.5 bg-surface border border-border rounded-md text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-text-muted mb-1.5 block">Role</label>
+                <select required className="w-full px-4 py-2.5 bg-surface border border-border rounded-md text-sm text-text-primary focus:outline-none focus:border-accent transition-colors">
+                  <option value="" disabled selected>Select your role</option>
+                  <option value="developer">Developer</option>
+                  <option value="finance">Finance / Ops</option>
+                  <option value="both">Both</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-text-muted mb-1.5 block">Message</label>
+                <textarea rows={3} placeholder="Tell us about your payment stack..."
+                  className="w-full px-4 py-2.5 bg-surface border border-border rounded-md text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors resize-y" />
+              </div>
+              <button type="submit" className="w-full py-3.5 bg-accent hover:bg-accent-hover text-white rounded-md font-semibold text-sm transition-all active:scale-[0.97]">
+                Request Access
+              </button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      {/* ── FINAL CTA ── */}
+      <section className="py-20 border-t border-border/30 bg-accent-soft border-l-4 border-l-accent">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6">
+          <h2 className="text-2xl sm:text-[36px] font-bold text-text-primary font-[family-name:var(--font-display)] tracking-[-0.02em] mb-3">
+            Your payment stack is already complex enough.
+          </h2>
+          <p className="text-base text-text-secondary mb-8">PayGate doesn't add to it. It sits on top.</p>
+          <Link to={hasToken ? '/dashboard' : '#contact'}
+            className="inline-flex items-center gap-2 px-8 py-4 bg-accent hover:bg-accent-hover text-white rounded-md font-semibold transition-all active:scale-[0.97]">
+            Get API Access
+          </Link>
+        </div>
+      </section>
+
+      {/* ── FOOTER ── */}
+      <footer className="border-t border-border py-14">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-12">
+            {[
+              { title: 'Product', links: [{ label: 'Features', to: '/features' }, { label: 'API Docs', to: '/docs' }, { label: 'Integrations', to: '/features' }] },
+              { title: 'Developers', links: [{ label: 'Documentation', to: '/docs' }, { label: 'Quickstart', to: '/docs' }, { label: 'SDK Reference', to: '/docs' }, { label: 'Status', to: '#' }] },
+              { title: 'Company', links: [{ label: 'About', to: '#' }, { label: 'Blog', to: '#' }, { label: 'Contact', to: '#contact' }, { label: 'Careers', to: '#' }] },
+              { title: 'Legal', links: [{ label: 'Privacy Policy', to: '#' }, { label: 'Terms of Service', to: '#' }, { label: 'Security', to: '#' }] },
+            ].map(({ title, links }) => (
+              <div key={title}>
+                <h5 className="text-xs font-semibold text-text-primary uppercase tracking-wider mb-4">{title}</h5>
+                {links.map((l) => (
+                  <Link key={l.label} to={l.to} className="block text-sm text-text-muted hover:text-text-secondary transition-colors py-1">{l.label}</Link>
+                ))}
+              </div>
+            ))}
+          </div>
+          <div className="flex flex-col sm:flex-row items-center justify-between pt-6 border-t border-border gap-4">
+            <span className="text-sm text-text-muted">&copy; {new Date().getFullYear()} PayGate. All rights reserved.</span>
+            <div className="flex items-center gap-2 text-sm text-text-muted">
+              <span className="w-2 h-2 rounded-full bg-success" />
+              Status: Operational
+            </div>
           </div>
         </div>
       </footer>

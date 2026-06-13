@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  ArrowRight, ArrowLeft, Code, BookOpen, Terminal, Package,
+  ArrowLeft, Code, BookOpen, Terminal, Package,
   Settings as SettingsIcon, Shield, ChevronRight, Copy, Check, Menu, X,
 } from 'lucide-react'
 
@@ -65,14 +65,14 @@ const content = {
 
         <h3 className="text-lg font-semibold text-text-primary">2. Get Your API Keys</h3>
         <p className="text-text-secondary">After registration, you'll receive:</p>
-        <div className="glass rounded-xl p-5 space-y-4">
+        <div className="bg-surface border border-border rounded-[10px] p-5 space-y-4">
           <div>
             <p className="text-xs text-text-muted mb-1">Public Key (client-side)</p>
-            <code className="block bg-slate-900 border border-border rounded-lg px-4 py-3 text-sm font-mono text-text-primary">pk_live_2x7m9k4q3w8e1r5t6y0u</code>
+            <code className="block bg-bg-primary border border-border rounded-lg px-4 py-3 text-sm font-mono text-text-primary">pk_live_2x7m9k4q3w8e1r5t6y0u</code>
           </div>
           <div>
             <p className="text-xs text-text-muted mb-1">Secret Key (server-side — shown only once!)</p>
-            <code className="block bg-slate-900 border border-border rounded-lg px-4 py-3 text-sm font-mono text-yellow-400">sk_live_9a1b2c3d4e5f6g7h8i9j</code>
+            <code className="block bg-bg-primary border border-border rounded-lg px-4 py-3 text-sm font-mono text-warning">sk_live_9a1b2c3d4e5f6g7h8i9j</code>
           </div>
         </div>
 
@@ -195,8 +195,8 @@ function CheckoutPage() {
   );
 }`} />
 
-        <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-5 mt-6">
-          <p className="text-sm text-yellow-400 font-medium">⚠️ Important</p>
+        <div className="bg-warning/10 border border-warning/20 rounded-[10px] p-5 mt-6">
+          <p className="text-sm text-warning font-medium">Important</p>
           <p className="text-sm text-text-secondary mt-1">
             Never expose your secret key in client-side code. The PaymentModal only needs your
             public key. All secret key operations happen server-side.
@@ -271,7 +271,7 @@ function verifyWebhook(payload, signature, secretKey) {
 }`} />
 
         <h3 className="text-lg font-semibold text-text-primary">Error Categories</h3>
-        <div className="overflow-hidden rounded-xl border border-border/50">
+        <div className="overflow-hidden rounded-[10px] border border-border/50">
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-surface border-b border-border/50">
@@ -290,9 +290,9 @@ function verifyWebhook(payload, signature, secretKey) {
                 ['PaymentError', '400', 'Payment processing failed'],
                 ['ServiceError', '500', 'Internal server error'],
               ].map(([type, code, desc], i) => (
-                <tr key={type} className={`border-b border-border/30 ${i % 2 === 0 ? 'bg-white/[0.02]' : ''}`}>
+                <tr key={type} className={`border-b border-border/30 ${i % 2 === 0 ? 'bg-black/[0.02]' : ''}`}>
                   <td className="px-5 py-3">
-                    <code className="text-xs text-red-400 font-mono">{type}</code>
+                    <code className="text-xs text-danger font-mono">{type}</code>
                   </td>
                   <td className="px-5 py-3 text-text-primary font-mono">{code}</td>
                   <td className="px-5 py-3 text-text-muted">{desc}</td>
@@ -309,51 +309,79 @@ function verifyWebhook(payload, signature, secretKey) {
 const Docs = () => {
   const [activeSection, setActiveSection] = useState('getting-started')
   const [mobileNav, setMobileNav] = useState(false)
-  const token = localStorage.getItem('token')
+  const hasToken = document.cookie.split('; ').some(c => c.startsWith('token='))
 
   const activeContent = content[activeSection as keyof typeof content]
 
   return (
     <div className="min-h-screen bg-bg-primary">
-      <div className="flex">
-        <aside className="hidden lg:flex flex-col w-64 shrink-0 border-r border-border/50 min-h-screen">
-          <div className="p-5 border-b border-border/50">
-            <Link to={token ? '/dashboard' : '/'} className="flex items-center gap-2.5">
-              <div className="w-8 h-8 bg-gradient-to-br from-accent to-purple-500 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">P</span>
+      {/* Top Navbar */}
+      <nav className="sticky top-0 z-40 border-b border-border/50 bg-bg-primary/85 backdrop-blur-2xl">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="flex items-center justify-between h-16">
+            <Link to="/" className="flex items-center gap-2.5">
+              <div className="relative w-8 h-8 flex items-center justify-center">
+                <div className="absolute inset-0 bg-text-primary rotate-45 rounded-sm" />
+                <span className="relative text-white font-bold text-sm font-[family-name:var(--font-display)]">P</span>
               </div>
-              <span className="text-lg font-bold text-text-primary tracking-tight">PayGate</span>
+              <span className="text-lg font-bold text-text-primary tracking-tight font-[family-name:var(--font-display)]">PayGate</span>
+            </Link>
+            <div className="hidden md:flex items-center gap-1">
+              <Link to="/docs" className="px-4 py-2 text-sm font-medium text-accent bg-accent/5 rounded-lg">API Docs</Link>
+              <Link to="/features" className="px-4 py-2 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors rounded-lg hover:bg-black/[0.03]">Integrations</Link>
+              <span className="px-4 py-2 text-sm font-medium text-text-muted/50 cursor-default">Pricing</span>
+              <span className="px-4 py-2 text-sm font-medium text-text-muted/50 cursor-default">Changelog</span>
+              <span className="px-4 py-2 text-sm font-medium text-text-muted/50 cursor-default">Status</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Link to="/" className="hidden sm:inline-flex px-4 py-2 border border-border rounded-md text-sm font-medium text-text-secondary hover:border-border-accent hover:text-text-primary transition-all">Contact Sales</Link>
+              <Link to="/dashboard" className="px-5 py-2 bg-accent hover:bg-accent-hover rounded-md text-sm font-semibold text-white transition-all active:scale-[0.97]">Get API Access</Link>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <div className="flex">
+        <aside className="hidden lg:flex flex-col w-64 shrink-0 border-r border-border min-h-screen">
+          <div className="p-5 border-b border-border">
+            <Link to={hasToken ? '/dashboard' : '/'} className="flex items-center gap-2.5">
+              <div className="relative w-8 h-8 flex items-center justify-center">
+                <div className="absolute inset-0 bg-text-primary rotate-45 rounded-sm" />
+                <span className="relative text-white font-bold text-sm font-[family-name:var(--font-display)]">P</span>
+              </div>
+              <span className="text-lg font-bold text-text-primary tracking-tight font-[family-name:var(--font-display)]">PayGate</span>
             </Link>
           </div>
           <nav className="flex-1 overflow-y-auto p-4 space-y-1">
             <p className="text-xs font-semibold text-text-muted uppercase tracking-wider px-3 mb-3">API Reference</p>
             {sections.map((section) => (
               <button key={section.id} onClick={() => setActiveSection(section.id)}
-                className={`w-full px-3 py-2.5 rounded-lg text-left text-sm flex items-center gap-3 transition-colors ${
+                className={`w-full px-3 py-2.5 rounded-md text-left text-sm flex items-center gap-3 transition-colors ${
                   activeSection === section.id
                     ? 'text-accent bg-accent/10 font-medium'
-                    : 'text-text-secondary hover:text-text-primary hover:bg-white/5'
+                    : 'text-text-secondary hover:text-text-primary hover:bg-black/[0.03]'
                 }`}>
                 <section.icon size={16} />
                 {section.label}
               </button>
             ))}
           </nav>
-          <div className="p-4 border-t border-border/50">
-            <Link to={token ? '/dashboard' : '/'}
+          <div className="p-4 border-t border-border">
+            <Link to={hasToken ? '/dashboard' : '/'}
               className="flex items-center gap-2 text-sm text-text-muted hover:text-text-secondary transition-colors">
-              <ArrowLeft size={14} /> Back to {token ? 'Dashboard' : 'Home'}
+              <ArrowLeft size={14} /> Back to {hasToken ? 'Dashboard' : 'Home'}
             </Link>
           </div>
         </aside>
 
         <div className="flex-1 min-w-0">
-          <div className="lg:hidden glass border-b border-border/50 px-4 py-3 flex items-center justify-between">
-            <Link to={token ? '/dashboard' : '/'} className="flex items-center gap-2.5">
-              <div className="w-7 h-7 bg-gradient-to-br from-accent to-purple-500 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xs">P</span>
+          <div className="lg:hidden border-b border-border px-4 py-3 flex items-center justify-between bg-bg-primary/85 backdrop-blur-xl">
+            <Link to={hasToken ? '/dashboard' : '/'} className="flex items-center gap-2.5">
+              <div className="relative w-7 h-7 flex items-center justify-center">
+                <div className="absolute inset-0 bg-text-primary rotate-45 rounded-sm" />
+                <span className="relative text-white font-bold text-xs font-[family-name:var(--font-display)]">P</span>
               </div>
-              <span className="text-base font-bold text-text-primary tracking-tight">PayGate</span>
+              <span className="text-base font-bold text-text-primary tracking-tight font-[family-name:var(--font-display)]">PayGate</span>
             </Link>
             <button onClick={() => setMobileNav(!mobileNav)} className="p-1.5 text-text-secondary hover:text-text-primary">
               {mobileNav ? <X size={20} /> : <Menu size={20} />}
@@ -361,13 +389,13 @@ const Docs = () => {
           </div>
 
           {mobileNav && (
-            <div className="lg:hidden bg-surface border-b border-border/50 px-4 py-3 space-y-1">
+            <div className="lg:hidden bg-surface border-b border-border px-4 py-3 space-y-1">
               {sections.map((section) => (
                 <button key={section.id} onClick={() => { setActiveSection(section.id); setMobileNav(false) }}
-                  className={`w-full px-3 py-2.5 rounded-lg text-left text-sm flex items-center gap-3 transition-colors ${
+                  className={`w-full px-3 py-2.5 rounded-md text-left text-sm flex items-center gap-3 transition-colors ${
                     activeSection === section.id
                       ? 'text-accent bg-accent/10 font-medium'
-                      : 'text-text-secondary hover:text-text-primary hover:bg-white/5'
+                      : 'text-text-secondary hover:text-text-primary hover:bg-black/[0.03]'
                   }`}>
                   <section.icon size={16} />
                   {section.label}
@@ -378,11 +406,11 @@ const Docs = () => {
 
           <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
             <div className="animate-fade-in">
-              <h2 className="text-3xl font-bold text-text-primary mb-6">{activeContent.title}</h2>
+              <h2 className="text-3xl font-bold text-text-primary mb-6 font-[family-name:var(--font-display)]">{activeContent.title}</h2>
               {activeContent.body}
             </div>
 
-            <div className="flex items-center justify-between mt-12 pt-8 border-t border-border/50">
+            <div className="flex items-center justify-between mt-12 pt-8 border-t border-border">
               <button onClick={() => {
                 const idx = sections.findIndex(s => s.id === activeSection)
                 if (idx > 0) setActiveSection(sections[idx - 1].id)
@@ -408,7 +436,7 @@ const Docs = () => {
             </div>
           </main>
 
-          <footer className="border-t border-border/50 py-6 mt-8">
+          <footer className="border-t border-border py-6 mt-8">
             <div className="max-w-3xl mx-auto px-4 sm:px-6 flex items-center justify-between">
               <span className="text-sm text-text-muted">&copy; {new Date().getFullYear()} PayGate</span>
               <div className="flex items-center gap-4">

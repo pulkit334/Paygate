@@ -1,15 +1,18 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+const hasAuthCookie = () =>
+  document.cookie.split('; ').some(c => c.startsWith('token='))
+
 export const useAuth = () => {
   const navigate = useNavigate()
-  const token = localStorage.getItem('token')
+  const authed = hasAuthCookie()
 
   useEffect(() => {
-    if (!token) {
-      navigate('/login')
+    if (!authed) {
+      navigate('/')
     }
-  }, [token, navigate])
+  }, [authed, navigate])
 
-  return { token }
+  return { authed }
 }

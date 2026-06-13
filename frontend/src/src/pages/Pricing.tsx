@@ -88,31 +88,39 @@ const Pricing = () => {
 
   return (
     <div className="min-h-screen bg-bg-primary">
-      <nav className="glass border-b border-border/50 px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-gradient-to-br from-accent to-purple-500 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">P</span>
-            </div>
-            <span className="text-xl font-bold text-text-primary tracking-tight">PayGate</span>
-          </Link>
-          <div className="flex items-center gap-4">
-            <Link to="/login" className="text-sm font-medium text-text-secondary hover:text-text-primary transition-colors">Sign in</Link>
-            <Link to="/register" className="px-5 py-2 bg-accent hover:bg-accent-hover text-white rounded-xl text-sm font-medium transition-all shadow-lg shadow-accent/20 inline-flex items-center gap-2">
-              Get Started <ArrowRight size={14} />
+      <nav className="sticky top-0 z-40 border-b border-border/50 bg-bg-primary/85 backdrop-blur-2xl">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="flex items-center justify-between h-16">
+            <Link to="/" className="flex items-center gap-2.5">
+              <div className="relative w-8 h-8 flex items-center justify-center">
+                <div className="absolute inset-0 bg-text-primary rotate-45 rounded-sm" />
+                <span className="relative text-white font-bold text-sm font-[family-name:var(--font-display)]">P</span>
+              </div>
+              <span className="text-lg font-bold text-text-primary tracking-tight font-[family-name:var(--font-display)]">PayGate</span>
             </Link>
+            <div className="hidden md:flex items-center gap-1">
+              <Link to="/docs" className="px-4 py-2 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors rounded-lg hover:bg-black/[0.03]">API Docs</Link>
+              <Link to="/features" className="px-4 py-2 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors rounded-lg hover:bg-black/[0.03]">Integrations</Link>
+              <Link to="/pricing" className="px-4 py-2 text-sm font-medium text-accent bg-accent/5 rounded-lg">Pricing</Link>
+              <span className="px-4 py-2 text-sm font-medium text-text-muted/50 cursor-default">Changelog</span>
+              <span className="px-4 py-2 text-sm font-medium text-text-muted/50 cursor-default">Status</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Link to="/" className="hidden sm:inline-flex px-4 py-2 border border-border rounded-md text-sm font-medium text-text-secondary hover:border-border-accent hover:text-text-primary transition-all">Contact Sales</Link>
+              <Link to="/dashboard" className="px-5 py-2 bg-accent hover:bg-accent-hover rounded-md text-sm font-semibold text-white transition-all active:scale-[0.97]">Get API Access</Link>
+            </div>
           </div>
         </div>
       </nav>
 
-      <section className="py-20 md:py-28 hero-gradient">
+      <section className="py-20 md:py-28">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center">
           <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-text-muted hover:text-text-secondary mb-8 transition-colors">
             <ArrowLeft size={14} /> Back to home
           </Link>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-text-primary tracking-tight">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-text-primary tracking-tight font-[family-name:var(--font-display)]">
             Simple, transparent{' '}
-            <span className="gradient-text">pricing</span>
+            <span className="text-accent">pricing</span>
           </h1>
           <p className="mt-5 text-lg text-text-secondary max-w-2xl mx-auto">
             Start for free. Scale as you grow. No hidden fees, no surprises — just one platform
@@ -124,16 +132,16 @@ const Pricing = () => {
       <section className="py-16 md:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex justify-center mb-12">
-            <div className="inline-flex items-center gap-3 bg-surface rounded-xl p-1.5 border border-border/50">
+            <div className="inline-flex items-center gap-3 bg-surface rounded-md p-1.5 border border-border/50">
               <button onClick={() => setYearly(false)}
-                className={`px-5 py-2 rounded-lg text-sm font-medium transition-all ${
-                  !yearly ? 'bg-accent text-white shadow-lg shadow-accent/20' : 'text-text-secondary hover:text-text-primary'
+                className={`px-5 py-2 rounded text-sm font-medium transition-all ${
+                  !yearly ? 'bg-accent text-white' : 'text-text-secondary hover:text-text-primary'
                 }`}>
                 Monthly
               </button>
               <button onClick={() => setYearly(true)}
-                className={`px-5 py-2 rounded-lg text-sm font-medium transition-all ${
-                  yearly ? 'bg-accent text-white shadow-lg shadow-accent/20' : 'text-text-secondary hover:text-text-primary'
+                className={`px-5 py-2 rounded text-sm font-medium transition-all ${
+                  yearly ? 'bg-accent text-white' : 'text-text-secondary hover:text-text-primary'
                 }`}>
                 Yearly
                 <span className="ml-2 text-xs text-success font-semibold">Save ~17%</span>
@@ -143,21 +151,21 @@ const Pricing = () => {
 
           <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {tiers.map((tier) => (
-              <div key={tier.name} className={`relative rounded-2xl p-8 card-hover ${
+              <div key={tier.name} className={`relative rounded-[10px] p-8 card-hover ${
                 tier.highlighted
-                  ? 'bg-gradient-to-b from-accent/10 to-accent/5 border-2 border-accent/40 shadow-xl shadow-accent/10'
-                  : 'glass'
+                  ? 'bg-accent-soft border-2 border-accent/40'
+                  : 'bg-surface border border-border'
               }`}>
                 {tier.highlighted && (
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 bg-accent text-white text-xs font-semibold rounded-full shadow-lg">
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 bg-accent text-white text-xs font-semibold rounded">
                     Most Popular
                   </div>
                 )}
-                <h3 className="text-xl font-bold text-text-primary mb-2">{tier.name}</h3>
+                <h3 className="text-xl font-bold text-text-primary mb-2 font-[family-name:var(--font-display)]">{tier.name}</h3>
                 <p className="text-sm text-text-muted mb-6">{tier.desc}</p>
 
                 <div className="mb-6">
-                  <span className="text-4xl font-bold text-text-primary">
+                  <span className="text-4xl font-bold text-text-primary font-[family-name:var(--font-display)]">
                     {tier.price.monthly === 0 ? 'Free' : `₹${(yearly ? tier.price.yearly : tier.price.monthly).toLocaleString('en-IN')}`}
                   </span>
                   {tier.price.monthly > 0 && (
@@ -168,17 +176,17 @@ const Pricing = () => {
                 <ul className="space-y-3 mb-8 min-h-[280px]">
                   {tier.features.map((f) => (
                     <li key={f} className="flex items-start gap-3 text-sm text-text-secondary">
-                      <Check size={16} className="text-success shrink-0 mt-0.5" />
+                      <Check size={16} className="text-accent shrink-0 mt-0.5" />
                       {f}
                     </li>
                   ))}
                 </ul>
 
-                <Link to="/register"
-                  className={`block w-full text-center py-3.5 rounded-xl font-medium transition-all ${
+                <Link to="/"
+                  className={`block w-full text-center py-3.5 rounded-md font-medium transition-all ${
                     tier.highlighted
-                      ? 'bg-accent hover:bg-accent-hover text-white shadow-lg shadow-accent/20'
-                      : 'border border-border hover:border-accent/50 text-text-primary hover:bg-white/5'
+                      ? 'bg-accent hover:bg-accent-hover text-white'
+                      : 'border border-border hover:border-accent/50 text-text-primary hover:bg-black/[0.03]'
                   }`}>
                   {tier.cta}
                 </Link>
@@ -188,18 +196,18 @@ const Pricing = () => {
         </div>
       </section>
 
-      <section className="py-16 md:py-24 border-t border-border/20">
+      <section className="py-16 md:py-24 border-t border-border/30">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-14">
-            <h2 className="text-3xl sm:text-4xl font-bold text-text-primary tracking-tight">
+            <h2 className="text-3xl sm:text-4xl font-bold text-text-primary tracking-tight font-[family-name:var(--font-display)]">
               Frequently asked{' '}
-              <span className="gradient-text">questions</span>
+              <span className="text-accent">questions</span>
             </h2>
           </div>
 
           <div className="grid md:grid-cols-2 gap-4">
             {faqs.map((faq) => (
-              <div key={faq.q} className="glass rounded-xl p-6">
+              <div key={faq.q} className="bg-surface border border-border rounded-[10px] p-6">
                 <div className="flex items-start gap-3">
                   <HelpCircle size={16} className="text-accent shrink-0 mt-0.5" />
                   <div>
@@ -213,30 +221,30 @@ const Pricing = () => {
         </div>
       </section>
 
-      <section className="py-20 relative overflow-hidden border-t border-border/20">
-        <div className="absolute inset-0 bg-gradient-to-br from-accent/20 via-purple-500/10 to-transparent" />
+      <section className="py-20 relative overflow-hidden border-t border-border/30">
+
         <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center relative z-10">
-          <h2 className="text-3xl sm:text-4xl font-bold text-text-primary tracking-tight mb-6">
+          <h2 className="text-3xl sm:text-4xl font-bold text-text-primary tracking-tight mb-6 font-[family-name:var(--font-display)]">
             Still have questions?{' '}
-            <span className="gradient-text">We're here.</span>
+            <span className="text-accent">We're here.</span>
           </h2>
           <p className="text-lg text-text-secondary mb-8">
             Not sure which plan fits your team? Our engineering team will help you figure it out.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <a href="mailto:sales@paygate.io"
-              className="inline-flex items-center gap-2 px-8 py-4 bg-accent hover:bg-accent-hover text-white rounded-xl font-semibold transition-all shadow-xl shadow-accent/25 text-lg">
+              className="inline-flex items-center gap-2 px-8 py-4 bg-accent hover:bg-accent-hover text-white rounded-md font-semibold transition-all text-lg">
               <Mail size={18} /> Contact Sales
             </a>
-            <Link to="/register"
-              className="inline-flex items-center gap-2 px-8 py-4 border border-border hover:border-accent/50 text-text-primary rounded-xl font-medium transition-all text-lg">
-              Start Free Trial <ArrowRight size={18} />
+            <Link to="/"
+              className="inline-flex items-center gap-2 px-8 py-4 border border-border hover:border-accent/50 text-text-primary rounded-md font-medium transition-all text-lg">
+              Get Started <ArrowRight size={18} />
             </Link>
           </div>
         </div>
       </section>
 
-      <footer className="border-t border-border/50 py-8">
+      <footer className="border-t border-border py-8">
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
           <span className="text-sm text-text-muted">&copy; {new Date().getFullYear()} PayGate.</span>
           <div className="flex items-center gap-4">

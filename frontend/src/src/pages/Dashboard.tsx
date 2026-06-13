@@ -3,8 +3,8 @@ import { useAuth } from "../hooks/useAuth";
 import Navbar from "../components/Navbar";
 import SummaryCard from "../components/SummaryCard";
 import TransactionTable from "../components/TransactionTable";
-import { getSummary, getDailyVolume } from "../api/analytics";
-import { getPayments } from "../api/payments";
+import { getSummary, getDailyVolume } from "../services/analytics.service";
+import { getPayments } from "../services/payments.service";
 import {
   BarChart,
   Bar,
@@ -58,13 +58,13 @@ const Dashboard = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-text-primary">Dashboard</h1>
+            <h1 className="text-2xl font-bold text-text-primary font-[family-name:var(--font-display)]">Dashboard</h1>
             <p className="text-sm text-text-muted mt-1">
-              Welcome back, JioMart team
+              Welcome back, Acme Corp
             </p>
           </div>
           <div className="flex items-center gap-3 mt-3 sm:mt-0">
-            <div className="flex items-center gap-2 px-4 py-2 bg-green-500/10 border border-green-500/20 rounded-xl text-green-400 text-sm">
+            <div className="flex items-center gap-2 px-4 py-2 bg-success-soft border border-success/20 rounded-md text-success text-sm">
               <TrendingUp size={16} />
               <span className="font-medium">+12.5% this month</span>
             </div>
@@ -72,7 +72,7 @@ const Dashboard = () => {
         </div>
 
         {error && (
-          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
+          <div className="mb-6 p-4 bg-danger-soft border border-danger/20 rounded-md text-danger text-sm">
             {error}
           </div>
         )}
@@ -83,13 +83,13 @@ const Dashboard = () => {
               {[1, 2, 3, 4].map((i) => (
                 <div
                   key={i}
-                  className="bg-surface border border-border rounded-xl p-5 animate-pulse h-24"
+                  className="bg-surface border border-border rounded-[10px] p-5 animate-pulse h-24"
                 />
               ))}
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="bg-surface border border-border rounded-xl p-6 animate-pulse h-64" />
-              <div className="bg-surface border border-border rounded-xl p-6 animate-pulse h-64" />
+              <div className="bg-surface border border-border rounded-[10px] p-6 animate-pulse h-64" />
+              <div className="bg-surface border border-border rounded-[10px] p-6 animate-pulse h-64" />
             </div>
           </>
         ) : (
@@ -100,6 +100,8 @@ const Dashboard = () => {
                   label="Total Volume"
                   value={formatAmount(summary.totalReceived)}
                   icon={<IndianRupee size={20} />}
+                  trend="+12% vs yesterday"
+                  trendUp
                 />
                 <SummaryCard
                   label="Total Transactions"
@@ -110,6 +112,8 @@ const Dashboard = () => {
                   label="Success Rate"
                   value={`${summary.successRate}%`}
                   icon={<CheckCircle size={20} />}
+                  trend="Stable"
+                  trendUp
                 />
                 <SummaryCard
                   label="Last Payment"
@@ -134,7 +138,7 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold text-text-primary">
+                  <h2 className="text-lg font-semibold text-text-primary font-[family-name:var(--font-display)]">
                     Recent Transactions
                   </h2>
                   <span className="text-xs text-accent flex items-center gap-1 cursor-pointer hover:underline">
@@ -145,7 +149,7 @@ const Dashboard = () => {
               </div>
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold text-text-primary">
+                  <h2 className="text-lg font-semibold text-text-primary font-[family-name:var(--font-display)]">
                     Daily Volume
                   </h2>
                   <div className="flex items-center gap-2 text-xs text-text-muted">
@@ -153,12 +157,12 @@ const Dashboard = () => {
                     Last 7 days
                   </div>
                 </div>
-                <div className="bg-surface border border-border rounded-xl p-6">
+                <div className="bg-surface border border-border rounded-[10px] p-6">
                   <ResponsiveContainer width="100%" height={280}>
                     <BarChart data={dailyVolume}>
                       <XAxis
                         dataKey="date"
-                        tick={{ fill: "#94a3b8", fontSize: 12 }}
+                        tick={{ fill: "#55556A", fontSize: 12 }}
                         tickFormatter={(v) =>
                           new Date(v).toLocaleDateString("en-IN", {
                             day: "2-digit",
@@ -167,15 +171,15 @@ const Dashboard = () => {
                         }
                       />
                       <YAxis
-                        tick={{ fill: "#94a3b8", fontSize: 12 }}
+                        tick={{ fill: "#55556A", fontSize: 12 }}
                         tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`}
                       />
                       <Tooltip
                         contentStyle={{
-                          background: "#1e293b",
-                          border: "1px solid #334155",
+                          background: "#111118",
+                          border: "1px solid #2A2A38",
                           borderRadius: "8px",
-                          color: "#f1f5f9",
+                          color: "#F0F0FF",
                         }}
                         formatter={(value) => [
                           formatAmount(value as number),
@@ -184,7 +188,7 @@ const Dashboard = () => {
                       />
                       <Bar
                         dataKey="amount"
-                        fill="#6366f1"
+                        fill="#6C63FF"
                         radius={[4, 4, 0, 0]}
                       />
                     </BarChart>
@@ -193,9 +197,9 @@ const Dashboard = () => {
               </div>
             </div>
 
-            <div className="mt-6 glass rounded-xl p-5 flex flex-wrap items-center justify-between gap-4">
+            <div className="mt-6 bg-surface border border-border rounded-[10px] p-5 flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-accent/10 rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center">
                   <Wallet size={18} className="text-accent" />
                 </div>
                 <div>
@@ -206,8 +210,8 @@ const Dashboard = () => {
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-green-500/10 rounded-xl flex items-center justify-center">
-                  <TrendingUp size={18} className="text-green-400" />
+                <div className="w-10 h-10 bg-success-soft rounded-lg flex items-center justify-center">
+                  <TrendingUp size={18} className="text-success" />
                 </div>
                 <div>
                   <p className="text-xs text-text-muted">Settlements Pending</p>

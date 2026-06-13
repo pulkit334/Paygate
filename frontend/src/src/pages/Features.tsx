@@ -78,13 +78,13 @@ const comparisonRows = [
 ]
 
 const FeatureCard = ({ feature, index }: { feature: typeof featureGroups[0]['features'][0], index: number }) => (
-  <div className="glass-light rounded-2xl p-7 card-hover" style={{ animationDelay: `${index * 0.05}s` }}>
+  <div className="bg-surface border border-border rounded-[10px] p-7 card-hover" style={{ animationDelay: `${index * 0.05}s` }}>
     <div className="flex items-start gap-5">
-      <div className="w-12 h-12 bg-accent/10 rounded-xl flex items-center justify-center shrink-0">
+      <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center shrink-0">
         <feature.icon size={22} className="text-accent" />
       </div>
       <div>
-        <h3 className="text-lg font-semibold text-text-primary mb-2">{feature.title}</h3>
+        <h3 className="text-lg font-semibold text-text-primary mb-2 font-[family-name:var(--font-display)]">{feature.title}</h3>
         <p className="text-sm text-text-secondary leading-relaxed mb-4">{feature.desc}</p>
         <div className="grid grid-cols-2 gap-2">
           {feature.highlights.map((h) => (
@@ -102,31 +102,39 @@ const FeatureCard = ({ feature, index }: { feature: typeof featureGroups[0]['fea
 const Features = () => {
   return (
     <div className="min-h-screen bg-bg-primary">
-      <nav className="glass border-b border-border/50 px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-gradient-to-br from-accent to-purple-500 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">P</span>
-            </div>
-            <span className="text-xl font-bold text-text-primary tracking-tight">PayGate</span>
-          </Link>
-          <div className="flex items-center gap-4">
-            <Link to="/login" className="text-sm font-medium text-text-secondary hover:text-text-primary transition-colors">Sign in</Link>
-            <Link to="/register" className="px-5 py-2 bg-accent hover:bg-accent-hover text-white rounded-xl text-sm font-medium transition-all shadow-lg shadow-accent/20 inline-flex items-center gap-2">
-              Get Started <ArrowRight size={14} />
+      <nav className="sticky top-0 z-40 border-b border-border/50 bg-bg-primary/85 backdrop-blur-2xl">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="flex items-center justify-between h-16">
+            <Link to="/" className="flex items-center gap-2.5">
+              <div className="relative w-8 h-8 flex items-center justify-center">
+                <div className="absolute inset-0 bg-text-primary rotate-45 rounded-sm" />
+                <span className="relative text-white font-bold text-sm font-[family-name:var(--font-display)]">P</span>
+              </div>
+              <span className="text-lg font-bold text-text-primary tracking-tight font-[family-name:var(--font-display)]">PayGate</span>
             </Link>
+            <div className="hidden md:flex items-center gap-1">
+              <Link to="/docs" className="px-4 py-2 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors rounded-lg hover:bg-black/[0.03]">API Docs</Link>
+              <Link to="/features" className="px-4 py-2 text-sm font-medium text-accent bg-accent/5 rounded-lg">Integrations</Link>
+              <span className="px-4 py-2 text-sm font-medium text-text-muted/50 cursor-default">Pricing</span>
+              <span className="px-4 py-2 text-sm font-medium text-text-muted/50 cursor-default">Changelog</span>
+              <span className="px-4 py-2 text-sm font-medium text-text-muted/50 cursor-default">Status</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Link to="/" className="hidden sm:inline-flex px-4 py-2 border border-border rounded-md text-sm font-medium text-text-secondary hover:border-border-accent hover:text-text-primary transition-all">Contact Sales</Link>
+              <Link to="/dashboard" className="px-5 py-2 bg-accent hover:bg-accent-hover rounded-md text-sm font-semibold text-white transition-all active:scale-[0.97]">Get API Access</Link>
+            </div>
           </div>
         </div>
       </nav>
 
-      <section className="py-20 md:py-28 hero-gradient">
+      <section className="py-20 md:py-28">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center">
           <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-text-muted hover:text-text-secondary mb-8 transition-colors">
             <ArrowLeft size={14} /> Back to home
           </Link>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-text-primary tracking-tight">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-text-primary tracking-tight font-[family-name:var(--font-display)]">
             Everything you need to{' '}
-            <span className="gradient-text">scale payments</span>
+            <span className="text-accent">scale payments</span>
           </h1>
           <p className="mt-5 text-lg text-text-secondary max-w-2xl mx-auto">
             Purpose-built for engineering teams managing payment infrastructure across multiple apps and services.
@@ -136,10 +144,10 @@ const Features = () => {
       </section>
 
       {featureGroups.map((group) => (
-        <section key={group.title} className="py-16 md:py-24 border-t border-border/20">
+        <section key={group.title} className="py-16 md:py-24 border-t border-border/30">
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
             <div className="max-w-3xl mb-12">
-              <h2 className="text-2xl sm:text-3xl font-bold text-text-primary">{group.title}</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold text-text-primary font-[family-name:var(--font-display)]">{group.title}</h2>
               <p className="text-text-secondary mt-3">{group.subtitle}</p>
             </div>
             <div className="space-y-5">
@@ -151,10 +159,10 @@ const Features = () => {
         </section>
       ))}
 
-      <section className="py-20 md:py-24 border-t border-border/20 bg-gradient-to-b from-transparent via-accent/[0.02] to-transparent">
+      <section className="py-20 md:py-24 border-t border-border/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-3xl mx-auto mb-14">
-            <h2 className="text-3xl sm:text-4xl font-bold text-text-primary tracking-tight">
+            <h2 className="text-3xl sm:text-4xl font-bold text-text-primary tracking-tight font-[family-name:var(--font-display)]">
               PayGate vs. Direct Integration
             </h2>
             <p className="mt-4 text-text-secondary text-lg">
@@ -162,7 +170,7 @@ const Features = () => {
             </p>
           </div>
 
-          <div className="max-w-4xl mx-auto overflow-hidden rounded-2xl border border-border/50">
+          <div className="max-w-4xl mx-auto overflow-hidden rounded-[10px] border border-border/50">
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-surface border-b border-border/50">
@@ -173,12 +181,12 @@ const Features = () => {
               </thead>
               <tbody>
                 {comparisonRows.map((row, i) => (
-                  <tr key={row.feature} className={`border-b border-border/30 ${i % 2 === 0 ? 'bg-white/[0.02]' : ''}`}>
+                  <tr key={row.feature} className={`border-b border-border/30 ${i % 2 === 0 ? 'bg-black/[0.02]' : ''}`}>
                     <td className="px-6 py-4 text-text-primary font-medium">{row.feature}</td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
                         <Check size={14} className="text-success shrink-0" />
-                        <span className="text-green-400">{row.paygate}</span>
+                        <span className="text-success">{row.paygate}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-text-muted">{row.direct}</td>
@@ -190,30 +198,30 @@ const Features = () => {
         </div>
       </section>
 
-      <section className="py-20 md:py-24 relative overflow-hidden border-t border-border/20">
-        <div className="absolute inset-0 bg-gradient-to-br from-accent/20 via-purple-500/10 to-transparent" />
+      <section className="py-20 md:py-24 relative overflow-hidden border-t border-border/30">
+
         <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center relative z-10">
-          <h2 className="text-3xl sm:text-4xl font-bold text-text-primary tracking-tight mb-6">
+          <h2 className="text-3xl sm:text-4xl font-bold text-text-primary tracking-tight mb-6 font-[family-name:var(--font-display)]">
             Ready to simplify your{' '}
-            <span className="gradient-text">payment stack</span>?
+            <span className="text-accent">payment stack</span>?
           </h2>
           <p className="text-lg text-text-secondary mb-8">
             Stop maintaining N payment integrations. Start with one.
           </p>
-          <Link to="/register"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-accent hover:bg-accent-hover text-white rounded-xl font-semibold transition-all shadow-xl shadow-accent/25 hover:shadow-accent/40 text-lg group">
-            Get Started Free
+          <Link to="/"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-accent hover:bg-accent-hover text-white rounded-md font-semibold transition-all text-lg group">
+            Get Started
             <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
       </section>
 
-      <footer className="border-t border-border/50 py-8">
+      <footer className="border-t border-border py-8">
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
           <span className="text-sm text-text-muted">&copy; {new Date().getFullYear()} PayGate.</span>
           <div className="flex items-center gap-4">
             <Link to="/" className="text-sm text-text-muted hover:text-text-secondary transition-colors">Home</Link>
-            <Link to="/pricing" className="text-sm text-text-muted hover:text-text-secondary transition-colors">Pricing</Link>
+            <span className="text-sm text-text-muted/50 cursor-default">Pricing</span>
             <Link to="/docs" className="text-sm text-text-muted hover:text-text-secondary transition-colors">Docs</Link>
           </div>
         </div>

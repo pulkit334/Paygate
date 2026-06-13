@@ -1,0 +1,73 @@
+import { api } from './client'
+
+export const PAYMENTS = {
+  ALL: '/payments',
+  ORDER: '/payments/order',
+  VERIFY: '/payments/verify',
+}
+
+export interface Payment {
+  id: string
+  amount: number
+  currency: string
+  status: string
+  customerEmail: string
+  createdAt: string
+  transactionId: string
+  razorpayOrderId: string
+  metadata: Record<string, string>
+  failureReason?: string
+}
+
+export interface PaymentsResponse {
+  payments: Payment[]
+  total: number
+}
+
+export const getPayments = async (params?: {
+  status?: string
+  from?: string
+  to?: string
+  limit?: number
+}): Promise<PaymentsResponse> => {
+  try {
+    const response = await api.get(PAYMENTS.ALL, { params })
+    return response.data
+  } catch (err) {
+    throw err
+  }
+}
+
+export const createOrder = async (data: {
+  amount: number
+  currency?: string
+  customerEmail?: string
+}) => {
+  try {
+    const response = await api.post(PAYMENTS.ORDER, data)
+    return response.data
+  } catch (err) {
+    const code = (err as any)?.response?.data?.code
+    if (code === 'ORDER_CREATION_FAILED') {
+      throw new Error('Failed to create payment order')
+    }
+    throw err
+  }
+}
+
+export const verifyPayment = async (data: {
+  razorpay_order_id: string
+  razorpay_payment_id: string
+  razorpay_signature: string
+}) => {
+  try {
+    const response = await api.post(PAYMENTS.VERIFY, data)
+    return response.data
+  } catch (err) {
+    const code = (err as any)?.response?.data?.code
+    if (code === 'VERIFICATION_FAILED') {
+      throw new Error('Payment verification failed')
+    }
+    throw err
+  }
+}

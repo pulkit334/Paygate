@@ -3,7 +3,7 @@ import type { FormEvent } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import Navbar from '../components/Navbar'
 import SecretKeyModal from '../components/SecretKeyModal'
-import { getSettings, rotateKeys, updateCallbackUrl } from '../api/settings'
+import { getSettings, rotateKeys, updateCallbackUrl } from '../services/settings.service'
 import { Eye, EyeOff, Key, Link, AlertTriangle, Copy, Check, Shield, RefreshCw } from 'lucide-react'
 
 const Settings = () => {
@@ -76,31 +76,31 @@ const Settings = () => {
       <Navbar />
       <main className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-text-primary">Settings</h1>
+          <h1 className="text-2xl font-bold text-text-primary font-[family-name:var(--font-display)]">Settings</h1>
           <p className="text-sm text-text-muted mt-1">Manage your API keys and application configuration</p>
         </div>
 
         {error && (
-          <div className="mb-4 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm flex items-center gap-2">
+          <div className="mb-4 p-4 bg-danger-soft border border-danger/20 rounded-md text-danger text-sm flex items-center gap-2">
             <AlertTriangle size={14} /> {error}
           </div>
         )}
         {success && (
-          <div className="mb-4 p-4 bg-green-500/10 border border-green-500/20 rounded-xl text-green-400 text-sm flex items-center gap-2">
+          <div className="mb-4 p-4 bg-success-soft border border-success/20 rounded-md text-success text-sm flex items-center gap-2">
             <Check size={14} /> {success}
           </div>
         )}
 
         {loading ? (
           <div className="space-y-6">
-            <div className="bg-surface border border-border rounded-xl p-6 animate-pulse h-48" />
-            <div className="bg-surface border border-border rounded-xl p-6 animate-pulse h-40" />
+            <div className="bg-surface border border-border rounded-[10px] p-6 animate-pulse h-48" />
+            <div className="bg-surface border border-border rounded-[10px] p-6 animate-pulse h-40" />
           </div>
         ) : (
           <>
-            <div className="glass rounded-xl p-6 mb-6">
+            <div className="bg-surface border border-border rounded-[10px] p-6 mb-6">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-accent/10 rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center">
                   <Key size={18} className="text-accent" />
                 </div>
                 <div>
@@ -112,10 +112,10 @@ const Settings = () => {
               <div className="space-y-4">
                 <div>
                   <label className="text-xs text-text-muted block mb-1.5">Public Key</label>
-                  <div className="flex items-center bg-slate-900 border border-border/50 rounded-xl overflow-hidden group">
+                  <div className="flex items-center bg-bg-primary border border-border rounded-lg overflow-hidden group">
                     <code className="flex-1 px-4 py-3 text-sm font-mono text-text-primary">{publicKey}</code>
                     <button onClick={() => copyKey(publicKey)}
-                      className="px-4 py-3 border-l border-border/50 text-text-muted hover:text-text-primary hover:bg-white/5 transition-all">
+                      className="px-4 py-3 border-l border-border text-text-muted hover:text-text-primary hover:bg-black/[0.03] transition-all">
                       {copied ? <Check size={14} className="text-success" /> : <Copy size={14} />}
                     </button>
                   </div>
@@ -123,27 +123,27 @@ const Settings = () => {
 
                 <div>
                   <label className="text-xs text-text-muted block mb-1.5">Secret Key</label>
-                  <div className="flex items-center bg-slate-900 border border-border/50 rounded-xl overflow-hidden">
+                  <div className="flex items-center bg-bg-primary border border-border rounded-lg overflow-hidden">
                     <code className="flex-1 px-4 py-3 text-sm font-mono text-text-primary">
                       {showSecret ? secretMasked : 'sk_live_••••••••'}
                     </code>
                     <button onClick={() => setShowSecret(!showSecret)}
-                      className="px-4 py-3 border-l border-border/50 text-text-muted hover:text-text-primary hover:bg-white/5 transition-all">
+                      className="px-4 py-3 border-l border-border text-text-muted hover:text-text-primary hover:bg-black/[0.03] transition-all">
                       {showSecret ? <EyeOff size={14} /> : <Eye size={14} />}
                     </button>
                   </div>
                 </div>
 
                 <button onClick={() => setShowRotateConfirm(true)}
-                  className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-yellow-400 bg-yellow-500/10 border border-yellow-500/20 rounded-xl hover:bg-yellow-500/20 transition-all">
+                  className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-warning bg-warning-soft border border-warning/20 rounded-lg hover:bg-warning/20 transition-all">
                   <RefreshCw size={14} /> Rotate Keys
                 </button>
               </div>
             </div>
 
-            <div className="glass rounded-xl p-6 mb-6">
+            <div className="bg-surface border border-border rounded-[10px] p-6 mb-6">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-accent/10 rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center">
                   <Link size={18} className="text-accent" />
                 </div>
                 <div>
@@ -154,7 +154,7 @@ const Settings = () => {
 
               <div className="mb-4">
                 <label className="text-xs text-text-muted block mb-1.5">Current URL</label>
-                <code className="block w-full px-4 py-3 bg-slate-900 border border-border/50 rounded-xl text-sm font-mono text-text-primary">
+                <code className="block w-full px-4 py-3 bg-bg-primary border border-border rounded-lg text-sm font-mono text-text-primary">
                   {callbackUrl || <span className="text-text-muted italic">Not configured</span>}
                 </code>
               </div>
@@ -163,20 +163,20 @@ const Settings = () => {
                 <label className="text-xs text-text-muted block mb-1.5">New URL</label>
                 <div className="flex gap-3">
                   <input type="url" value={newCallbackUrl} onChange={(e) => setNewCallbackUrl(e.target.value)}
-                    className="flex-1 px-4 py-2.5 bg-slate-900 border border-border/50 rounded-xl text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors text-sm"
+                    className="flex-1 px-4 py-2.5 bg-bg-primary border border-border rounded-lg text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors text-sm"
                     placeholder="https://api.myapp.com/webhooks/paygate" />
                   <button type="submit" disabled={saving}
-                    className="px-6 py-2.5 bg-accent hover:bg-accent-hover disabled:opacity-50 text-white rounded-xl font-medium transition-all text-sm whitespace-nowrap">
+                    className="px-6 py-2.5 bg-accent hover:bg-accent-hover disabled:opacity-50 text-white rounded-lg font-medium transition-all text-sm whitespace-nowrap">
                     {saving ? 'Saving...' : 'Update'}
                   </button>
                 </div>
               </form>
             </div>
 
-            <div className="glass rounded-xl p-6">
+            <div className="bg-surface border border-border rounded-[10px] p-6">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-green-500/10 rounded-xl flex items-center justify-center">
-                  <Shield size={18} className="text-green-400" />
+                <div className="w-10 h-10 bg-success-soft rounded-lg flex items-center justify-center">
+                  <Shield size={18} className="text-success" />
                 </div>
                 <div>
                   <h2 className="text-lg font-semibold text-text-primary">Security Summary</h2>
@@ -188,10 +188,10 @@ const Settings = () => {
                   { label: 'API Key Auth', value: 'Active', status: 'success' },
                   { label: 'Rate Limiting', value: '100 req/min', status: 'success' },
                 ].map((item) => (
-                  <div key={item.label} className="bg-slate-900/50 border border-border/30 rounded-xl p-4 flex items-center justify-between">
+                  <div key={item.label} className="bg-bg-primary border border-border rounded-lg p-4 flex items-center justify-between">
                     <span className="text-sm text-text-muted">{item.label}</span>
                     <span className={`text-sm font-medium ${
-                      item.status === 'success' ? 'text-green-400' : 'text-yellow-400'
+                      item.status === 'success' ? 'text-success' : 'text-warning'
                     }`}>{item.value}</span>
                   </div>
                 ))}
@@ -203,10 +203,10 @@ const Settings = () => {
 
       {showRotateConfirm && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-surface border border-border rounded-2xl max-w-md w-full p-6 shadow-2xl">
+          <div className="bg-surface border border-border rounded-[10px] max-w-md w-full p-6">
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-3 bg-red-500/10 rounded-full">
-                <AlertTriangle size={20} className="text-red-400" />
+              <div className="p-3 bg-danger-soft rounded-full">
+                <AlertTriangle size={20} className="text-danger" />
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-text-primary">Rotate API Keys?</h3>
@@ -214,17 +214,17 @@ const Settings = () => {
               </div>
             </div>
             <p className="text-sm text-text-secondary mb-6 leading-relaxed">
-              Current keys will <span className="text-red-400 font-medium">stop working immediately</span>.
+              Current keys will <span className="text-danger font-medium">stop working immediately</span>.
               Any services using the old keys will need to be updated. Make sure you update all
               your apps before rotating.
             </p>
             <div className="flex gap-3 justify-end">
               <button onClick={() => setShowRotateConfirm(false)}
-                className="px-5 py-2.5 text-sm font-medium text-text-secondary border border-border rounded-xl hover:bg-white/5 transition-all">
+                className="px-5 py-2.5 text-sm font-medium text-text-secondary border border-border rounded-lg hover:bg-black/[0.03] transition-all">
                 Cancel
               </button>
               <button onClick={handleRotate}
-                className="px-5 py-2.5 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-xl transition-all shadow-lg shadow-red-500/20">
+                className="px-5 py-2.5 text-sm font-medium text-white bg-danger hover:bg-red-600 rounded-lg transition-all">
                 Rotate Keys
               </button>
             </div>

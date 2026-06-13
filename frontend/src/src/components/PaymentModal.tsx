@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { X, Loader, CheckCircle, XCircle } from 'lucide-react'
-import client from '../api/client'
+import client from '../services/client'
 
 interface PaymentModalProps {
   open: boolean
@@ -71,7 +71,7 @@ const PaymentModal = ({ open, onClose, amount, currency = 'INR', customerEmail, 
           email: customerEmail || '',
         },
         theme: {
-          color: '#6366f1',
+          color: '#6C63FF',
         },
       }
 
@@ -93,60 +93,61 @@ const PaymentModal = ({ open, onClose, amount, currency = 'INR', customerEmail, 
 
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-      <div className="bg-surface border border-border rounded-2xl max-w-md w-full p-6 shadow-2xl">
+      <div className="bg-surface border border-border rounded-[10px] max-w-md w-full p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-accent to-purple-500 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">P</span>
+            <div className="relative w-8 h-8 flex items-center justify-center">
+              <div className="absolute inset-0 bg-text-primary rotate-45 rounded-sm" />
+              <span className="relative text-white font-bold text-sm font-[family-name:var(--font-display)]">P</span>
             </div>
             <h2 className="text-lg font-semibold text-text-primary">Complete Payment</h2>
           </div>
-          <button onClick={onClose} className="p-1.5 text-text-muted hover:text-text-primary rounded-lg hover:bg-white/5 transition-all">
+          <button onClick={onClose} className="p-1.5 text-text-muted hover:text-text-primary rounded-lg hover:bg-black/[0.03] transition-all">
             <X size={18} />
           </button>
         </div>
 
         {status === 'success' ? (
           <div className="text-center py-8">
-            <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircle size={32} className="text-green-400" />
+            <div className="w-16 h-16 bg-success-soft rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle size={32} className="text-success" />
             </div>
             <h3 className="text-xl font-semibold text-text-primary mb-2">Payment Successful!</h3>
             <p className="text-sm text-text-muted mb-6">Your transaction has been processed.</p>
             <button onClick={onClose}
-              className="px-6 py-2.5 bg-accent hover:bg-accent-hover text-white rounded-xl text-sm font-medium transition-all">
+              className="px-6 py-2.5 bg-accent hover:bg-accent-hover text-white rounded-lg text-sm font-medium transition-all">
               Done
             </button>
           </div>
         ) : status === 'failed' ? (
           <div className="text-center py-8">
-            <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
-              <XCircle size={32} className="text-red-400" />
+            <div className="w-16 h-16 bg-danger-soft rounded-full flex items-center justify-center mx-auto mb-4">
+              <XCircle size={32} className="text-danger" />
             </div>
             <h3 className="text-xl font-semibold text-text-primary mb-2">Payment Failed</h3>
-            <p className="text-sm text-red-400 mb-6">{error || 'Something went wrong'}</p>
+            <p className="text-sm text-danger mb-6">{error || 'Something went wrong'}</p>
             <div className="flex gap-3 justify-center">
               <button onClick={() => { setStatus('idle'); setError('') }}
-                className="px-6 py-2.5 bg-accent hover:bg-accent-hover text-white rounded-xl text-sm font-medium transition-all">
+                className="px-6 py-2.5 bg-accent hover:bg-accent-hover text-white rounded-lg text-sm font-medium transition-all">
                 Try Again
               </button>
               <button onClick={onClose}
-                className="px-6 py-2.5 border border-border text-text-secondary rounded-xl text-sm font-medium hover:bg-white/5 transition-all">
+                className="px-6 py-2.5 border border-border text-text-secondary rounded-lg text-sm font-medium hover:bg-black/[0.03] transition-all">
                 Cancel
               </button>
             </div>
           </div>
         ) : (
           <>
-            <div className="bg-slate-900/50 border border-border/50 rounded-xl p-5 mb-6">
+            <div className="bg-bg-primary border border-border rounded-lg p-5 mb-6">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm text-text-muted">Amount</span>
-                <span className="text-2xl font-bold text-text-primary">
+                <span className="text-2xl font-bold text-text-primary font-[family-name:var(--font-display)]">
                   {new Intl.NumberFormat('en-IN', { style: 'currency', currency }).format(amount)}
                 </span>
               </div>
               {customerEmail && (
-                <div className="flex items-center justify-between pt-3 border-t border-border/30">
+                <div className="flex items-center justify-between pt-3 border-t border-border">
                   <span className="text-sm text-text-muted">Customer</span>
                   <span className="text-sm text-text-primary">{customerEmail}</span>
                 </div>
@@ -154,17 +155,17 @@ const PaymentModal = ({ open, onClose, amount, currency = 'INR', customerEmail, 
             </div>
 
             {error && (
-              <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-sm text-red-400">{error}</div>
+              <div className="mb-4 p-3 bg-danger-soft border border-danger/20 rounded-lg text-sm text-danger">{error}</div>
             )}
 
             <button onClick={handlePayment} disabled={loading}
-              className="w-full px-6 py-3 bg-accent hover:bg-accent-hover disabled:opacity-50 text-white rounded-xl font-medium transition-all flex items-center justify-center gap-2">
+              className="w-full px-6 py-3 bg-accent hover:bg-accent-hover disabled:opacity-50 text-white rounded-lg font-medium transition-all flex items-center justify-center gap-2">
               {loading ? <Loader size={16} className="animate-spin" /> : null}
               {loading ? 'Processing...' : `Pay ${new Intl.NumberFormat('en-IN', { style: 'currency', currency }).format(amount)}`}
             </button>
 
             <p className="text-xs text-text-muted text-center mt-4">
-              Secured by Razorpay &middot; Powered by PayGate
+              Secured by Razorpay · Powered by PayGate
             </p>
           </>
         )}

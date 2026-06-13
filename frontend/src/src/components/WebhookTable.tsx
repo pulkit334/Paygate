@@ -1,4 +1,4 @@
-import type { WebhookDelivery } from '../api/webhooks'
+import type { WebhookDelivery } from '../services/webhooks.service'
 import { RotateCw } from 'lucide-react'
 
 interface WebhookTableProps {
@@ -11,10 +11,10 @@ interface WebhookTableProps {
 const statusBadge = (status: string) => {
   const isSuccess = status === 'success' || status === 'delivered'
   return (
-    <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${
+    <span className={`px-2.5 py-0.5 rounded text-xs font-semibold border ${
       isSuccess
-        ? 'bg-green-500/10 text-green-400 border-green-500/20'
-        : 'bg-red-500/10 text-red-400 border-red-500/20'
+        ? 'bg-success-soft text-success border-success/20'
+        : 'bg-danger-soft text-danger border-danger/20'
     }`}>
       {status}
     </span>
@@ -22,18 +22,18 @@ const statusBadge = (status: string) => {
 }
 
 const statusColor = (code: number) => {
-  if (code >= 200 && code < 300) return 'text-green-400'
-  if (code >= 400) return 'text-red-400'
-  return 'text-yellow-400'
+  if (code >= 200 && code < 300) return 'text-success'
+  if (code >= 400) return 'text-danger'
+  return 'text-warning'
 }
 
 const WebhookTable = ({ deliveries, loading, onRetry, retryingId }: WebhookTableProps) => {
   if (loading) {
     return (
-      <div className="bg-surface border border-border rounded-xl p-6">
+      <div className="bg-surface border border-border rounded-[10px] p-6">
         <div className="animate-pulse space-y-3">
           {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="h-10 bg-slate-700/50 rounded" />
+            <div key={i} className="h-10 bg-bg-elevated rounded" />
           ))}
         </div>
       </div>
@@ -41,7 +41,7 @@ const WebhookTable = ({ deliveries, loading, onRetry, retryingId }: WebhookTable
   }
 
   return (
-    <div className="bg-surface border border-border rounded-xl overflow-hidden">
+    <div className="bg-surface border border-border rounded-[10px] overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
@@ -58,7 +58,7 @@ const WebhookTable = ({ deliveries, loading, onRetry, retryingId }: WebhookTable
             {deliveries.map((delivery) => {
               const isFailed = delivery.status === 'failed'
               return (
-                <tr key={delivery.id} className="border-b border-border last:border-0 hover:bg-white/[0.02] transition-colors">
+                <tr key={delivery.id} className="border-b border-border last:border-0 hover:bg-bg-elevated/50 transition-colors">
                   <td className="px-4 py-3 text-text-primary">
                     {new Date(delivery.createdAt).toLocaleString('en-IN', {
                       day: '2-digit',
@@ -80,7 +80,7 @@ const WebhookTable = ({ deliveries, loading, onRetry, retryingId }: WebhookTable
                       <button
                         onClick={() => onRetry(delivery.id)}
                         disabled={retryingId === delivery.id}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-accent/10 text-accent hover:bg-accent/20 transition-colors disabled:opacity-50"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-accent/10 text-accent hover:bg-accent/20 transition-colors disabled:opacity-50"
                       >
                         <RotateCw size={12} className={retryingId === delivery.id ? 'animate-spin' : ''} />
                         {retryingId === delivery.id ? 'Retrying...' : 'Retry'}
