@@ -77,7 +77,7 @@ const Navbar = () => {
               </>
             )}
             {!hasToken && (
-              <Link to="/"
+              <Link to="/login"
                 className="hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-medium text-text-secondary hover:text-text-primary rounded-md hover:bg-black/[0.03] transition-all">
                 Sign in
               </Link>
@@ -115,7 +115,7 @@ const Navbar = () => {
               </>
             )}
             {!hasToken && (
-              <Link to="/" onClick={() => setMobileOpen(false)}
+              <Link to="/login" onClick={() => setMobileOpen(false)}
                 className="flex items-center gap-3 px-3 py-3 rounded-md text-sm font-medium text-accent bg-accent/10 transition-all w-full">
                 Sign in
               </Link>

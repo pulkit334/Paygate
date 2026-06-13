@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PayGate — One Orchestration Layer for Every Payment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg-base:#0A0A0F;--bg-surface:#111118;--bg-elevated:#1A1A25;
+  --border:#2A2A38;--border-accent:#3D3D55;
+  --accent:#6C63FF;--accent-soft:#2D2B52;--accent-glow:rgba(108,99,255,0.15);
+  --text-primary:#F0F0FF;--text-secondary:#9090B0;--text-muted:#55556A;
+  --green:#22C55E;--green-soft:#0F2A1A;--red:#EF4444;--red-soft:#2A0F0F;
+  --amber:#F59E0B;--amber-soft:#2A1F0A;--blue:#3B82F6;--blue-soft:#0F1A2A;
+  --font-display:'Space Grotesk',sans-serif;--font-body:'Inter',sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+  --radius-card:10px;--radius-btn:6px;--radius-badge:4px;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-body);background:var(--bg-base);color:var(--text-secondary);line-height:1.7;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,textarea,select{font-family:inherit;color:var(--text-primary);background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-btn);padding:10px 14px;font-size:14px;outline:none;transition:border-color .2s}
+input:focus,textarea:focus,select:focus{border-color:var(--accent)}
+ul{list-style:none}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+.reveal{opacity:0;transform:translateY(30px);transition:opacity .6s ease,transform .6s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+/* ===== NAVBAR ===== */
+.navbar{position:fixed;top:0;left:0;right:0;z-index:1000;padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:rgba(10,10,15,.85);backdrop-filter:blur(0px);-webkit-backdrop-filter:blur(0px);transition:backdrop-filter .3s}
+.navbar.scrolled{backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);background:rgba(10,10,15,.6)}
+.nav-logo{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:700;font-size:20px;color:var(--text-primary)}
+.nav-logo .diamond{width:20px;height:20px;position:relative}
+.nav-logo .diamond::before{content:'';position:absolute;top:50%;left:50%;width:14px;height:14px;background:var(--accent);transform:translate(-50%,-50%) rotate(45deg);border-radius:2px}
+.nav-links{display:flex;gap:32px}
+.nav-links a{font-size:14px;font-weight:500;color:var(--text-secondary);transition:color .2s}
+.nav-links a:hover{color:var(--text-primary)}
+.nav-actions{display:flex;gap:12px;align-items:center}
+.btn-ghost{padding:8px 18px;border:1px solid var(--border);border-radius:var(--radius-btn);font-size:14px;font-weight:500;color:var(--text-secondary);transition:all .2s}
+.btn-ghost:hover{border-color:var(--border-accent);color:var(--text-primary)}
+.btn-accent{padding:8px 18px;background:var(--accent);border-radius:var(--radius-btn);font-size:14px;font-weight:600;color:#fff;transition:all .2s}
+.btn-accent:hover{background:#5b52ee}
+.btn-accent:active{transform:scale(.97)}
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:4px}
+.hamburger span{width:22px;height:2px;background:var(--text-primary);transition:all .3s;border-radius:1px}
+.mobile-nav{display:none;position:fixed;inset:0;background:var(--bg-base);z-index:999;flex-direction:column;align-items:center;justify-content:center;gap:32px}
+.mobile-nav.open{display:flex}
+.mobile-nav a{font-size:20px;font-weight:500;color:var(--text-secondary);transition:color .2s}
+.mobile-nav a:hover{color:var(--text-primary)}
+.mobile-close{position:absolute;top:20px;right:24px;background:none;border:none;color:var(--text-primary);font-size:28px;cursor:pointer}
+
+/* ===== HERO ===== */
+.hero{min-height:100vh;display:flex;align-items:center;padding:100px 24px 60px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-200px;left:50%;transform:translateX(-50%);width:800px;height:800px;background:radial-gradient(circle,rgba(108,99,255,.12) 0%,transparent 70%);pointer-events:none}
+.hero-inner{max-width:1200px;margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+.hero-content{position:relative;z-index:1}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;background:var(--accent-soft);border:1px solid rgba(108,99,255,.25);border-radius:20px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:28px}
+.hero-eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.hero h1{font-family:var(--font-display);font-size:68px;font-weight:700;line-height:1.05;letter-spacing:-.04em;color:var(--text-primary);margin-bottom:24px}
+.hero h1 .accent-line{color:var(--accent)}
+.hero-sub{font-size:18px;line-height:1.7;color:var(--text-secondary);max-width:520px;margin-bottom:36px}
+.hero-cta{display:flex;gap:16px;align-items:center;margin-bottom:40px}
+.hero-cta .btn-primary{padding:14px 32px;background:var(--accent);border-radius:var(--radius-btn);font-size:16px;font-weight:600;color:#fff;transition:all .2s;display:inline-flex;align-items:center;gap:8px}
+.hero-cta .btn-primary:hover{background:#5b52ee}
+.hero-cta .btn-primary:active{transform:scale(.97)}
+.hero-cta .btn-docs{font-size:15px;font-weight:500;color:var(--text-muted);transition:color .2s;display:inline-flex;align-items:center;gap:6px}
+.hero-cta .btn-docs:hover{color:var(--text-secondary)}
+.trust-row{display:flex;gap:24px;flex-wrap:wrap}
+.trust-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);font-weight:500}
+.trust-item svg{width:14px;height:14px;color:var(--accent);flex-shrink:0}
+
+/* Hero Diagram */
+.hero-visual{position:relative;display:flex;align-items:center;justify-content:center}
+.diagram-panel{width:100%;max-width:480px;background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-card);padding:40px 32px;position:relative}
+.diagram-panel::after{content:'';position:absolute;inset:-1px;border-radius:var(--radius-card);pointer-events:none;box-shadow:0 0 40px rgba(108,99,255,.08)}
+.diagram-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:0}
+.diagram-box{background:var(--bg-elevated);border:1px solid var(--border);border-radius:8px;padding:14px 18px;text-align:center;flex:1;position:relative;z-index:1}
+.diagram-box.app{border-color:var(--blue)}
+.diagram-box.gateway{border-color:var(--accent);background:var(--accent-soft)}
+.diagram-box-label{font-size:12px;font-weight:600;color:var(--text-primary);white-space:nowrap}
+.diagram-box-sub{font-size:10px;color:var(--text-muted);margin-top:2px}
+.diagram-arrow{display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0;position:relative;width:60px}
+.diagram-line{width:100%;height:2px;background:var(--border);position:relative;overflow:visible}
+.diagram-line .pulse{position:absolute;width:8px;height:8px;border-radius:50%;background:var(--accent);top:-3px;animation:moveDot 2s linear infinite}
+.diagram-line .pulse2{animation-delay:.7s}
+.diagram-line .pulse3{animation-delay:1.4s}
+@keyframes moveDot{0%{left:-8px;opacity:0}10%{opacity:1}90%{opacity:1}100%{left:calc(100% + 8px);opacity:0}}
+.diagram-providers{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:24px}
+.provider-chip{background:var(--bg-elevated);border:1px solid var(--border);border-radius:6px;padding:10px 12px;text-align:center;font-size:11px;font-weight:600;color:var(--text-secondary);transition:border-color .2s}
+.provider-chip:hover{border-color:var(--border-accent)}
+
+/* ===== INTEGRATION STRIP ===== */
+.int-strip{background:var(--bg-surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:20px 0;overflow:hidden}
+.int-strip-inner{max-width:1200px;margin:0 auto;padding:0 24px;display:flex;align-items:center;gap:40px}
+.int-strip-label{font-size:13px;font-weight:500;color:var(--text-muted);white-space:nowrap;flex-shrink:0}
+.marquee-wrap{overflow:hidden;flex:1;position:relative}
+.marquee-wrap::before,.marquee-wrap::after{content:'';position:absolute;top:0;bottom:0;width:60px;z-index:2;pointer-events:none}
+.marquee-wrap::before{left:0;background:linear-gradient(90deg,var(--bg-surface),transparent)}
+.marquee-wrap::after{right:0;background:linear-gradient(-90deg,var(--bg-surface),transparent)}
+.marquee{display:flex;gap:48px;animation:marqueeScroll 30s linear infinite;width:max-content}
+.marquee:hover{animation-play-state:paused}
+@keyframes marqueeScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.marquee-item{font-size:15px;font-weight:600;color:var(--text-muted);white-space:nowrap;opacity:.6;transition:opacity .2s}
+.marquee-item:hover{opacity:1}
+
+/* ===== FEATURES ===== */
+.features{padding:100px 24px}
+.features-inner{max-width:1100px;margin:0 auto}
+.section-label{text-align:center;font-family:var(--font-display);font-size:44px;font-weight:700;color:var(--text-primary);margin-bottom:12px;letter-spacing:-.02em}
+.section-sub{text-align:center;font-size:16px;color:var(--text-secondary);max-width:560px;margin:0 auto 56px}
+.features-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px}
+.features-col-header{font-size:14px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin-bottom:20px;display:flex;align-items:center;gap:8px}
+.features-col-header.dev{color:var(--blue)}
+.features-col-header.ops{color:var(--green)}
+.features-col-header .bar{width:16px;height:3px;border-radius:2px}
+.features-col-header.dev .bar{background:var(--blue)}
+.features-col-header.ops .bar{background:var(--green)}
+.feature-card{background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-card);padding:24px;transition:border-color .2s,background .2s;margin-bottom:16px}
+.feature-card:hover{border-color:var(--border-accent);background:var(--bg-elevated)}
+.feature-card:hover{box-shadow:0 0 30px var(--accent-glow)}
+.feature-card-icon{width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+.feature-card-icon svg{width:20px;height:20px}
+.feature-card-icon.blue{background:var(--blue-soft);color:var(--blue)}
+.feature-card-icon.green{background:var(--green-soft);color:var(--green)}
+.feature-card-icon.violet{background:var(--accent-soft);color:var(--accent)}
+.feature-card-icon.amber{background:var(--amber-soft);color:var(--amber)}
+.feature-card h4{font-size:16px;font-weight:600;color:var(--text-primary);margin-bottom:6px}
+.feature-card p{font-size:14px;color:var(--text-secondary);line-height:1.6}
+
+/* ===== HOW IT WORKS ===== */
+.how-it-works{padding:100px 24px;position:relative;overflow:hidden}
+.how-inner{max-width:1000px;margin:0 auto;position:relative}
+.step{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;margin-bottom:80px;position:relative}
+.step:nth-child(even){direction:rtl}
+.step:nth-child(even) > *{direction:ltr}
+.step-num{position:absolute;font-family:var(--font-display);font-size:180px;font-weight:700;color:rgba(108,99,255,.04);pointer-events:none;z-index:0;line-height:1}
+.step:nth-child(1) .step-num{top:-40px;left:-20px}
+.step:nth-child(2) .step-num{top:-40px;right:-20px;left:auto}
+.step:nth-child(3) .step-num{top:-40px;left:-20px}
+.step-text{position:relative;z-index:1}
+.step-text h3{font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--text-primary);margin-bottom:12px}
+.step-text p{font-size:15px;color:var(--text-secondary);line-height:1.7}
+.step-visual{position:relative;z-index:1}
+
+/* Code snippet */
+.code-snippet{background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-card);overflow:hidden}
+.code-snippet-header{display:flex;gap:6px;padding:12px 16px;border-bottom:1px solid var(--border)}
+.code-snippet-dot{width:10px;height:10px;border-radius:50%}
+.code-snippet-dot:nth-child(1){background:#EF4444}
+.code-snippet-dot:nth-child(2){background:#F59E0B}
+.code-snippet-dot:nth-child(3){background:#22C55E}
+.code-snippet pre{padding:16px;font-family:var(--font-mono);font-size:13px;line-height:1.8;color:var(--text-secondary);overflow-x:auto;margin:0}
+.code-snippet .kw{color:var(--accent)}
+.code-snippet .str{color:var(--green)}
+.code-snippet .fn{color:#F59E0B}
+.code-snippet .cm{color:var(--text-muted)}
+.code-snippet .num{color:#EF4444}
+
+/* Provider toggles */
+.provider-toggles{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.provider-toggle{background:var(--bg-surface);border:1px solid var(--border);border-radius:8px;padding:16px;display:flex;align-items:center;justify-content:space-between}
+.provider-toggle-name{font-size:14px;font-weight:600;color:var(--text-primary)}
+.toggle-switch{width:40px;height:22px;border-radius:11px;background:var(--border);position:relative;cursor:pointer;transition:background .2s}
+.toggle-switch.active{background:var(--accent)}
+.toggle-switch::after{content:'';position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;top:3px;left:3px;transition:transform .2s}
+.toggle-switch.active::after{transform:translateX(18px)}
+
+/* Mini dashboard mock */
+.mini-dash{background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-card);padding:20px}
+.mini-chart{display:flex;align-items:flex-end;gap:8px;height:100px;margin-bottom:16px}
+.mini-bar{flex:1;background:var(--accent);border-radius:4px 4px 0 0;opacity:.6;transition:opacity .2s}
+.mini-bar:hover{opacity:1}
+.mini-rows{display:flex;flex-direction:column;gap:8px}
+.mini-row{display:flex;align-items:center;justify-content:space-between;font-size:12px}
+.mini-row .label{color:var(--text-muted)}
+.mini-row .value{font-family:var(--font-mono);color:var(--text-primary);font-weight:500}
+.status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.status-dot.green{background:var(--green)}
+.status-dot.red{background:var(--red)}
+.status-dot.amber{background:var(--amber)}
+
+/* ===== API DOCS PREVIEW ===== */
+.api-docs{padding:100px 24px}
+.api-docs-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:200px 1fr;gap:32px;background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-card);overflow:hidden}
+.api-sidebar{border-right:1px solid var(--border);padding:24px 0}
+.api-sidebar a{display:block;padding:10px 24px;font-size:13px;font-weight:500;color:var(--text-muted);transition:all .2s;border-left:2px solid transparent}
+.api-sidebar a:hover,.api-sidebar a.active{color:var(--text-primary);border-left-color:var(--accent);background:rgba(108,99,255,.05)}
+.api-content{padding:32px}
+.api-content h3{font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--text-primary);margin-bottom:8px}
+.api-content .endpoint{font-family:var(--font-mono);font-size:13px;color:var(--accent);margin-bottom:20px;display:inline-block}
+.api-content .code-block{background:var(--bg-base);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:20px}
+.api-content .code-block pre{padding:16px;font-family:var(--font-mono);font-size:13px;line-height:1.8;color:var(--text-secondary);margin:0;overflow-x:auto}
+.api-docs-cta{display:inline-flex;align-items:center;gap:6px;margin-top:16px;font-size:14px;font-weight:600;color:var(--accent);transition:gap .2s}
+.api-docs-cta:hover{gap:10px}
+
+/* ===== TESTIMONIALS ===== */
+.testimonials{padding:100px 24px}
+.testimonials-inner{max-width:1100px;margin:0 auto}
+.testimonials-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.testimonial-card{background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-card);padding:28px;transition:border-color .2s}
+.testimonial-card:hover{border-color:var(--border-accent)}
+.testimonial-card .company{font-size:15px;font-weight:700;color:var(--text-primary);margin-bottom:4px}
+.testimonial-card .role{font-size:13px;color:var(--text-muted);margin-bottom:16px}
+.testimonial-card .quote{font-size:15px;color:var(--text-secondary);line-height:1.7;font-style:italic}
+
+/* ===== PRICING ===== */
+.pricing{padding:100px 24px}
+.pricing-inner{max-width:1100px;margin:0 auto}
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;align-items:start}
+.price-card{background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-card);padding:32px;position:relative;transition:border-color .2s}
+.price-card:hover{border-color:var(--border-accent)}
+.price-card.featured{border-color:var(--accent);background:var(--accent-soft)}
+.price-badge{position:absolute;top:-12px;right:20px;padding:4px 12px;background:var(--accent);border-radius:var(--radius-badge);font-size:11px;font-weight:600;color:#fff;text-transform:uppercase;letter-spacing:.04em}
+.price-card h3{font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--text-primary);margin-bottom:6px}
+.price-card .price{font-size:36px;font-weight:700;color:var(--text-primary);margin-bottom:20px;font-family:var(--font-display)}
+.price-card .price span{font-size:15px;font-weight:400;color:var(--text-muted)}
+.price-features{margin-bottom:28px}
+.price-features li{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--text-secondary);padding:8px 0;border-bottom:1px solid rgba(42,42,56,.5)}
+.price-features li:last-child{border-bottom:none}
+.price-features li svg{width:16px;height:16px;color:var(--accent);flex-shrink:0}
+.price-card .btn-accent{display:block;width:100%;text-align:center;padding:12px;border-radius:var(--radius-btn);font-weight:600;font-size:14px;transition:all .2s}
+.price-card .btn-accent:hover{background:#5b52ee}
+.price-card .btn-ghost{display:block;width:100%;text-align:center;padding:12px;border:1px solid var(--border);border-radius:var(--radius-btn);font-weight:600;font-size:14px;transition:all .2s;color:var(--text-secondary)}
+.price-card .btn-ghost:hover{border-color:var(--border-accent);color:var(--text-primary)}
+
+/* ===== CONTACT FORM ===== */
+.contact{padding:100px 24px}
+.contact-inner{max-width:1000px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:start}
+.contact-text h2{font-family:var(--font-display);font-size:36px;font-weight:700;color:var(--text-primary);margin-bottom:16px;letter-spacing:-.02em}
+.contact-text p{font-size:16px;color:var(--text-secondary);margin-bottom:24px;line-height:1.7}
+.contact-text .note{font-size:13px;color:var(--text-muted)}
+.contact-form{display:flex;flex-direction:column;gap:16px}
+.contact-form .row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.contact-form label{display:block;font-size:13px;font-weight:500;color:var(--text-muted);margin-bottom:6px}
+.contact-form input,.contact-form select,.contact-form textarea{width:100%}
+.contact-form textarea{min-height:100px;resize:vertical}
+.contact-form .error-msg{font-size:12px;color:var(--red);margin-top:4px;display:none}
+.contact-form .field.error input,.contact-form .field.error select,.contact-form .field.error textarea{border-color:var(--red)}
+.contact-form .field.error .error-msg{display:block}
+.form-success{text-align:center;padding:60px 20px;display:none}
+.form-success.show{display:block}
+.form-success .check{width:64px;height:64px;border-radius:50%;background:var(--green-soft);border:2px solid var(--green);display:flex;align-items:center;justify-content:center;margin:0 auto 20px}
+.form-success h3{font-family:var(--font-display);font-size:24px;font-weight:700;color:var(--text-primary);margin-bottom:8px}
+.form-success p{font-size:15px;color:var(--text-secondary)}
+
+/* ===== FINAL CTA ===== */
+.final-cta{padding:80px 24px;background:var(--accent-soft);border-left:4px solid var(--accent)}
+.final-cta-inner{max-width:800px;margin:0 auto}
+.final-cta h2{font-family:var(--font-display);font-size:36px;font-weight:700;color:var(--text-primary);margin-bottom:12px;letter-spacing:-.02em}
+.final-cta p{font-size:16px;color:var(--text-secondary);margin-bottom:28px}
+.final-cta .btn-accent{display:inline-flex;padding:14px 32px;font-size:16px;font-weight:600}
+
+/* ===== FOOTER ===== */
+.footer{border-top:1px solid var(--border);padding:60px 24px 24px}
+.footer-inner{max-width:1100px;margin:0 auto}
+.footer-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:40px;margin-bottom:40px}
+.footer-col h5{font-size:13px;font-weight:600;color:var(--text-primary);text-transform:uppercase;letter-spacing:.04em;margin-bottom:16px}
+.footer-col a{display:block;font-size:14px;color:var(--text-muted);padding:4px 0;transition:color .2s}
+.footer-col a:hover{color:var(--text-secondary)}
+.footer-bottom{display:flex;align-items:center;justify-content:space-between;padding-top:24px;border-top:1px solid var(--border);font-size:13px;color:var(--text-muted)}
+.footer-status{display:flex;align-items:center;gap:6px}
+.footer-social{display:flex;gap:16px}
+.footer-social a{color:var(--text-muted);transition:color .2s}
+.footer-social a:hover{color:var(--text-secondary)}
+
+/* ===== DASHBOARD ===== */
+#dashboard{display:none;min-height:100vh}
+#dashboard.active{display:flex}
+.dash-sidebar{width:240px;background:var(--bg-surface);border-right:1px solid var(--border);position:fixed;top:0;bottom:0;left:0;display:flex;flex-direction:column;z-index:100}
+.dash-sidebar-top{padding:20px;border-bottom:1px solid var(--border)}
+.dash-sidebar-logo{display:flex;align-items:center;gap:8px;font-family:var(--font-display);font-weight:700;font-size:16px;color:var(--text-primary);margin-bottom:12px}
+.dash-sidebar-logo .diamond{width:16px;height:16px;position:relative}
+.dash-sidebar-logo .diamond::before{content:'';position:absolute;top:50%;left:50%;width:10px;height:10px;background:var(--accent);transform:translate(-50%,-50%) rotate(45deg);border-radius:2px}
+.dash-workspace{font-size:12px;color:var(--text-muted)}
+.dash-nav{flex:1;padding:16px 0;overflow-y:auto}
+.dash-nav a{display:flex;align-items:center;gap:12px;padding:10px 20px;font-size:14px;font-weight:500;color:var(--text-muted);transition:all .2s;border-left:2px solid transparent}
+.dash-nav a:hover{color:var(--text-secondary);background:rgba(108,99,255,.04)}
+.dash-nav a.active{color:var(--accent);border-left-color:var(--accent);background:var(--accent-soft)}
+.dash-nav a svg{width:18px;height:18px;flex-shrink:0}
+.dash-sidebar-bottom{padding:16px 20px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.dash-avatar{width:32px;height:32px;border-radius:50%;background:var(--accent-soft);border:1px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--accent)}
+.dash-user-info{flex:1}
+.dash-user-name{font-size:13px;font-weight:500;color:var(--text-primary)}
+.dash-user-role{font-size:11px;color:var(--text-muted)}
+.dash-logout{font-size:12px;color:var(--text-muted);cursor:pointer;transition:color .2s;background:none;border:none;font-family:inherit}
+.dash-logout:hover{color:var(--red)}
+.dash-main{margin-left:240px;flex:1;padding:24px 32px;min-height:100vh}
+.dash-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}
+.dash-header h1{font-family:var(--font-display);font-size:24px;font-weight:700;color:var(--text-primary)}
+.dash-header .greeting{font-size:14px;color:var(--text-muted);margin-top:4px}
+.dash-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:var(--radius-badge);font-size:13px;font-weight:500}
+.dash-badge.green{background:var(--green-soft);color:var(--green);border:1px solid rgba(34,197,94,.2)}
+
+/* Stat cards */
+.stat-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+.stat-card{background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-card);padding:20px;transition:border-color .2s}
+.stat-card:hover{border-color:var(--border-accent)}
+.stat-card .label{font-size:13px;color:var(--text-muted);margin-bottom:8px}
+.stat-card .value{font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--text-primary)}
+.stat-card .change{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:500;margin-top:6px}
+.stat-card .change.up{color:var(--green)}
+.stat-card .change.down{color:var(--red)}
+
+/* Tables */
+.dash-section{margin-bottom:28px}
+.dash-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.dash-section-header h2{font-family:var(--font-display);font-size:18px;font-weight:700;color:var(--text-primary)}
+.table-controls{display:flex;gap:10px;align-items:center}
+.table-controls input,.table-controls select{padding:8px 12px;font-size:13px}
+.btn-sm{padding:8px 14px;border-radius:var(--radius-btn);font-size:13px;font-weight:500;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.btn-sm.accent{background:var(--accent);color:#fff}
+.btn-sm.accent:hover{background:#5b52ee}
+.btn-sm.ghost{border:1px solid var(--border);color:var(--text-muted)}
+.btn-sm.ghost:hover{border-color:var(--border-accent);color:var(--text-primary)}
+.btn-sm.danger{border:1px solid rgba(239,68,68,.3);color:var(--red)}
+.btn-sm.danger:hover{background:var(--red-soft)}
+.dash-table{width:100%;border-collapse:collapse}
+.dash-table th{text-align:left;padding:12px 16px;font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border);white-space:nowrap}
+.dash-table td{padding:12px 16px;font-size:13px;color:var(--text-secondary);border-bottom:1px solid rgba(42,42,56,.5);white-space:nowrap}
+.dash-table tr:hover td{background:var(--bg-elevated)}
+.dash-table .mono{font-family:var(--font-mono);font-size:12px;color:var(--text-muted)}
+.badge{display:inline-flex;padding:3px 10px;border-radius:var(--radius-badge);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+.badge.success{background:var(--green-soft);color:var(--green)}
+.badge.failed{background:var(--red-soft);color:var(--red)}
+.badge.pending{background:var(--amber-soft);color:var(--amber)}
+.badge.retried{background:var(--blue-soft);color:var(--blue)}
+.dash-card{background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-card);padding:20px;margin-bottom:20px}
+
+/* Routing rules */
+.rule-card{background:var(--bg-elevated);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;transition:border-color .2s}
+.rule-card:hover{border-color:var(--border-accent)}
+.rule-info h4{font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:6px}
+.rule-chips{display:flex;gap:6px;flex-wrap:wrap}
+.rule-chip{padding:3px 10px;border-radius:var(--radius-badge);font-size:11px;font-weight:500;background:var(--bg-surface);border:1px solid var(--border);color:var(--text-muted)}
+.rule-chip.provider{background:var(--accent-soft);border-color:rgba(108,99,255,.25);color:var(--accent)}
+
+/* Toggle switch */
+.switch{width:40px;height:22px;border-radius:11px;background:var(--border);position:relative;cursor:pointer;transition:background .2s;flex-shrink:0}
+.switch.on{background:var(--accent)}
+.switch::after{content:'';position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;top:3px;left:3px;transition:transform .2s}
+.switch.on::after{transform:translateX(18px)}
+
+/* Provider health */
+.health-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.health-card{background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-card);padding:20px;transition:border-color .2s}
+.health-card:hover{border-color:var(--border-accent)}
+.health-card .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.health-card .name{font-size:15px;font-weight:600;color:var(--text-primary)}
+.health-bar-bg{height:6px;background:var(--bg-elevated);border-radius:3px;overflow:hidden;margin-bottom:8px}
+.health-bar{height:100%;border-radius:3px;transition:width .6s ease}
+.health-bar.green{background:var(--green)}
+.health-bar.amber{background:var(--amber)}
+.health-bar.red{background:var(--red)}
+.health-meta{display:flex;justify-content:space-between;font-size:12px;color:var(--text-muted)}
+.health-meta .latency{font-family:var(--font-mono)}
+.last-check{font-size:11px;color:var(--text-muted);text-align:center;margin-top:12px}
+
+/* Webhook log */
+.webhook-table{font-family:var(--font-mono);font-size:12px}
+.webhook-table td.code{font-weight:600}
+.webhook-table td.code.c200{color:var(--green)}
+.webhook-table td.code.c400{color:var(--amber)}
+.webhook-table td.code.c500{color:var(--red)}
+
+/* API Keys */
+.key-prefix{font-family:var(--font-mono);font-size:12px;color:var(--text-muted)}
+.key-actions{display:flex;gap:6px}
+.key-actions button{padding:4px 10px;border-radius:var(--radius-badge);font-size:11px;font-weight:500;border:1px solid var(--border);color:var(--text-muted);transition:all .2s;background:none;cursor:pointer}
+.key-actions button:hover{border-color:var(--border-accent);color:var(--text-primary)}
+.key-actions button.revoke{color:var(--red);border-color:rgba(239,68,68,.3)}
+.key-actions button.revoke:hover{background:var(--red-soft)}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:768px){
+  .nav-links,.nav-actions .btn-ghost{display:none}
+  .hamburger{display:flex}
+  .hero-inner{grid-template-columns:1fr;gap:40px}
+  .hero h1{font-size:40px}
+  .hero-visual{display:none}
+  .features-grid{grid-template-columns:1fr}
+  .step{grid-template-columns:1fr;gap:24px}
+  .step:nth-child(even){direction:ltr}
+  .step-num{display:none}
+  .api-docs-inner{grid-template-columns:1fr}
+  .api-sidebar{display:none}
+  .testimonials-grid{grid-template-columns:1fr}
+  .pricing-grid{grid-template-columns:1fr}
+  .contact-inner{grid-template-columns:1fr}
+  .footer-grid{grid-template-columns:repeat(2,1fr)}
+  .stat-cards{grid-template-columns:repeat(2,1fr)}
+  .health-grid{grid-template-columns:repeat(2,1fr)}
+  .dash-sidebar{transform:translateX(-100%);transition:transform .3s}
+  .dash-sidebar.open{transform:translateX(0)}
+  .dash-main{margin-left:0;padding:16px}
+  .int-strip-inner{flex-direction:column;gap:12px}
+  .dash-mobile-toggle{display:flex!important}
+}
+@media(max-width:480px){
+  .hero h1{font-size:32px}
+  .section-label{font-size:30px}
+  .stat-cards{grid-template-columns:1fr}
+  .health-grid{grid-template-columns:1fr}
+  .footer-grid{grid-template-columns:1fr}
+  .pricing-grid{grid-template-columns:1fr}
+  .contact-form .row{grid-template-columns:1fr}
+  .dash-table-wrap{overflow-x:auto}
+  .table-controls{flex-wrap:wrap}
+}
+.dash-mobile-toggle{display:none;position:fixed;top:16px;left:16px;z-index:200;width:40px;height:40px;background:var(--bg-surface);border:1px solid var(--border);border-radius:8px;align-items:center;justify-content:center;cursor:pointer;color:var(--text-primary)}
+</style>
+</head>
+<body>
+
+<!-- ==================== LANDING PAGE ==================== -->
+<div id="landing">
+
+<!-- NAVBAR -->
+<nav class="navbar" id="navbar" role="navigation" aria-label="Main navigation">
+  <a href="#" class="nav-logo" aria-label="PayGate home">
+    <span class="diamond" aria-hidden="true"></span>
+    PayGate
+  </a>
+  <div class="nav-links">
+    <a href="#features">API Docs</a>
+    <a href="#integrations">Integrations</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#how-it-works">Changelog</a>
+    <a href="#api-docs">Status</a>
+  </div>
+  <div class="nav-actions">
+    <button class="btn-ghost" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Contact Sales</button>
+    <button class="btn-accent" onclick="showDashboard()">Get API Access</button>
+  </div>
+  <button class="hamburger" aria-label="Open menu" onclick="document.getElementById('mobileNav').classList.add('open')">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- Mobile Nav -->
+<div class="mobile-nav" id="mobileNav" role="dialog" aria-label="Mobile navigation">
+  <button class="mobile-close" aria-label="Close menu" onclick="this.parentElement.classList.remove('open')">&times;</button>
+  <a href="#features" onclick="this.parentElement.classList.remove('open')">API Docs</a>
+  <a href="#integrations" onclick="this.parentElement.classList.remove('open')">Integrations</a>
+  <a href="#pricing" onclick="this.parentElement.classList.remove('open')">Pricing</a>
+  <a href="#how-it-works" onclick="this.parentElement.classList.remove('open')">Changelog</a>
+  <a href="#api-docs" onclick="this.parentElement.classList.remove('open')">Status</a>
+  <a href="#contact" onclick="this.parentElement.classList.remove('open')">Contact Sales</a>
+  <button class="btn-accent" onclick="showDashboard()" style="margin-top:16px">Get API Access</button>
+</div>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-inner">
+    <div class="hero-content">
+      <div class="hero-eyebrow"><span class="dot" aria-hidden="true"></span> Payment Orchestration &middot; Now in GA</div>
+      <h1>Route. Retry.<br><span class="accent-line">Reconcile.</span><br>One API for every payment provider.</h1>
+      <p class="hero-sub">PayGate sits between your app and your payment providers. Intelligent routing, automatic failover, and a unified dashboard &mdash; without rebuilding your stack.</p>
+      <div class="hero-cta">
+        <button class="btn-primary" onclick="showDashboard()">Get API Access</button>
+        <a href="#api-docs" class="btn-docs">Read the Docs &rarr;</a>
+      </div>
+      <div class="trust-row">
+        <span class="trust-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          SOC 2 Certified
+        </span>
+        <span class="trust-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          99.99% Uptime
+        </span>
+        <span class="trust-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Sub-200ms Routing
+        </span>
+        <span class="trust-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          GDPR Ready
+        </span>
+      </div>
+    </div>
+    <div class="hero-visual" aria-hidden="true">
+      <div class="diagram-panel">
+        <div class="diagram-row">
+          <div class="diagram-box app">
+            <div class="diagram-box-label">Your App</div>
+            <div class="diagram-box-sub">REST / SDK</div>
+          </div>
+          <div class="diagram-arrow">
+            <div class="diagram-line"><span class="pulse"></span><span class="pulse pulse2"></span><span class="pulse pulse3"></span></div>
+          </div>
+          <div class="diagram-box gateway">
+            <div class="diagram-box-label">PayGate</div>
+            <div class="diagram-box-sub">Route &middot; Retry</div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:center;margin:16px 0">
+          <div class="diagram-arrow" style="width:100px">
+            <div class="diagram-line"><span class="pulse"></span><span class="pulse pulse2"></span></div>
+          </div>
+        </div>
+        <div class="diagram-providers">
+          <div class="provider-chip">Stripe</div>
+          <div class="provider-chip">Razorpay</div>
+          <div class="provider-chip">PayU</div>
+          <div class="provider-chip">Braintree</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INTEGRATION STRIP -->
+<section class="int-strip" id="integrations" aria-label="Supported payment providers">
+  <div class="int-strip-inner">
+    <span class="int-strip-label">Works with your existing stack</span>
+    <div class="marquee-wrap">
+      <div class="marquee" aria-hidden="true">
+        <span class="marquee-item">Stripe</span><span class="marquee-item">Razorpay</span>
+        <span class="marquee-item">PayU</span><span class="marquee-item">Braintree</span>
+        <span class="marquee-item">PayPal</span><span class="marquee-item">Square</span>
+        <span class="marquee-item">Adyen</span><span class="marquee-item">Cashfree</span>
+        <span class="marquee-item">Stripe</span><span class="marquee-item">Razorpay</span>
+        <span class="marquee-item">PayU</span><span class="marquee-item">Braintree</span>
+        <span class="marquee-item">PayPal</span><span class="marquee-item">Square</span>
+        <span class="marquee-item">Adyen</span><span class="marquee-item">Cashfree</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="features-inner">
+    <h2 class="section-label reveal">Built for both sides of the table</h2>
+    <p class="section-sub reveal">Whether you're shipping the integration or signing off the reports.</p>
+    <div class="features-grid">
+      <div class="reveal">
+        <div class="features-col-header dev"><span class="bar" aria-hidden="true"></span> For Developers</div>
+        <div class="feature-card">
+          <div class="feature-card-icon blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+          </div>
+          <h4>Unified REST API</h4>
+          <p>One endpoint, all providers. No more juggling multiple SDKs and authentication flows.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-card-icon violet">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          </div>
+          <h4>SDK for Node, Python, Go, PHP</h4>
+          <p>Official client libraries with full type support. Install in seconds, not hours.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-card-icon blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          </div>
+          <h4>Webhook Inspector</h4>
+          <p>View, debug, and replay webhook events. Retry failed deliveries with one click.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-card-icon violet">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+          <h4>Live API Key Rotation</h4>
+          <p>Rotate keys without downtime. Zero-interruption key management for production systems.</p>
+        </div>
+      </div>
+      <div class="reveal">
+        <div class="features-col-header ops"><span class="bar" aria-hidden="true"></span> For Finance &amp; Ops</div>
+        <div class="feature-card">
+          <div class="feature-card-icon green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+          </div>
+          <h4>Real-time Transaction Dashboard</h4>
+          <p>Every transaction, every provider, one view. Filter, search, and drill into any payment.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-card-icon green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+          </div>
+          <h4>Multi-provider Reconciliation</h4>
+          <p>Automated reports across Stripe, Razorpay, PayU — no more spreadsheets.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-card-icon amber">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <h4>Failure Rate Breakdown</h4>
+          <p>See exactly which providers are failing and why. Pinpoint issues before they cascade.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-card-icon green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </div>
+          <h4>Exportable Ledger</h4>
+          <p>Download CSV or PDF exports for any date range. Ready for audits and board meetings.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-it-works" id="how-it-works">
+  <div class="how-inner">
+    <h2 class="section-label reveal">How it works</h2>
+    <p class="section-sub reveal">Three steps from zero to fully orchestrated payments.</p>
+
+    <div class="step reveal">
+      <span class="step-num" aria-hidden="true">01</span>
+      <div class="step-text">
+        <h3>Install PayGate</h3>
+        <p>Connect via REST API or drop in our SDK. 5 lines of code to go live.</p>
+      </div>
+      <div class="step-visual">
+        <div class="code-snippet">
+          <div class="code-snippet-header"><span class="code-snippet-dot"></span><span class="code-snippet-dot"></span><span class="code-snippet-dot"></span></div>
+          <pre><span class="cm">// Install the SDK</span>
+<span class="kw">npm</span> install @paygate/sdk
+
+<span class="cm">// Initialize and charge</span>
+<span class="kw">import</span> { <span class="fn">PayGate</span> } <span class="kw">from</span> <span class="str">'@paygate/sdk'</span>;
+
+<span class="kw">const</span> pg = <span class="kw">new</span> <span class="fn">PayGate</span>(<span class="str">'pk_live_...'</span>);
+
+<span class="kw">const</span> charge = <span class="kw">await</span> pg.charges.<span class="fn">create</span>({
+  <span class="fn">amount</span>: <span class="num">499900</span>,
+  <span class="fn">currency</span>: <span class="str">'INR'</span>,
+  <span class="fn">provider</span>: <span class="str">'auto'</span>
+});</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="step reveal">
+      <span class="step-num" aria-hidden="true">02</span>
+      <div class="step-text">
+        <h3>Connect Your Providers</h3>
+        <p>Add Stripe, Razorpay, PayU — any combination. Set routing rules per currency, region, or transaction value.</p>
+      </div>
+      <div class="step-visual">
+        <div class="provider-toggles">
+          <div class="provider-toggle">
+            <span class="provider-toggle-name">Stripe</span>
+            <div class="toggle-switch active" role="switch" aria-checked="true" tabindex="0" onclick="this.classList.toggle('active')"></div>
+          </div>
+          <div class="provider-toggle">
+            <span class="provider-toggle-name">Razorpay</span>
+            <div class="toggle-switch active" role="switch" aria-checked="true" tabindex="0" onclick="this.classList.toggle('active')"></div>
+          </div>
+          <div class="provider-toggle">
+            <span class="provider-toggle-name">PayU</span>
+            <div class="toggle-switch" role="switch" aria-checked="false" tabindex="0" onclick="this.classList.toggle('active')"></div>
+          </div>
+          <div class="provider-toggle">
+            <span class="provider-toggle-name">Braintree</span>
+            <div class="toggle-switch active" role="switch" aria-checked="true" tabindex="0" onclick="this.classList.toggle('active')"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step reveal">
+      <span class="step-num" aria-hidden="true">03</span>
+      <div class="step-text">
+        <h3>Go Live &amp; Monitor</h3>
+        <p>Every transaction is logged, routed, and trackable. Retries happen automatically. You get alerted only when something actually needs you.</p>
+      </div>
+      <div class="step-visual">
+        <div class="mini-dash">
+          <div class="mini-chart">
+            <div class="mini-bar" style="height:40%"></div>
+            <div class="mini-bar" style="height:65%"></div>
+            <div class="mini-bar" style="height:55%"></div>
+            <div class="mini-bar" style="height:80%"></div>
+            <div class="mini-bar" style="height:70%"></div>
+            <div class="mini-bar" style="height:90%"></div>
+            <div class="mini-bar" style="height:85%"></div>
+          </div>
+          <div class="mini-rows">
+            <div class="mini-row"><span class="label">Success Rate</span><span class="value" style="color:var(--green)">97.4%</span></div>
+            <div class="mini-row"><span class="label">Avg Latency</span><span class="value">142ms</span></div>
+            <div class="mini-row"><span class="label">Active Providers</span><span class="value">4</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- API DOCS PREVIEW -->
+<section class="api-docs" id="api-docs">
+  <div class="api-docs-inner reveal">
+    <nav class="api-sidebar" aria-label="API documentation sections">
+      <a href="#" class="active">Quickstart</a>
+      <a href="#">Authentication</a>
+      <a href="#">Endpoints</a>
+      <a href="#">Webhooks</a>
+      <a href="#">Errors</a>
+    </nav>
+    <div class="api-content">
+      <h3>Create a Charge</h3>
+      <span class="endpoint">POST /v1/charges</span>
+      <div class="code-block">
+        <pre><span class="cm">// Request</span>
+<span class="kw">curl</span> -X POST https://api.paygate.dev/v1/charges \
+  -H <span class="str">"Authorization: Bearer pk_live_..."</span> \
+  -H <span class="str">"Content-Type: application/json"</span> \
+  -d <span class="str">'{
+    "amount": 499900,
+    "currency": "INR",
+    "description": "Order #1234",
+    "metadata": {
+      "order_id": "ord_1234"
+    }
+  }'</span>
+
+<span class="cm">// Response</span>
+{
+  <span class="str">"id"</span>: <span class="str">"ch_7x8kL2mN9pQ3"</span>,
+  <span class="str">"amount"</span>: <span class="num">499900</span>,
+  <span class="str">"currency"</span>: <span class="str">"INR"</span>,
+  <span class="str">"status"</span>: <span class="str">"succeeded"</span>,
+  <span class="str">"provider"</span>: <span class="str">"razorpay"</span>,
+  <span class="str">"latency_ms"</span>: <span class="num">142</span>,
+  <span class="str">"created_at"</span>: <span class="str">"2026-06-13T10:30:00Z"</span>
+}</pre>
+      </div>
+      <a href="#" class="api-docs-cta">View Full Documentation &rarr;</a>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials" id="testimonials">
+  <div class="testimonials-inner">
+    <h2 class="section-label reveal">Trusted by engineering teams</h2>
+    <p class="section-sub reveal">Companies that moved to PayGate and never looked back.</p>
+    <div class="testimonials-grid">
+      <div class="testimonial-card reveal">
+        <div class="company">FinStack</div>
+        <div class="role">Priya S., VP Engineering</div>
+        <p class="quote">"PayGate cut our payment failure rate by 34% in the first month. The intelligent retry logic alone justified the switch."</p>
+      </div>
+      <div class="testimonial-card reveal">
+        <div class="company">Kredify</div>
+        <div class="role">Arjun M., CTO</div>
+        <p class="quote">"Our finance team finally stopped asking me for transaction exports. The reconciliation dashboard does it all."</p>
+      </div>
+      <div class="testimonial-card reveal">
+        <div class="company">Movo</div>
+        <div class="role">Sarah L., Lead Developer</div>
+        <p class="quote">"We went from 3 payment integrations to 1 in a weekend. The SDK is clean, the docs are excellent."</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing" id="pricing">
+  <div class="pricing-inner">
+    <h2 class="section-label reveal">Simple, transparent pricing</h2>
+    <p class="section-sub reveal">Start free. Scale as you grow. No hidden fees.</p>
+    <div class="pricing-grid">
+      <div class="price-card reveal">
+        <h3>Starter</h3>
+        <div class="price">Free <span></span></div>
+        <ul class="price-features">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Up to 1,000 transactions/month</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 2 provider connections</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Basic dashboard</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Community support</li>
+        </ul>
+        <button class="btn-ghost" onclick="showDashboard()">Start Free</button>
+      </div>
+      <div class="price-card featured reveal">
+        <span class="price-badge">Most Used</span>
+        <h3>Growth</h3>
+        <div class="price">₹4,999 <span>/month</span></div>
+        <ul class="price-features">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Up to 50,000 transactions/month</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Unlimited providers</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Full dashboard + exports</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Webhook inspector</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Email support</li>
+        </ul>
+        <button class="btn-accent" onclick="showDashboard()">Get API Access</button>
+      </div>
+      <div class="price-card reveal">
+        <h3>Enterprise</h3>
+        <div class="price">Custom</div>
+        <ul class="price-features">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Unlimited volume</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> SLA + uptime guarantee</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Dedicated onboarding</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> SSO + audit logs</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Custom contracts</li>
+        </ul>
+        <button class="btn-ghost" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Contact Sales</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT FORM -->
+<section class="contact" id="contact">
+  <div class="contact-inner">
+    <div class="contact-text reveal">
+      <h2>Ready to orchestrate your payments?</h2>
+      <p>Get API access, talk to our team, or request a demo. We respond within 1 business day.</p>
+      <p class="note">No sales pressure. Just a conversation about your stack.</p>
+    </div>
+    <div class="reveal">
+      <form class="contact-form" id="contactForm" novalidate>
+        <div class="field" id="field-name">
+          <label for="c-name">Full Name</label>
+          <input type="text" id="c-name" name="name" placeholder="Priya Sharma" required>
+          <div class="error-msg">Please enter your name</div>
+        </div>
+        <div class="field" id="field-email">
+          <label for="c-email">Work Email</label>
+          <input type="email" id="c-email" name="email" placeholder="priya@company.com" required>
+          <div class="error-msg">Please enter a valid work email</div>
+        </div>
+        <div class="field" id="field-company">
+          <label for="c-company">Company</label>
+          <input type="text" id="c-company" name="company" placeholder="Acme Corp" required>
+          <div class="error-msg">Please enter your company name</div>
+        </div>
+        <div class="field" id="field-role">
+          <label for="c-role">Role</label>
+          <select id="c-role" name="role" required>
+            <option value="" disabled selected>Select your role</option>
+            <option value="developer">Developer</option>
+            <option value="finance">Finance / Ops</option>
+            <option value="both">Both</option>
+          </select>
+          <div class="error-msg">Please select a role</div>
+        </div>
+        <div class="field">
+          <label for="c-message">Message</label>
+          <textarea id="c-message" name="message" placeholder="Tell us about your payment stack..."></textarea>
+        </div>
+        <button type="submit" class="btn-accent" style="padding:14px 32px;font-size:15px">Request Access</button>
+      </form>
+      <div class="form-success" id="formSuccess">
+        <div class="check">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h3>Thank you</h3>
+        <p>We'll be in touch within 1 business day.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final-cta">
+  <div class="final-cta-inner reveal">
+    <h2>Your payment stack is already complex enough.</h2>
+    <p>PayGate doesn't add to it. It sits on top.</p>
+    <button class="btn-accent" onclick="showDashboard()">Get API Access</button>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h5>Product</h5>
+        <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#api-docs">API Docs</a>
+        <a href="#integrations">Integrations</a>
+        <a href="#">Changelog</a>
+      </div>
+      <div class="footer-col">
+        <h5>Developers</h5>
+        <a href="#api-docs">Documentation</a>
+        <a href="#api-docs">Quickstart</a>
+        <a href="#api-docs">SDK Reference</a>
+        <a href="#">Status</a>
+      </div>
+      <div class="footer-col">
+        <h5>Company</h5>
+        <a href="#">About</a>
+        <a href="#">Blog</a>
+        <a href="#contact">Contact</a>
+        <a href="#">Careers</a>
+      </div>
+      <div class="footer-col">
+        <h5>Legal</h5>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+        <a href="#">Security</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; 2026 PayGate. All rights reserved.</span>
+      <div class="footer-status">
+        <span class="status-dot green" aria-hidden="true"></span>
+        Status: Operational
+      </div>
+      <div class="footer-social">
+        <a href="#" aria-label="GitHub">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        </a>
+        <a href="#" aria-label="Twitter">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        </a>
+        <a href="#" aria-label="LinkedIn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</div><!-- /landing -->
+
+
+<!-- ==================== DASHBOARD ==================== -->
+<div id="dashboard">
+
+<!-- Dashboard Sidebar -->
+<aside class="dash-sidebar" id="dashSidebar" role="navigation" aria-label="Dashboard navigation">
+  <div class="dash-sidebar-top">
+    <div class="dash-sidebar-logo"><span class="diamond" aria-hidden="true"></span> PayGate</div>
+    <div class="dash-workspace">Acme Corp</div>
+  </div>
+  <nav class="dash-nav">
+    <a href="#" class="active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Overview
+    </a>
+    <a href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      Transactions
+    </a>
+    <a href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+      Routing Rules
+    </a>
+    <a href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+      Providers
+    </a>
+    <a href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+      Webhooks
+    </a>
+    <a href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      API Keys
+    </a>
+    <a href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Reports
+    </a>
+    <a href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Team
+    </a>
+    <a href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Settings
+    </a>
+  </nav>
+  <div class="dash-sidebar-bottom">
+    <div class="dash-avatar">AS</div>
+    <div class="dash-user-info">
+      <div class="dash-user-name">Admin User</div>
+      <div class="dash-user-role">admin@acmecorp.com</div>
+    </div>
+    <button class="dash-logout" onclick="showLanding()">Logout</button>
+  </div>
+</aside>
+
+<!-- Dashboard Main Content -->
+<main class="dash-main">
+  <button class="dash-mobile-toggle" aria-label="Toggle sidebar" onclick="document.getElementById('dashSidebar').classList.toggle('open')">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+
+  <div class="dash-header">
+    <div>
+      <h1>Dashboard</h1>
+      <p class="greeting">Welcome back, Acme Corp</p>
+    </div>
+    <div class="dash-badge green">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+      +12.5% this month
+    </div>
+  </div>
+
+  <!-- Stat Cards -->
+  <div class="stat-cards">
+    <div class="stat-card">
+      <div class="label">Total Volume Today</div>
+      <div class="value" data-count="2481300" data-prefix="₹" data-format="inr">₹0</div>
+      <div class="change up">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+        +12% vs yesterday
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Success Rate</div>
+      <div class="value" data-count="97.4" data-suffix="%">0%</div>
+      <div class="change up">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+        Stable
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Failed Transactions</div>
+      <div class="value" data-count="38">0</div>
+      <div class="change down">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/></svg>
+        Down from 52
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Active Providers</div>
+      <div class="value" data-count="4">0</div>
+      <div class="change up" style="color:var(--blue)">
+        All operational
+      </div>
+    </div>
+  </div>
+
+  <!-- Transaction Table -->
+  <div class="dash-section">
+    <div class="dash-section-header">
+      <h2>Transactions</h2>
+      <div class="table-controls">
+        <input type="text" placeholder="Search txn ID..." aria-label="Search transactions" style="width:180px">
+        <select aria-label="Filter by provider">
+          <option value="">All Providers</option>
+          <option>Stripe</option>
+          <option>Razorpay</option>
+          <option>PayU</option>
+          <option>Braintree</option>
+        </select>
+        <select aria-label="Filter by status">
+          <option value="">All Status</option>
+          <option>Success</option>
+          <option>Failed</option>
+          <option>Pending</option>
+          <option>Retried</option>
+        </select>
+        <button class="btn-sm ghost">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export CSV
+        </button>
+      </div>
+    </div>
+    <div class="dash-table-wrap" style="overflow-x:auto">
+      <table class="dash-table" role="table">
+        <thead>
+          <tr>
+            <th>Txn ID</th>
+            <th>Amount</th>
+            <th>Currency</th>
+            <th>Provider</th>
+            <th>Status</th>
+            <th>Latency</th>
+            <th>Timestamp</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="mono">txn_8xK2mN9pQ3wR</td><td>₹49,990</td><td>INR</td><td>Razorpay</td><td><span class="badge success">Success</span></td><td>142ms</td><td>13 Jun, 10:32 AM</td></tr>
+          <tr><td class="mono">txn_7yJ3lM0qP4xS</td><td>$129.99</td><td>USD</td><td>Stripe</td><td><span class="badge success">Success</span></td><td>98ms</td><td>13 Jun, 10:28 AM</td></tr>
+          <tr><td class="mono">txn_6hI4kN1rO5yT</td><td>₹12,500</td><td>INR</td><td>PayU</td><td><span class="badge failed">Failed</span></td><td>2,340ms</td><td>13 Jun, 10:15 AM</td></tr>
+          <tr><td class="mono">txn_5gH5jM2sP6zU</td><td>₹85,000</td><td>INR</td><td>Razorpay</td><td><span class="badge success">Success</span></td><td>156ms</td><td>13 Jun, 09:58 AM</td></tr>
+          <tr><td class="mono">txn_4fG6iL3tQ7aV</td><td>$49.00</td><td>USD</td><td>Stripe</td><td><span class="badge retried">Retried</span></td><td>312ms</td><td>13 Jun, 09:45 AM</td></tr>
+          <tr><td class="mono">txn_3eF7hK4uR8bW</td><td>₹23,450</td><td>INR</td><td>Razorpay</td><td><span class="badge success">Success</span></td><td>128ms</td><td>13 Jun, 09:30 AM</td></tr>
+          <tr><td class="mono">txn_2dE8gJ5vS9cX</td><td>$299.00</td><td>USD</td><td>Braintree</td><td><span class="badge pending">Pending</span></td><td>--</td><td>13 Jun, 09:12 AM</td></tr>
+          <tr><td class="mono">txn_1cD9fI6wT0dY</td><td>₹7,800</td><td>INR</td><td>PayU</td><td><span class="badge success">Success</span></td><td>189ms</td><td>13 Jun, 08:55 AM</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Routing Rules -->
+  <div class="dash-section">
+    <div class="dash-section-header">
+      <h2>Routing Rules</h2>
+    </div>
+    <div class="dash-card">
+      <div class="rule-card">
+        <div class="rule-info">
+          <h4>Route INR &gt; &#8377;50,000 &rarr; Razorpay</h4>
+          <div class="rule-chips">
+            <span class="rule-chip">Currency: INR</span>
+            <span class="rule-chip">Amount: &gt; 50000</span>
+            <span class="rule-chip provider">Razorpay</span>
+          </div>
+        </div>
+        <div class="switch on" role="switch" aria-checked="true" aria-label="Toggle rule" tabindex="0" onclick="this.classList.toggle('on')"></div>
+      </div>
+      <div class="rule-card">
+        <div class="rule-info">
+          <h4>Failover: if Stripe fails &rarr; retry via PayU</h4>
+          <div class="rule-chips">
+            <span class="rule-chip">Condition: Stripe fail</span>
+            <span class="rule-chip provider">PayU</span>
+          </div>
+        </div>
+        <div class="switch on" role="switch" aria-checked="true" aria-label="Toggle rule" tabindex="0" onclick="this.classList.toggle('on')"></div>
+      </div>
+      <div class="rule-card">
+        <div class="rule-info">
+          <h4>Route international USD &rarr; Stripe</h4>
+          <div class="rule-chips">
+            <span class="rule-chip">Currency: USD</span>
+            <span class="rule-chip">Region: International</span>
+            <span class="rule-chip provider">Stripe</span>
+          </div>
+        </div>
+        <div class="switch on" role="switch" aria-checked="true" aria-label="Toggle rule" tabindex="0" onclick="this.classList.toggle('on')"></div>
+      </div>
+      <button class="btn-sm accent" style="margin-top:12px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Rule
+      </button>
+    </div>
+  </div>
+
+  <!-- Provider Health -->
+  <div class="dash-section">
+    <div class="dash-section-header">
+      <h2>Provider Health</h2>
+    </div>
+    <div class="health-grid">
+      <div class="health-card">
+        <div class="top">
+          <span class="name">Stripe</span>
+          <span class="status-dot green" aria-label="Healthy"></span>
+        </div>
+        <div class="health-bar-bg"><div class="health-bar green" style="width:98.2%"></div></div>
+        <div class="health-meta"><span>98.2% success</span><span class="latency">98ms</span></div>
+      </div>
+      <div class="health-card">
+        <div class="top">
+          <span class="name">Razorpay</span>
+          <span class="status-dot green" aria-label="Healthy"></span>
+        </div>
+        <div class="health-bar-bg"><div class="health-bar green" style="width:97.4%"></div></div>
+        <div class="health-meta"><span>97.4% success</span><span class="latency">142ms</span></div>
+      </div>
+      <div class="health-card">
+        <div class="top">
+          <span class="name">PayU</span>
+          <span class="status-dot amber" aria-label="Degraded"></span>
+        </div>
+        <div class="health-bar-bg"><div class="health-bar amber" style="width:89.1%"></div></div>
+        <div class="health-meta"><span>89.1% success</span><span class="latency">340ms</span></div>
+      </div>
+      <div class="health-card">
+        <div class="top">
+          <span class="name">Braintree</span>
+          <span class="status-dot green" aria-label="Healthy"></span>
+        </div>
+        <div class="health-bar-bg"><div class="health-bar green" style="width:96.8%"></div></div>
+        <div class="health-meta"><span>96.8% success</span><span class="latency">112ms</span></div>
+      </div>
+    </div>
+    <p class="last-check">Last checked: 2 mins ago</p>
+  </div>
+
+  <!-- Webhook Log -->
+  <div class="dash-section">
+    <div class="dash-section-header">
+      <h2>Webhook Log</h2>
+      <button class="btn-sm ghost">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        Refresh
+      </button>
+    </div>
+    <div class="dash-card" style="padding:0;overflow:hidden">
+      <div class="dash-table-wrap" style="overflow-x:auto">
+        <table class="dash-table webhook-table" role="table">
+          <thead>
+            <tr>
+              <th>Event</th>
+              <th>Endpoint</th>
+              <th>Status</th>
+              <th>Response</th>
+              <th>Time</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>payment.captured</td><td class="mono">https://acme.com/webhooks/pay</td><td class="code c200">200</td><td>45ms</td><td>10:32:14</td><td></td></tr>
+            <tr><td>payment.created</td><td class="mono">https://acme.com/webhooks/pay</td><td class="code c200">200</td><td>38ms</td><td>10:28:03</td><td></td></tr>
+            <tr><td>payment.failed</td><td class="mono">https://acme.com/webhooks/pay</td><td class="code c500">500</td><td>2,102ms</td><td>10:15:22</td><td><button class="btn-sm ghost" style="padding:3px 8px;font-size:11px">Retry</button></td></tr>
+            <tr><td>payment.captured</td><td class="mono">https://acme.com/webhooks/pay</td><td class="code c200">200</td><td>52ms</td><td>09:58:41</td><td></td></tr>
+            <tr><td>refund.created</td><td class="mono">https://acme.com/webhooks/refund</td><td class="code c400">400</td><td>120ms</td><td>09:45:10</td><td><button class="btn-sm ghost" style="padding:3px 8px;font-size:11px">Retry</button></td></tr>
+            <tr><td>payment.created</td><td class="mono">https://acme.com/webhooks/pay</td><td class="code c200">200</td><td>41ms</td><td>09:30:55</td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- API Keys -->
+  <div class="dash-section">
+    <div class="dash-section-header">
+      <h2>API Keys</h2>
+      <button class="btn-sm accent">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Generate New Key
+      </button>
+    </div>
+    <div class="dash-card" style="padding:0;overflow:hidden">
+      <div class="dash-table-wrap" style="overflow-x:auto">
+        <table class="dash-table" role="table">
+          <thead>
+            <tr>
+              <th>Key Name</th>
+              <th>Prefix</th>
+              <th>Created</th>
+              <th>Last Used</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Production Key</td>
+              <td class="key-prefix">pk_live_&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;3f9a</td>
+              <td>12 Jan, 2026</td>
+              <td>2 mins ago</td>
+              <td><div class="key-actions"><button>Copy</button><button>Rotate</button><button class="revoke">Revoke</button></div></td>
+            </tr>
+            <tr>
+              <td>Test Key</td>
+              <td class="key-prefix">pk_test_&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;8b2e</td>
+              <td>12 Jan, 2026</td>
+              <td>1 hour ago</td>
+              <td><div class="key-actions"><button>Copy</button><button>Rotate</button><button class="revoke">Revoke</button></div></td>
+            </tr>
+            <tr>
+              <td>Staging Key</td>
+              <td class="key-prefix">pk_test_&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;d4c1</td>
+              <td>3 Mar, 2026</td>
+              <td>3 days ago</td>
+              <td><div class="key-actions"><button>Copy</button><button>Rotate</button><button class="revoke">Revoke</button></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div><!-- /dashboard -->
+
+
+<script>
+// ===== LANDING <-> DASHBOARD TOGGLE =====
+function showDashboard(){
+  document.getElementById('landing').style.display='none';
+  document.getElementById('dashboard').classList.add('active');
+  document.body.style.background='var(--bg-base)';
+  window.scrollTo(0,0);
+  animateCounters();
+  staggerTableRows();
+}
+function showLanding(){
+  document.getElementById('dashboard').classList.remove('active');
+  document.getElementById('landing').style.display='block';
+  window.scrollTo(0,0);
+}
+
+// ===== NAVBAR SCROLL BLUR =====
+const navbar=document.getElementById('navbar');
+let lastScroll=0;
+window.addEventListener('scroll',()=>{
+  navbar.classList.toggle('scrolled',window.scrollY>20);
+},{passive:true});
+
+// ===== SCROLL REVEAL =====
+const reveals=document.querySelectorAll('.reveal');
+const revealObs=new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');revealObs.unobserve(e.target)}});
+},{threshold:0.1,rootMargin:'0px 0px -40px 0px'});
+reveals.forEach(el=>revealObs.observe(el));
+
+// ===== COUNT-UP ANIMATION =====
+function animateCounters(){
+  document.querySelectorAll('.stat-card .value[data-count]').forEach(el=>{
+    const target=parseFloat(el.dataset.count);
+    const prefix=el.dataset.prefix||'';
+    const suffix=el.dataset.suffix||'';
+    const isFloat=target%1!==0;
+    const duration=1200;
+    const start=performance.now();
+    function tick(now){
+      const p=Math.min((now-start)/duration,1);
+      const ease=1-Math.pow(1-p,3);
+      const val=ease*target;
+      if(el.dataset.format==='inr'){
+        el.textContent=prefix+Math.round(val).toLocaleString('en-IN');
+      }else if(isFloat){
+        el.textContent=prefix+val.toFixed(1)+suffix;
+      }else{
+        el.textContent=prefix+Math.round(val)+suffix;
+      }
+      if(p<1)requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  });
+}
+
+// ===== STAGGER TABLE ROWS =====
+function staggerTableRows(){
+  document.querySelectorAll('.dash-table tbody tr').forEach((row,i)=>{
+    row.style.opacity='0';
+    row.style.transform='translateY(10px)';
+    row.style.transition='opacity .4s ease, transform .4s ease';
+    setTimeout(()=>{row.style.opacity='1';row.style.transform='translateY(0)'},80*i);
+  });
+}
+
+// ===== CONTACT FORM =====
+document.getElementById('contactForm').addEventListener('submit',function(e){
+  e.preventDefault();
+  let valid=true;
+  const fields=[
+    {id:'field-name',val:document.getElementById('c-name').value.trim(),check:v=>v.length>0},
+    {id:'field-email',val:document.getElementById('c-email').value.trim(),check:v=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)},
+    {id:'field-company',val:document.getElementById('c-company').value.trim(),check:v=>v.length>0},
+    {id:'field-role',val:document.getElementById('c-role').value,check:v=>v.length>0}
+  ];
+  fields.forEach(f=>{
+    const el=document.getElementById(f.id);
+    if(!f.check(f.val)){el.classList.add('error');valid=false}
+    else{el.classList.remove('error')}
+  });
+  if(valid){
+    this.style.display='none';
+    document.getElementById('formSuccess').classList.add('show');
+  }
+});
+// Clear error on input
+document.querySelectorAll('.contact-form input, .contact-form select').forEach(el=>{
+  el.addEventListener('input',function(){
+    const field=this.closest('.field');
+    if(field)field.classList.remove('error');
+  });
+});
+
+// ===== TOGGLE SWITCHES (accessibility) =====
+document.querySelectorAll('.toggle-switch, .switch').forEach(sw=>{
+  sw.addEventListener('keydown',function(e){
+    if(e.key===' '||e.key==='Enter'){e.preventDefault();this.click()}
+  });
+});
+
+// ===== SIDEBAR NAV ACTIVE STATE =====
+document.querySelectorAll('.dash-nav a').forEach(link=>{
+  link.addEventListener('click',function(e){
+    e.preventDefault();
+    document.querySelectorAll('.dash-nav a').forEach(l=>l.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>

@@ -4,6 +4,11 @@ import Navbar from "../components/Navbar";
 import SummaryCard from "../components/SummaryCard";
 import TransactionTable from "../components/TransactionTable";
 import { getSummary, getDailyVolume } from "../services/analytics.service";
+import type {
+  ISummary,
+  IDailyVolume,
+  IPayment,
+} from "../../utils/interface_dashboard/dashboard";
 import { getPayments } from "../services/payments.service";
 import {
   BarChart,
@@ -25,9 +30,9 @@ import {
 
 const Dashboard = () => {
   useAuth();
-  const [summary, setSummary] = useState<any>(null);
-  const [payments, setPayments] = useState<any[]>([]);
-  const [dailyVolume, setDailyVolume] = useState<any[]>([]);
+  const [summary, setSummary] = useState<ISummary | null>(null);
+  const [payments, setPayments] = useState<IPayment[]>([]);
+  const [dailyVolume, setDailyVolume] = useState<IDailyVolume[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -38,9 +43,9 @@ const Dashboard = () => {
       getDailyVolume(7).catch(() => []),
     ])
       .then(([s, p, d]) => {
-        setSummary(s);
-        setPayments(p.payments);
-        setDailyVolume(d);
+        setSummary(s && typeof s === 'object' ? s : null);
+        setPayments(p?.payments ?? []);
+        setDailyVolume(Array.isArray(d) ? d : []);
       })
       .catch(() => setError("Failed to load dashboard data"))
       .finally(() => setLoading(false));
@@ -58,7 +63,9 @@ const Dashboard = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-text-primary font-[family-name:var(--font-display)]">Dashboard</h1>
+            <h1 className="text-2xl font-bold text-text-primary font-display">
+              Dashboard
+            </h1>
             <p className="text-sm text-text-muted mt-1">
               Welcome back, Acme Corp
             </p>
@@ -98,19 +105,19 @@ const Dashboard = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                 <SummaryCard
                   label="Total Volume"
-                  value={formatAmount(summary.totalReceived)}
+                  value={formatAmount(summary?.totalReceived ?? 0)}
                   icon={<IndianRupee size={20} />}
                   trend="+12% vs yesterday"
                   trendUp
                 />
                 <SummaryCard
                   label="Total Transactions"
-                  value={summary.totalTransactions.toLocaleString("en-IN")}
+                  value={summary?.totalTransactions?.toLocaleString("en-IN") ?? '0'}
                   icon={<Activity size={20} />}
                 />
                 <SummaryCard
                   label="Success Rate"
-                  value={`${summary.successRate}%`}
+                  value={summary?.successRate != null ? `${summary.successRate}%` : '0%'}
                   icon={<CheckCircle size={20} />}
                   trend="Stable"
                   trendUp
@@ -138,7 +145,7 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold text-text-primary font-[family-name:var(--font-display)]">
+                  <h2 className="text-lg font-semibold text-text-primary font-display">
                     Recent Transactions
                   </h2>
                   <span className="text-xs text-accent flex items-center gap-1 cursor-pointer hover:underline">
@@ -149,7 +156,7 @@ const Dashboard = () => {
               </div>
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold text-text-primary font-[family-name:var(--font-display)]">
+                  <h2 className="text-lg font-semibold text-text-primary font-display">
                     Daily Volume
                   </h2>
                   <div className="flex items-center gap-2 text-xs text-text-muted">

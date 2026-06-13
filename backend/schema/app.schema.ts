@@ -2,13 +2,13 @@ import * as z from "zod";
 
 export const RegisterAppSchema = z.object({
   name: z.string().min(3).max(50),
-  ownerEmail: z.email("Invalid email"),
+  ownerEmail: z.string().email("Invalid email"),
   password: z.string().min(8, "Min 8 characters"),
-  callbackUrl: z.url().optional(),
+  callbackUrl: z.string().url().optional(),
 })
 
 export const LoginSchema = z.object({
-  ownerEmail: z.email("Invalid email"),
+  ownerEmail: z.string().email("Invalid email"),
   password: z.string().min(8, "Password required").max(16)
 })
 

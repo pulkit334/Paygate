@@ -1,4 +1,5 @@
-import { api } from './client'
+import { isAxiosError } from 'axios'
+import { MerchantApi } from './client'
 
 export const AUTH = {
   LOGIN: '/auth/login',
@@ -29,12 +30,14 @@ export interface LoginResponse {
 
 export const register = async (data: RegisterRequest): Promise<RegisterResponse> => {
   try {
-    const response = await api.post(AUTH.REGISTER, data)
+    const response = await MerchantApi.post(AUTH.REGISTER, data)
     return response.data
   } catch (err) {
-    const code = (err as any)?.response?.data?.code
-    if (code === 'USER_EXISTS') {
-      throw new Error('An account with this email already exists')
+    if (isAxiosError(err)) {
+      const code = err.response?.data?.code
+      if (code === 'USER_EXISTS') {
+        throw new Error('An account with this email already exists', { cause: err })
+      }
     }
     throw err
   }
@@ -42,15 +45,17 @@ export const register = async (data: RegisterRequest): Promise<RegisterResponse>
 
 export const login = async (data: LoginRequest): Promise<LoginResponse> => {
   try {
-    const response = await api.post(AUTH.LOGIN, data)
+    const response = await MerchantApi.post(AUTH.LOGIN, data)
     return response.data
   } catch (err) {
-    const code = (err as any)?.response?.data?.code
-    if (code === 'USER_NOT_FOUND') {
-      throw new Error('Invalid email or password')
-    }
-    if (code === 'ACCOUNT_DISABLED') {
-      throw new Error('Account has been disabled')
+    if (isAxiosError(err)) {
+      const code = err.response?.data?.code
+      if (code === 'USER_NOT_FOUND') {
+        throw new Error('Invalid email or password', { cause: err })
+      }
+      if (code === 'ACCOUNT_DISABLED') {
+        throw new Error('Account has been disabled', { cause: err })
+      }
     }
     throw err
   }

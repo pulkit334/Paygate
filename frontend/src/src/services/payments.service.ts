@@ -1,3 +1,4 @@
+import { isAxiosError } from 'axios'
 import { api } from './client'
 
 export const PAYMENTS = {
@@ -30,12 +31,8 @@ export const getPayments = async (params?: {
   to?: string
   limit?: number
 }): Promise<PaymentsResponse> => {
-  try {
     const response = await api.get(PAYMENTS.ALL, { params })
     return response.data
-  } catch (err) {
-    throw err
-  }
 }
 
 export const createOrder = async (data: {
@@ -45,28 +42,32 @@ export const createOrder = async (data: {
 }) => {
   try {
     const response = await api.post(PAYMENTS.ORDER, data)
-    return response.data
+    return response.data;
   } catch (err) {
-    const code = (err as any)?.response?.data?.code
-    if (code === 'ORDER_CREATION_FAILED') {
-      throw new Error('Failed to create payment order')
+    if (isAxiosError(err)) {
+      const code = err.response?.data?.code
+      if (code === 'ORDER_CREATION_FAILED') {
+        throw new Error('Failed to create payment order', { cause: err })
+      }
     }
     throw err
   }
 }
 
 export const verifyPayment = async (data: {
-  razorpay_order_id: string
-  razorpay_payment_id: string
-  razorpay_signature: string
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
 }) => {
   try {
     const response = await api.post(PAYMENTS.VERIFY, data)
-    return response.data
+    return response?.data;
   } catch (err) {
-    const code = (err as any)?.response?.data?.code
-    if (code === 'VERIFICATION_FAILED') {
-      throw new Error('Payment verification failed')
+    if (isAxiosError(err)) {
+      const code = err.response?.data?.code
+      if (code === 'VERIFICATION_FAILED') {
+        throw new Error('Payment verification failed', { cause: err })
+      }
     }
     throw err
   }

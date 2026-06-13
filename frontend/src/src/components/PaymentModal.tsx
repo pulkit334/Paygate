@@ -14,6 +14,7 @@ interface PaymentModalProps {
 
 declare global {
   interface Window {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Razorpay: any
   }
 }
@@ -76,12 +77,14 @@ const PaymentModal = ({ open, onClose, amount, currency = 'INR', customerEmail, 
       }
 
       const razorpay = new window.Razorpay(options)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       razorpay.on('payment.failed', (response: any) => {
         setStatus('failed')
         setError(response.error?.description || 'Payment failed')
         onFailure?.(response.error?.description || 'Payment failed')
       })
       razorpay.open()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setStatus('failed')
       setError(err.response?.data?.error || 'Failed to create payment order')

@@ -81,7 +81,7 @@ const TransactionTable = ({ payments, loading }: TransactionTableProps) => {
                 </td>
               </tr>
             ))}
-            {payments.length === 0 && (
+            {payments?.length === 0 && (
               <tr>
                 <td colSpan={5} className="px-4 py-8 text-center text-text-muted">
                   No transactions found
@@ -109,7 +109,7 @@ const TransactionTable = ({ payments, loading }: TransactionTableProps) => {
                   <span className="ml-2 text-danger">{payment.failureReason}</span>
                 </div>
               )}
-              {payment.metadata && Object.keys(payment.metadata).length > 0 && (
+              {payment.metadata && Object.keys(payment.metadata)?.length > 0 && (
                 <div className="col-span-2">
                   <span className="text-text-muted">Metadata:</span>
                   <pre className="mt-1 text-text-secondary font-mono text-xs bg-bg-primary p-2 rounded border border-border">

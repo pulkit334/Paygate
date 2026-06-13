@@ -1,77 +1,84 @@
-import express, { Request, Response } from "express";
+import express, { Request, Response, NextFunction } from "express";
 import { merchantClient } from "../GrpcRef/Grpc";
 import AppError from "../utils/Error";
-AppError;
+
 const router = express.Router();
 
-router.post("/login", async (req: Request, res: Response, next) => {
+interface GrpcError {
+  message: string;
+  code: number;
+}
+
+interface LoginResponse {
+  token: string;
+  merchant: Record<string, unknown>;
+}
+
+interface RegisterResponse {
+  message: string;
+  merchant: Record<string, unknown>;
+}
+
+router.post("/auth/login", async (req: Request, res: Response, next: NextFunction) => {
   try {
-    if (!req.body.email) {
-      //  res.status(400).json({ message: "Email is required" }); return;
-      throw AppError.Validation("Email is required");
-    }
-    if (!req.body.password) {
-      // res.status(400).json({ message: "Password is required" }); return;
-      throw AppError.Validation("Password is required");
-    }
+    const email = req.body.email?.trim().toLowerCase();
+    const password = req.body.password?.trim();
+
+    if (!email) throw AppError.Validation("Email is required");
+    if (!password) throw AppError.Validation("Password is required");
 
     const grpcPayload = {
-      ownerEmail: req.body.email,
-      password: req.body.password,
+      ownerEmail: email,
+      password: password,
     };
 
-    merchantClient.Login(grpcPayload, (err: any, Response: any) => {
+    merchantClient.Login(grpcPayload, (err: GrpcError | null, response: LoginResponse) => {
       if (err) {
-        //  res.status(500).json({ error: "Login failed" }); return;
         return next(AppError.Auth(err.message, 401));
       }
-      res.status(200).json(Response);
+
+      res.cookie("rememberme", 1, {
+        maxAge: 60 * 60 * 24 * 1000,
+        secure: process.env.NODE_ENV === "production",
+        httpOnly: true, 
+        sameSite: "lax",
+      });
+
+      res.status(200).json(response);
     });
   } catch (error) {
     next(error);
   }
 });
 
-router.post("/register", (req: Request, res: Response, next) => {
+router.post("/auth/register", async (req: Request, res: Response, next: NextFunction) => {
   try {
-    if (!req.body.name) {
-      throw AppError.Validation("Name is required");
-    }
-    if (!req.body.email) {
-      throw AppError.Validation("Email is required");
-    }
-    if (!req.body.password) {
-      throw AppError.Validation("Password is required");
-    }
+    const name = req.body.name?.trim();
+    const email = req.body.email?.trim().toLowerCase();
+    const password = req.body.password?.trim();
+    const callbackUrl = req.body.callbackUrl?.trim() || "";
+
+    if (!name) throw AppError.Validation("Name is required");
+    if (!email) throw AppError.Validation("Email is required");
+    if (!password) throw AppError.Validation("Password is required");
 
     const grpcPayload = {
-      name: req.body.name,
-      ownerEmail: req.body.email,
-      password: req.body.password,
-      callbackUrl: req.body.callbackUrl || "",
+      name,
+      ownerEmail: email,
+      password,
+      callbackUrl,
     };
-    merchantClient.Auth(grpcPayload, (err: any, response: any) => {
+
+    merchantClient.Auth(grpcPayload, (err: GrpcError | null, response: RegisterResponse) => {
       if (err) {
         return next(AppError.Auth(err.message));
       }
-      console.log("gRPC response:", response);
+
       res.status(201).json(response);
     });
   } catch (error) {
-    next(error); // ← PASS TO GLOBAL HANDLER
+    next(error);
   }
 });
 
 export default router;
-
-
-
-
-
-
-
-
-
-
-
-
