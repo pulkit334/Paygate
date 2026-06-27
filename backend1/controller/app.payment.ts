@@ -5,6 +5,7 @@ import { CreateOrderSchema } from "../schema/app.payment_schema";
 
 import { PaymentService } from "../services/app.PaymentService";
 import { sendUnaryData, ServerUnaryCall, status } from "@grpc/grpc-js";
+import Transaction from "../models/transction";
 
 export const createOrder = async (
   call: ServerUnaryCall<any, any>,
@@ -21,7 +22,7 @@ export const createOrder = async (
     });
   }
 
-  const appId = call.request.appId; // from proto request, not req
+  const appId = call.request.appId;
 
   try {
     const PaymentResponse = await PaymentService.initiatePayment(
@@ -94,38 +95,48 @@ export const VerifyOrder = async (
     });
   }
 };
-// STEP 1: Validate the incoming request body using the Zod 4 schema.
-// Check for: amount (int), currency (enum), customerName, and idempotencyKey.
 
-// STEP 2: Handle validation failures.
-// If result.success is false, return a 422 error with field-level details.
+export const GetTransction = async (call: ServerUnaryCall<any, any>, callback: sendUnaryData<any>) => {
+  const appId = call.request.appId;
+  const { from, to, limit = 50, offset = 0 } = call.request;
 
-// STEP 3: Identify the calling Application/Merchant.
-// Extract the App ID from the request object (attached by your API Key Middleware).
+  try {
+    const query: any = { appId };
 
-// STEP 4: Implement Idempotency - The "Database-First" Write.
-// Attempt to create a new record in the Transactions collection.
-// Use the idempotencyKey from the request as a unique identifier.
+    if (from || to) {
+      query.createdAt = {};
+      if (from) query.createdAt.$gte = new Date(from);
+      if (to) query.createdAt.$lte = new Date(to + "T23:59:59.999Z");
+    }
 
-// STEP 5: Database Guard - Handle duplicate requests.
-// If the DB throws an 11000 error, it means the merchant clicked "Pay" twice.
-// Catch this, fetch the existing transaction, and return it to prevent double-charging.
+    const transactions = await Transaction.find(query)
+      .sort({ createdAt: -1 })
+      .skip(offset)
+      .limit(limit);
 
-// STEP 6: Prepare for the External Provider (Razorpay).
-// Convert the amount to the smallest unit (e.g., multiply by 100 for INR/Paise).
-// Initialize the Razorpay Strategy from your Gateway Factory.
+    const total = await Transaction.countDocuments(query);
 
-// STEP 7: Initiate the Payment with Razorpay.
-// Call the Razorpay SDK to create an order.
-// Pass your MongoDB _id as the 'receipt' to link the two systems.
+    return callback(null, {
+      success: true,
+      transactions: transactions.map((t) => ({
+        transactionId: t._id.toString(),
+        amount: t.amount,
+        currency: t.currency,
+        status: t.status,
+        customerEmail: t.customerEmail,
+        customerName: t.customerName,
+        razorpayOrderId: t.razorpayOrderId,
+        razorpayPayId: t.razorpayPayId || "",
+        provider: t.Provider || "",
+        createdAt: t.createdAt?.toISOString() || "",
+      })),
+      total,
+    });
+  } catch (error: any) {
+    return callback({
+      code: status.INTERNAL,
+      message: error.message || "Failed to fetch transactions",
+    });
+  }
+};
 
-// STEP 8: Persist the Provider's Order ID.
-// Save the generated 'razorpay_order_id' back to your local Transaction record.
-// Set the transaction status to 'created'.
-
-// STEP 9: Final Response.
-// Return a 201 Created status with the transactionId and razorpayOrderId.
-// The merchant app will use this to trigger the frontend checkout.
-
-// STEP 10: Global Error Catch.
-// Handle SDK failures or network issues with a 500 Internal Server Error.

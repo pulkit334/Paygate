@@ -15,7 +15,8 @@ const handleSubmit = async (e: React.SyntheticEvent) => {
   setError('')
   try {
     const res = await login({ email, password })
-    document.cookie = `token=${res.token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`
+    console.log("the token value of the login request would be ",res)
+    document.cookie = `token=${res?.token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`
     navigate('/dashboard')
   } catch (err: unknown) {
     setError(err instanceof Error ? err.message : 'Login failed')

@@ -1,7 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState, useEffect, useCallback } from "react";
-import { useAuth } from "../hooks/useAuth";
 import Navbar from "../components/Navbar";
 import WebhookTable from "../components/WebhookTable";
 import { getDeliveries, retryDelivery } from "../services/webhooks.service";
@@ -102,7 +101,6 @@ const ErrorBanner = ({
 };
 
 const Webhooks = () => {
-  useAuth();
   const [deliveries, setDeliveries] = useState<IWebhookDelivery[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<AppError | null>(null);

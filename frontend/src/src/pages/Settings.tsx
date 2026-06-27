@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react'
 import type { FormEvent } from 'react'
-import { useAuth } from '../hooks/useAuth'
 import Navbar from '../components/Navbar'
 import SecretKeyModal from '../components/SecretKeyModal'
 import { getSettings, rotateKeys, updateCallbackUrl } from '../services/settings.service'
 import { Eye, EyeOff, Key, Link, AlertTriangle, Copy, Check, Shield, RefreshCw } from 'lucide-react'
 
 const Settings = () => {
-  useAuth()
   const [publicKey, setPublicKey] = useState('')
   const [callbackUrl, setCallbackUrl] = useState('')
   const [showSecret, setShowSecret] = useState(false)

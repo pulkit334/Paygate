@@ -8,6 +8,7 @@
   "main": "server.ts",
   "scripts": {
     "dev": "nodemon --exec ts-node server.ts",
+    "test": "jest --coverage",
     "build": "tsc",
     "start": "node dist/server.ts"
   },

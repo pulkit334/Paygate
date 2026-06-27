@@ -17,7 +17,7 @@ app.use(express.json());
 // 1. LOAD THE PROTO CONTRACT FILE
 const PROTO_PATH = path.resolve(__dirname, "./proto/merchant.proto");
 const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
-  //leave for now
+  //leave for now 
 });
 const protoDescriptor = grpc.loadPackageDefinition(packageDefinition) as any;
 const authPackage = protoDescriptor.authpackage;
@@ -29,8 +29,7 @@ server.addService(authPackage.MerchantAuth.service, {
   Auth: RegisterAppController,
   Login: LoginController,
   ValidateApiKey: ValidateApiKey,
-  MiddlewareAuth: MiddlewareAuth,
-});
+  MiddlewareAuth: MiddlewareAuth,});
 
 const startServer = async () => {
   await ConnectDb();

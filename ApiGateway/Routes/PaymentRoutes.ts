@@ -77,4 +77,33 @@ router.post("/verify", async (req: Request, res: Response, next) => {
   }
 });
 
+
+router.get("/transactions", async (req: Request, res: Response, next) => {
+  try {
+    // return ( req as any).app._id;
+    const appId =(req as any).merchant._id;
+    
+    if (!appId) throw AppError.Validation("Unauthorized");
+
+    const { from, to, limit = "50", offset = "0" } = req.query;
+
+    console.log("the data for the trnastion from the queyr would be like ",appId);
+    const grpcPayload = {
+      appId,
+      from: from || "",
+      to: to || "",
+      limit: parseInt(limit as string, 10),
+      offset: parseInt(offset as string, 10),
+    };
+
+    PaymentClient.GetTransctions(grpcPayload, (err: any, Response: any) => {
+      if (err) {
+        return next(AppError.Payment(err.message));
+      }
+      res.status(200).json(Response);
+    });
+  } catch (error) {
+    next(error);
+  }
+});
 export default router;

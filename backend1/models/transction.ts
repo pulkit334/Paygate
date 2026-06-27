@@ -17,6 +17,8 @@ export interface ITransaction {
   failureReason?: string;
   paidAt?: Date;
   customerName?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 const transactionSchema = new Schema<ITransaction>(

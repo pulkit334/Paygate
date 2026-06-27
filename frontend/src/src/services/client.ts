@@ -1,54 +1,61 @@
-import axios, { type AxiosInstance } from "axios";
-// Match the structur from the backend and then edit here
-const attachInterceptors = (instance: AxiosInstance) => {
-  instance.interceptors.response.use(
-    (response) => response,
-    async (error) => {
-      const status = error?.response?.status;
-      const code = error?.response?.data?.code;
-      const originalRequest = error.config;
+  import axios, { type AxiosInstance } from "axios";
 
-      if (status === 429) {
-        window.location.replace("/");
-        return Promise.reject(error);
+  // const getToken = () => {
+  //   const match = document.cookie.match(/token=([^;]+)/);
+  //   return match ? match[1] : null;
+  // };
+
+
+const getToken = ()=>{
+  const cookies = document.cookie.split("; ");
+  for(const cookie of cookies){
+    const [name,value] = cookie.split("=");
+    if(name =="token") return value;
+  }
+  return null;
+}
+
+
+  const attachInterceptors = (instance: AxiosInstance) => {
+    instance.interceptors.request.use((config) => {
+      const token = getToken();
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
       }
+      return config;
+    });
 
-      if (
-        status === 401 &&
-        code === "ACCESS_TOKEN_EXPIRED" &&
-        !originalRequest._retry
-      ) {
-        originalRequest._retry = true;
-        try {
-          await instance.post("/auth/refresh");
-          return instance(originalRequest);
-        } catch {
-          window.location.replace("/");
-          return Promise.reject(error);
+    instance.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        const status = error?.response?.status;
+        const originalRequest = error.config;
+        const url = originalRequest?.url || "";
+        const isAuthRoute = url.includes("/auth/login") || url.includes("/auth/register") || url.includes("/auth/refresh");
+
+        if (status === 401 && !isAuthRoute) {
+          const token = getToken();
+          if (!token) {
+            window.location.replace("/login");
+          }
         }
-      }
 
-      if (status === 401) {
-        window.location.replace("/");
         return Promise.reject(error);
-      }
+      },
+    );
+  };
 
-      return Promise.reject(error);
-    },
-  );
-};
+  export const MerchantApi = axios.create({
+    baseURL: "http://localhost:6283/api/v1",
+    withCredentials: true,
+  });
+  attachInterceptors(MerchantApi);
 
-export const MerchantApi = axios.create({
-  baseURL: "http://localhost:5000/api/v1",
-  withCredentials: true,
-});
-attachInterceptors(MerchantApi);
+  export const PaymentApi = axios.create({
+    baseURL: "http://localhost:6283/api/v2",
+    withCredentials: true,
+  });
+  attachInterceptors(PaymentApi);
 
-export const PaymentApi = axios.create({
-  baseURL: " http://localhost:5000/api/v2",
-  withCredentials: true,
-});
-attachInterceptors(PaymentApi);
-
-export const api = PaymentApi;
-export default api;
+  export const api = PaymentApi;
+  export default api;

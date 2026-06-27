@@ -6,6 +6,7 @@ service PaymentService {
   rpc CreateOrder (CreateOrderRequest) returns (CreateOrderResponse);
     rpc VerifyOrder (VerifyOrderRequest) returns (VerifyOrderResponse);
     rpc WebhookBody (PayWebhookRequest) returns (PayWebhookResponse);
+        rpc GetTransctions (GetTransctionRequest) returns (GetTransctionResponse);
     
 }
 
@@ -19,7 +20,7 @@ message CreateOrderRequest {
   string idempotencyKey = 7;
   string Provider = 8;
   string customoreEmail = 9;
-  string metadata = 10;
+  string metadata = 10; 
 }
 
 message CreateOrderResponse {
@@ -73,3 +74,31 @@ message PayWebhookResponse {
   string error = 3;
 }
 
+
+
+message GetTransctionRequest {
+  string appId = 1;
+  string from = 2;
+  string to = 3;
+  int32 limit = 4;
+  int32 offset = 5;
+}
+
+message GetTransctionResponse {
+  bool success = 1;
+  repeated TransactionItem transactions = 2;
+  int32 total = 3;
+}
+
+message TransactionItem {
+  string transactionId = 1;
+  int32 amount = 2;
+  string currency = 3;
+  string status = 4;
+  string customerEmail = 5;
+  string customerName = 6;
+  string razorpayOrderId = 7;
+  string razorpayPayId = 8;
+  string provider = 9;
+  string createdAt = 10;
+}

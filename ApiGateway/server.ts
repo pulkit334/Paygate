@@ -30,8 +30,7 @@ app.use(morgan("dev"));
 
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
-  // standardHeaders: true,
+  max: 10000,
   legacyHeaders: false,
   store: new RedisStore({
     sendCommand: (...args: string[]) => (redisClient as any).call(...args),
@@ -41,7 +40,7 @@ const generalLimiter = rateLimit({
 
 const paymentLimiter = rateLimit({
   windowMs: 60 * 1000,
-  max: 10,
+  max: 1000,
   standardHeaders: true,
   legacyHeaders: false,
   store: new RedisStore({

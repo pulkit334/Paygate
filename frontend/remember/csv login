@@ -1,0 +1,17 @@
+Payments Array
+      ↓
+Create Headers
+      ↓
+Convert Objects → Rows
+      ↓
+Rows → CSV String
+      ↓
+CSV String → Blob
+      ↓
+Blob → URL
+      ↓
+URL → Anchor Tag
+      ↓
+Click Anchor
+      ↓
+Download CSV

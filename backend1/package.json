@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "tsx watch server.ts",
     "start": "tsx server.ts",
+    "test": "jest --coverage",
     "generate-types": "proto-loader-gen-types --grpcLib=@grpc/grpc-js --outDir=proto/types/ proto/payment.proto"
   },
   "devDependencies": {

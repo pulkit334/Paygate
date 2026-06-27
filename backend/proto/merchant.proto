@@ -7,13 +7,7 @@ service MerchantAuth {
     rpc Login (AuthLoginReq) returns (AuthLoginRes);
     rpc ValidateApiKey (ValidateRequest) returns (ValidateResponse);
     rpc MiddlewareAuth (ValidateIncomingRequest) returns (ValidateOutgoingResponse);
-}
 
-message UserData {
-    string id = 1;
-    string name = 2;
-    string ownerEmail = 3;
-    string callbackUrl = 4;
 }
 
 message AuthRegisterReq {

@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useAuth } from "../hooks/useAuth";
 import Navbar from "../components/Navbar";
 import SummaryCard from "../components/SummaryCard";
 import TransactionTable from "../components/TransactionTable";
@@ -29,7 +28,6 @@ import {
 } from "lucide-react";
 
 const Dashboard = () => {
-  useAuth();
   const [summary, setSummary] = useState<ISummary | null>(null);
   const [payments, setPayments] = useState<IPayment[]>([]);
   const [dailyVolume, setDailyVolume] = useState<IDailyVolume[]>([]);

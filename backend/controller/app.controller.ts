@@ -27,7 +27,6 @@ export const RegisterAppController = async (
 
     const data = await appservice(name, ownerEmail, password, callbackUrl);
 
-    // return flat object matching AuthRegisterRes proto
     return callback(null, {
       success: true,
       message: data.message,
@@ -60,18 +59,15 @@ export const LoginController = async (
 
     const { ownerEmail, password } = result.data;
 
-    //  Step 1: Check Redis cache first
     let app = null;
     const cached = await redisClient.get(`user:${ownerEmail}`);
 
     if (cached) {
       app = JSON.parse(cached);
     } else {
-      //  Cache miss — fetch from DB
       app = await appSchema.findOne({ ownerEmail }).select("_id passwordHash")
 
       if (app) {
-        //  Store in cache for 5 minutes
         await redisClient.set(
           `user:${ownerEmail}`,
           JSON.stringify(app),
@@ -81,7 +77,6 @@ export const LoginController = async (
       }
     }
 
-    //  Step 2: Check if user exists
     if (!app) {
       return callback({
         code: status.NOT_FOUND,

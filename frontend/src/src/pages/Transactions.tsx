@@ -1,12 +1,15 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useCallback } from "react";
-import { useAuth } from "../hooks/useAuth";
 import Navbar from "../components/Navbar";
 import TransactionTable from "../components/TransactionTable";
-import { getPayments } from "../services/payments.service";
+import { GetTransctions } from "../services/payments.service";
+import { getErrorMessage } from "../../utils/error.util";
 import { Download, RefreshCw } from "lucide-react";
+import Pagination from "../components/Pagination";
 import type { IPayment } from "../../utils/interface_dashboard/dashboard";
 
 const REFRESH_INTERVAL = 5 * 60 * 1000;
+const PAGE_SIZE = 6;
 
 const exportCSV = (payments: IPayment[], date: string) => {
   const headers = [
@@ -37,47 +40,54 @@ const exportCSV = (payments: IPayment[], date: string) => {
   a.click();
   URL.revokeObjectURL(url);
 };
-
 const today = new Date().toISOString().split("T")[0];
 
 const Transactions = () => {
-  useAuth();
   const [payments, setPayments] = useState<IPayment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [fromDate, setFromDate] = useState(today);
   const [toDate, setToDate] = useState(today);
   const [lastRefreshed, setLastRefreshed] = useState<Date>(new Date());
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
 
-  // for refresh button + interval
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
   const fetchPayments = useCallback(() => {
     setLoading(true);
     setError("");
-    const params: Record<string, string> = {};
+    const params: Record<string, string | number> = {};
     if (fromDate) params.from = fromDate;
     if (toDate) params.to = toDate;
-    getPayments(params)
+    params.limit = PAGE_SIZE;
+    
+    params.offset = (page - 1) * PAGE_SIZE;
+    GetTransctions(params)
       .then((res) => {
-        setPayments(res?.payments ?? []);
+        setPayments((res?.transactions ?? []).map((t: any) => ({ ...t, id: t.transactionId })));
+        setTotal(res?.total ?? 0);
         setLastRefreshed(new Date());
         setLoading(false);
       })
       .catch((err) => {
-        setError(err.response?.data?.error || "Failed to load transactions");
+        setError(getErrorMessage(err));
         setLoading(false);
       });
-  }, [fromDate, toDate]);
+  }, [fromDate, toDate, page]);
 
-  // for filter change — setState inside callbacks not effect body
   useEffect(() => {
     let cancelled = false;
-    const params: Record<string, string> = {};
+    const params: Record<string, string | number> = {};
     if (fromDate) params.from = fromDate;
     if (toDate) params.to = toDate;
-    getPayments(params)
+    params.limit = PAGE_SIZE;
+    params.offset = (page - 1) * PAGE_SIZE;
+    GetTransctions(params)
       .then((res) => {
         if (!cancelled) {
-          setPayments(res?.payments ?? []);
+          setPayments((res?.transactions ?? []).map((t: any) => ({ ...t, id: t.transactionId })));
+          setTotal(res?.total ?? 0);
           setLastRefreshed(new Date());
           setLoading(false);
           setError("");
@@ -85,16 +95,15 @@ const Transactions = () => {
       })
       .catch((err) => {
         if (!cancelled) {
-          setError(err.response?.data?.error || "Failed to load transactions");
+          setError(getErrorMessage(err));
           setLoading(false);
         }
       });
     return () => {
       cancelled = true;
     };
-  }, [fromDate, toDate]);
+  }, [fromDate, toDate, page]);
 
-  // auto refresh interval
   useEffect(() => {
     const interval = setInterval(fetchPayments, REFRESH_INTERVAL);
     return () => clearInterval(interval);
@@ -110,7 +119,7 @@ const Transactions = () => {
               Transactions
             </h1>
             <p className="text-sm text-text-muted mt-1">
-              {loading ? "Loading..." : `${payments.length} transactions found`}
+              {loading ? "Loading..." : `${total.toLocaleString()} transactions found`}
             </p>
           </div>
           <div className="flex items-center gap-3 mt-3 sm:mt-0">
@@ -163,6 +172,13 @@ const Transactions = () => {
         )}
 
         <TransactionTable payments={payments} loading={loading} />
+
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          total={total}
+          onPageChange={setPage}
+        />
       </main>
     </div>
   );

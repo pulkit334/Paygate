@@ -5,7 +5,7 @@ import { ConnectDb } from "./config/database";
 import * as grpc from "@grpc/grpc-js";
 import * as protLoader from "@grpc/proto-loader";
 dotenv.config();
-import { createOrder, VerifyOrder } from "./controller/app.payment";
+import { createOrder, GetTransction, VerifyOrder } from "./controller/app.payment";
 
 import { fileURLToPath } from "url";
 import path from "path";
@@ -24,6 +24,7 @@ const Server = new grpc.Server();
 Server.addService(authPackage.PaymentService.service, {
   CreateOrder: createOrder,
   VerifyOrder: VerifyOrder,
+  GetTransctions : GetTransction
 });
 
 // app.use(

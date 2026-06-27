@@ -6,7 +6,6 @@ import {
 } from 'lucide-react'
 
 const Landing = () => {
-  const hasToken = document.cookie.split('; ').some(c => c.startsWith('token='))
 
   return (
     <div className="min-h-screen bg-bg-primary">
@@ -37,7 +36,7 @@ const Landing = () => {
                 className="hidden sm:inline-flex px-4 py-2 border border-accent/40 bg-accent/5 rounded-md text-sm font-medium text-accent transition-all">
                 Contact Sales
               </Link>
-              <Link to={hasToken ? '/dashboard' : '#contact'}
+              <Link to="/dashboard"
                 className="px-5 py-2 bg-accent hover:bg-accent-hover rounded-md text-sm font-semibold text-white transition-all active:scale-[0.97]">
                 Get API Access
               </Link>
@@ -64,7 +63,7 @@ const Landing = () => {
                 PayGate sits between your app and your payment providers. Intelligent routing, automatic failover, and a unified dashboard — without rebuilding your stack.
               </p>
               <div className="flex flex-col sm:flex-row items-start gap-4 mb-10">
-                <Link to={hasToken ? '/dashboard' : '#contact'}
+                <Link to="/dashboard"
                   className="inline-flex items-center gap-2 px-8 py-4 bg-accent hover:bg-accent-hover text-white rounded-md font-semibold transition-all active:scale-[0.97]">
                   Get API Access
                 </Link>
@@ -411,7 +410,7 @@ const charge = await pg.charges.create({
             Your payment stack is already complex enough.
           </h2>
           <p className="text-base text-text-secondary mb-8">PayGate doesn't add to it. It sits on top.</p>
-          <Link to={hasToken ? '/dashboard' : '#contact'}
+          <Link to="/dashboard"
             className="inline-flex items-center gap-2 px-8 py-4 bg-accent hover:bg-accent-hover text-white rounded-md font-semibold transition-all active:scale-[0.97]">
             Get API Access
           </Link>

@@ -4,6 +4,7 @@ import AppError from "../utils/Error"
 
 const JwtAuthMiddleware = (req: Request, res: Response, next: NextFunction) => {
   try {
+  
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -11,7 +12,7 @@ const JwtAuthMiddleware = (req: Request, res: Response, next: NextFunction) => {
     }
 
     const token = authHeader.split(" ")[1];
-
+ 
     merchantClient.MiddlewareAuth({ token }, (err: any, response: any) => {
       if (err) {
         return next(AppError.Auth("Token verification failed"));
