@@ -1,4 +1,5 @@
 import express, { Request, Response } from "express";
+import crypto from "crypto";
 import { merchantClient, PaymentClient } from "../GrpcRef/Grpc";
 import { ApiKeyMiddleware } from "../Middleware/validate_APi_Key";
 import AppError from "../utils/Error"; 
@@ -10,7 +11,6 @@ router.post(
   ApiKeyMiddleware,
   async (req: Request, res: Response, next) => {
     try {
-     
       if (!req.body.amount) {
         throw AppError.Validation("Amount is required");
       }
@@ -27,7 +27,7 @@ router.post(
         currency: req.body.currency,
         customerName: req.body.customerName,
         metadata: req.body.metadata || "",
-        idempotencyKey: req.body.idempotencyKey,
+        idempotencyKey: req.body.idempotencyKey || crypto.randomUUID(),
         customoreEmail: req.body.customoreEmail,
         Provider: req.body.Provider,
       };
@@ -48,7 +48,6 @@ router.post(
 
 router.post("/verify", async (req: Request, res: Response, next) => {
   try {
-    // ← ADD VALIDATION
     if (!req.body.razorpay_order_id) {
       throw AppError.Validation("razorpay_order_id is required");
     }
@@ -65,7 +64,6 @@ router.post("/verify", async (req: Request, res: Response, next) => {
       razorpay_signature: req.body.razorpay_signature,
     };
 
-   
     PaymentClient.Verify(GrpcPayLoad, (err: any, Response: any) => {
       if (err) {
         return next(AppError.Payment(err.message));
@@ -73,21 +71,18 @@ router.post("/verify", async (req: Request, res: Response, next) => {
       res.status(200).json(Response);
     });
   } catch (error) {
-    next(error); // ← PASS TO GLOBAL HANDLER
+    next(error);
   }
 });
 
-
 router.get("/transactions", async (req: Request, res: Response, next) => {
   try {
-    // return ( req as any).app._id;
-    const appId =(req as any).merchant._id;
+    const appId = (req as any).app._id;
     
     if (!appId) throw AppError.Validation("Unauthorized");
 
     const { from, to, limit = "50", offset = "0" } = req.query;
 
-    console.log("the data for the trnastion from the queyr would be like ",appId);
     const grpcPayload = {
       appId,
       from: from || "",
@@ -106,10 +101,5 @@ router.get("/transactions", async (req: Request, res: Response, next) => {
     next(error);
   }
 });
+
 export default router;
-
-
-
-
-
-

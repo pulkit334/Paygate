@@ -84,7 +84,6 @@ export const LoginController = async (
       });
     }
 
-    //  Step 3: Verify password
     const isMatch = await bcrypt.compare(password, app.passwordHash);
     if (!isMatch) {
       return callback({
@@ -93,7 +92,6 @@ export const LoginController = async (
       });
     }
 
-    //  Step 4: Generate token
     console.log(process.env.JWT_SECRET);
     const token = jwt.sign(
       { appId: app._id },
@@ -118,7 +116,6 @@ export const ValidateApiKey = async (
     const { apiKey } = call.request;
     console.log("ValidateApiKey called with:", apiKey);
 
-    // Step 1 - check prefix
     if (!apiKey || !apiKey.toLowerCase().startsWith("sk_live_")) {
       return callback(null, {
         valid: false,
@@ -126,13 +123,11 @@ export const ValidateApiKey = async (
       });
     }
     console.log("the request is behind the hash incoming service");
-    // Step 2 - hash incoming key
     const hashedIncoming = crypto
       .createHash("sha256")
       .update(apiKey)
       .digest("hex");
     console.log("Hashed:", hashedIncoming);
-    // Step 3 - find in DB
     console.log("the  cached part Would be");
     const cached: any = await redisClient.get(`apikey:${hashedIncoming}`);
     console.log(
@@ -150,7 +145,7 @@ export const ValidateApiKey = async (
       hashedSecret: hashedIncoming,
       isActive: true,
     });
-    console.log("App found:", app); // ADD THIS
+    console.log("App found:", app);
 
     if (!app) {
       return callback(null, {
@@ -167,7 +162,6 @@ export const ValidateApiKey = async (
       message: "Valid",
     };
 
-    //  Cache the result not the hash
     await redisClient.set(
       `apikey:${hashedIncoming}`,
       JSON.stringify(result),

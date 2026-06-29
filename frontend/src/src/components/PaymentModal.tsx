@@ -32,7 +32,7 @@ const PaymentModal = ({ open, onClose, amount, currency = 'INR', customerEmail, 
     setStatus('processing')
 
     try {
-      const orderRes = await client.post('/payments/order', {
+      const orderRes = await client.post('/create', {
         amount: Math.round(amount * 100),
         currency,
         customerEmail: customerEmail || 'customer@example.com',
@@ -49,7 +49,7 @@ const PaymentModal = ({ open, onClose, amount, currency = 'INR', customerEmail, 
         order_id: orderId,
         handler: async (response: any) => {
           try {
-            const verifyRes = await client.post('/payments/verify', {
+            const verifyRes = await client.post('/verify', {
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
