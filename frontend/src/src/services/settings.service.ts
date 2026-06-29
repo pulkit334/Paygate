@@ -1,10 +1,10 @@
 import { isAxiosError } from "axios";
-import { api } from "./client";
+import { MerchantApi } from "./client";
 
 export const APPS = {
-  REGENERATE_KEYS: "/apps/regenerate-keys",
-  CALLBACK_URL: "/apps/callback-url",
-  SETTINGS: "/apps/settings",
+  REGENERATE_KEYS: "/api-keys",
+  CALLBACK_URL: "/api-keys/updateCallbackUrl",
+  SETTINGS: "/api-keys/settings",
 };
 
 export interface KeysResponse {
@@ -19,7 +19,7 @@ export interface AppSettings {
 
 export const rotateKeys = async (): Promise<KeysResponse> => {
   try {
-    const response = await api.post(APPS.REGENERATE_KEYS);
+    const response = await MerchantApi.post(APPS.REGENERATE_KEYS);
     return response?.data;
   } catch (err) {
     if (isAxiosError(err)) {
@@ -34,7 +34,7 @@ export const rotateKeys = async (): Promise<KeysResponse> => {
 
 export const updateCallbackUrl = async (callbackUrl: string): Promise<void> => {
   try {
-    await api.put(APPS.CALLBACK_URL, { callbackUrl });
+    await MerchantApi.put(APPS.CALLBACK_URL, { callbackUrl });
   } catch (err) {
     if (isAxiosError(err)) {
       const code = err.response?.data?.code;
@@ -48,16 +48,16 @@ export const updateCallbackUrl = async (callbackUrl: string): Promise<void> => {
 
 export const getSettings = async (): Promise<AppSettings> => {
   try {
-    const response = await api.get(APPS.SETTINGS);
+    const response = await MerchantApi.get(APPS.SETTINGS);
     return response.data;
   } catch (err) {
-if(isAxiosError(err)){
-  const code = err?.response?.data;
-  if(code =="Internal Server Error"){
-      throw new Error("Invalid callback URL format", {cause : err});
-  }
-}
+    if (isAxiosError(err)) {
+      const code = err?.response?.data;
+      console.log(err);
+      if (code == "Internal Server Error") {
+        throw new Error("Invalid callback URL format", { cause: err });
+      }
+    }
     throw err;
   }
-  
 };

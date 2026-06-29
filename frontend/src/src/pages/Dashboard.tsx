@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import SummaryCard from "../components/SummaryCard";
 import TransactionTable from "../components/TransactionTable";
+import PaymentModal from "../components/PaymentModal";
 import { getSummary, getDailyVolume } from "../services/analytics.service";
 import type {
   ISummary,
@@ -25,6 +26,7 @@ import {
   TrendingUp,
   ArrowUpRight,
   Wallet,
+  Zap,
 } from "lucide-react";
 
 const Dashboard = () => {
@@ -33,6 +35,7 @@ const Dashboard = () => {
   const [dailyVolume, setDailyVolume] = useState<IDailyVolume[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showPayment, setShowPayment] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -69,6 +72,13 @@ const Dashboard = () => {
             </p>
           </div>
           <div className="flex items-center gap-3 mt-3 sm:mt-0">
+            <button
+              onClick={() => setShowPayment(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-accent hover:bg-accent-hover text-white rounded-lg text-sm font-medium transition-all"
+            >
+              <Zap size={16} />
+              Test Payment
+            </button>
             <div className="flex items-center gap-2 px-4 py-2 bg-success-soft border border-success/20 rounded-md text-success text-sm">
               <TrendingUp size={16} />
               <span className="font-medium">+12.5% this month</span>
@@ -236,6 +246,16 @@ const Dashboard = () => {
           </>
         )}
       </main>
+
+      <PaymentModal
+        open={showPayment}
+        onClose={() => setShowPayment(false)}
+        amount={100}
+        currency="INR"
+        customerEmail="customer@example.com"
+        onSuccess={(txId) => console.log("Payment success:", txId)}
+        onFailure={(err) => console.log("Payment failed:", err)}
+      />
     </div>
   );
 };

@@ -9,6 +9,10 @@ import {
   LoginController,
   ValidateApiKey,
   MiddlewareAuth,
+  ListApis,
+  DeleteApi,
+  updateCallbackUrl,
+  GetSettings,
 } from "./controller/app.controller";
 dotenv.config();
 const PORT = process.env.GRPC_PORT || 50051;
@@ -29,7 +33,12 @@ server.addService(authPackage.MerchantAuth.service, {
   Auth: RegisterAppController,
   Login: LoginController,
   ValidateApiKey: ValidateApiKey,
-  MiddlewareAuth: MiddlewareAuth,});
+  MiddlewareAuth: MiddlewareAuth,
+  ListApis: ListApis,
+  DeleteApi: DeleteApi,
+  UpdateCallbackUrl: updateCallbackUrl,
+  GetSettings: GetSettings,
+});
 
 const startServer = async () => {
   await ConnectDb();

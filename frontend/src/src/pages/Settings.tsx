@@ -1,14 +1,20 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState, useEffect } from 'react'
 import type { FormEvent } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
+import type { RootState } from '../store'
+import { fetchApiKeys, createApiKey, deleteApiKey } from '../toolkit/user-redux-toll/user-redux'
 import Navbar from '../components/Navbar'
 import SecretKeyModal from '../components/SecretKeyModal'
 import { getSettings, rotateKeys, updateCallbackUrl } from '../services/settings.service'
-import { Eye, EyeOff, Key, Link, AlertTriangle, Copy, Check, Shield, RefreshCw } from 'lucide-react'
+import { Key, Link, AlertTriangle, Copy, Check, Shield, RefreshCw } from 'lucide-react'
 
 const Settings = () => {
+  const dispatch = useDispatch()
+  const { apiKeys, loading: keysLoading } = useSelector((state: RootState) => state.user)
+
   const [publicKey, setPublicKey] = useState('')
   const [callbackUrl, setCallbackUrl] = useState('')
-  const [showSecret, setShowSecret] = useState(false)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -19,15 +25,22 @@ const Settings = () => {
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
+    dispatch(fetchApiKeys() as any)
     getSettings()
       .then((data) => {
-        setPublicKey(data.publicKey)
         setCallbackUrl(data.callbackUrl)
         setNewCallbackUrl(data.callbackUrl)
       })
       .catch((err) => setError(err.response?.data?.error || 'Failed to load settings'))
       .finally(() => setLoading(false))
-  }, [])
+  }, [dispatch])
+
+  useEffect(() => {
+    if (apiKeys.length > 0 && apiKeys[0].publicKey) {
+      console.log("[Settings] Setting publicKey from Redux:", apiKeys[0].publicKey);
+      setPublicKey(apiKeys[0].publicKey)
+    }
+  }, [apiKeys])
 
   const handleUpdateCallback = async (e: FormEvent) => {
     e.preventDefault()
@@ -64,10 +77,8 @@ const Settings = () => {
   }
 
   if (newKeys) {
-    return <SecretKeyModal publicKey={newKeys.publicKey} secretKey={newKeys.secretKey} onSaved={() => setNewKeys(null)} />
+    return <SecretKeyModal publicKey={newKeys.publicKey} onSaved={() => setNewKeys(null)} />
   }
-
-  const secretMasked = `sk_live_${'•'.repeat(16)}`
 
   return (
     <div className="min-h-screen bg-bg-primary">
@@ -115,19 +126,6 @@ const Settings = () => {
                     <button onClick={() => copyKey(publicKey)}
                       className="px-4 py-3 border-l border-border text-text-muted hover:text-text-primary hover:bg-black/[0.03] transition-all">
                       {copied ? <Check size={14} className="text-success" /> : <Copy size={14} />}
-                    </button>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-xs text-text-muted block mb-1.5">Secret Key</label>
-                  <div className="flex items-center bg-bg-primary border border-border rounded-lg overflow-hidden">
-                    <code className="flex-1 px-4 py-3 text-sm font-mono text-text-primary">
-                      {showSecret ? secretMasked : 'sk_live_••••••••'}
-                    </code>
-                    <button onClick={() => setShowSecret(!showSecret)}
-                      className="px-4 py-3 border-l border-border text-text-muted hover:text-text-primary hover:bg-black/[0.03] transition-all">
-                      {showSecret ? <EyeOff size={14} /> : <Eye size={14} />}
                     </button>
                   </div>
                 </div>

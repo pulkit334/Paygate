@@ -1,8 +1,9 @@
-import { configureStore } from "@reduxjs/toolkit"; 
+import { configureStore } from "@reduxjs/toolkit";
+import userReducer from "../toolkit/user-redux-toll/user-redux";
 
 export const Store = configureStore({
-    reducer : {
-        Transctions :   transctionReducer,
+    reducer: {
+        user: userReducer,
     }
 })
 

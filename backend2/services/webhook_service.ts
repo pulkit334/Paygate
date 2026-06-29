@@ -111,7 +111,7 @@ export const startWebhookService = async () => {
               appId: data.appId,
               transactionId: data.transactionId,
               targetUrl: data.callbackUrl,
-              status: data.status,
+              status: deliveryStatus as "success" | "failed",
               payload: payload,
               signature: signature,
               responseCode: responseStatus,

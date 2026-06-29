@@ -65,7 +65,7 @@ export const LoginController = async (
     if (cached) {
       app = JSON.parse(cached);
     } else {
-      app = await appSchema.findOne({ ownerEmail }).select("_id passwordHash")
+      app = await appSchema.findOne({ ownerEmail }).select("_id passwordHash");
 
       if (app) {
         await redisClient.set(
@@ -209,6 +209,170 @@ export const MiddlewareAuth = (
     return callback({
       code: status.UNAUTHENTICATED,
       message: "Invalid token",
+    });
+  }
+};
+
+export const ListApis = async (
+  call: ServerUnaryCall<any, any>,
+  callback: sendUnaryData<any>,
+) => {
+  try {
+    const { appId } = call.request;
+
+    if (!appId) {
+      return callback({
+        code: status.INVALID_ARGUMENT,
+        message: "appId is required",
+      });
+    }
+
+    const app = await appSchema
+      .findById(appId)
+      .select("publicKey isActive createdAt");
+
+    if (!app) {
+      return callback({
+        code: status.NOT_FOUND,
+        message: "App not found",
+      });
+    }
+
+    return callback(null, {
+      success: true,
+      data: {
+        _id: app._id.toString(),
+        publicKey: app.publicKey || "",
+        isActive: app.isActive,
+        createdAt: (app as any).createdAt?.toISOString() || "",
+      },
+    });
+  } catch (error: any) {
+    return callback({
+      code: status.INTERNAL,
+      message: error.message || "Internal server error",
+    });
+  }
+};
+
+export const DeleteApi = async (
+  call: ServerUnaryCall<any, any>,
+  callback: sendUnaryData<any>,
+) => {
+  try {
+    const { appId } = call.request;
+
+    if (!appId) {
+      return callback({
+        code: status.INVALID_ARGUMENT,
+        message: "appId is required",
+      });
+    }
+
+    const app = await appSchema.findByIdAndUpdate(
+      appId,
+      { publicKey: null, hashedSecret: null, isActive: false },
+      { new: true },
+    );
+
+    if (!app) {
+      return callback({
+        code: status.NOT_FOUND,
+        message: "App not found",
+      });
+    }
+
+    return callback(null, {
+      success: true,
+      message: "API keys deleted successfully",
+    });
+  } catch (error: any) {
+    return callback({
+      code: status.INTERNAL,
+      message: error.message || "Internal server error",
+    });
+  }
+};
+
+export const updateCallbackUrl = async (
+  call: ServerUnaryCall<any, any>,
+  callback: sendUnaryData<any>,
+) => {
+  try {
+    const { callbackUrl, appId } = call.request;
+
+    if (!appId) {
+      return callback({
+        code: status.INVALID_ARGUMENT,
+        message: "appId is required",
+      });
+    }
+
+    if (!callbackUrl) {
+      return callback({
+        code: status.INVALID_ARGUMENT,
+        message: "callbackUrl is required",
+      });
+    }
+
+    const app = await appSchema.findByIdAndUpdate(
+      appId,
+      { callbackUrl },
+      { new: true },
+    );
+
+    if (!app) {
+      return callback({
+        code: status.NOT_FOUND,
+        message: "App not found",
+      });
+    }
+
+    return callback(null, {
+      success: true,
+      message: "Callback URL updated successfully",
+      callbackUrl: app.callbackUrl,
+    });
+  } catch (error: any) {
+    return callback({
+      code: status.INTERNAL,
+      message: error.message || "Internal server error",
+    });
+  }
+};
+
+export const GetSettings = async (
+  call: ServerUnaryCall<any, any>,
+  callback: sendUnaryData<any>,
+) => {
+  try {
+    const { appId } = call.request;
+
+    if (!appId) {
+      return callback({
+        code: status.INVALID_ARGUMENT,
+        message: "appId is required",
+      });
+    }
+
+    const app = await appSchema.findById(appId).select("publicKey callbackUrl");
+
+    if (!app) {
+      return callback({
+        code: status.NOT_FOUND,
+        message: "App not found",
+      });
+    }
+
+    return callback(null, {
+      success: true,
+      publicKey: app.publicKey || "",
+      callbackUrl: app.callbackUrl || "",
+    });
+  } catch (error: any) {
+    return callback({
+      code: status.INTERNAL,
+      message: error.message || "Internal server error",
     });
   }
 };

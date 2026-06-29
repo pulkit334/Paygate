@@ -1,6 +1,6 @@
 import express, { NextFunction, Request, Response } from "express";
 import dotenv from "dotenv";
-import "./config/redis";
+import { redisClient, waitForConnection } from "./config/redis";
 import { ConnectDb } from "./config/database";
 import morgan from "morgan";
 import webhookRoutes from "./Routes/route";
@@ -25,8 +25,9 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   });
 });
 
-app.listen(PORT, () => {
-  ConnectDb();
-  startWebhookService();
+app.listen(PORT, async () => {
+  await ConnectDb();
+  await waitForConnection();
   console.log(`Server is listening on port ${PORT}`);
+  startWebhookService();
 });

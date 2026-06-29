@@ -7,7 +7,10 @@ service MerchantAuth {
     rpc Login (AuthLoginReq) returns (AuthLoginRes);
     rpc ValidateApiKey (ValidateRequest) returns (ValidateResponse);
     rpc MiddlewareAuth (ValidateIncomingRequest) returns (ValidateOutgoingResponse);
-
+    rpc ListApis (ListApisRequest) returns (ListApisResponse);
+    rpc DeleteApi (DeleteApiRequest) returns (DeleteApiResponse);
+    rpc UpdateCallbackUrl (UpdateCallbackUrlRequest) returns (UpdateCallbackUrlResponse);
+    rpc GetSettings (GetSettingsRequest) returns (GetSettingsResponse);
 }
 
 message AuthRegisterReq {
@@ -55,4 +58,50 @@ message ValidateOutgoingResponse {
   bool valid = 1;
   string appId = 2;         
   string message = 3;
+}
+
+message ListApisRequest {
+  string appId = 1;
+}
+
+message ListApisResponse {
+  bool success = 1;
+  ApiData data = 2;
+}
+
+message ApiData {
+  string _id = 1;
+  string publicKey = 2;
+  bool isActive = 3;
+  string createdAt = 4;
+}
+
+message DeleteApiRequest {
+  string appId = 1;
+}
+
+message DeleteApiResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message UpdateCallbackUrlRequest {
+  string appId = 1;
+  string callbackUrl = 2;
+}
+
+message UpdateCallbackUrlResponse {
+  bool success = 1;
+  string message = 2;
+  string callbackUrl = 3;
+}
+
+message GetSettingsRequest {
+  string appId = 1;
+}
+
+message GetSettingsResponse {
+  bool success = 1;
+  string publicKey = 2;
+  string callbackUrl = 3;
 }
