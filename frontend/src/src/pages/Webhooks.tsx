@@ -113,7 +113,7 @@ const Webhooks = () => {
   const fetchDeliveries = useCallback(() => {
     setLoading(true);
     setError(null);
-    getDeliveries({ date: selectedDate })
+    getDeliveries({ from: selectedDate })
       .then((data) => {
         setDeliveries(data);
         setLastRefreshed(new Date());

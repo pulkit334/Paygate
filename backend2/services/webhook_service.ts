@@ -5,7 +5,6 @@ import axios from "axios";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-
 export const startWebhookService = async () => {
   try {
     await redisClient.xgroup(
@@ -15,7 +14,6 @@ export const startWebhookService = async () => {
       "0",
       "MKSTREAM",
     );
-
   } catch (err: any) {
     if (!err.message.includes("BUSYGROUP")) {
       console.error("[Webhook Service] XGROUP error:", err.message);
@@ -79,7 +77,6 @@ export const startWebhookService = async () => {
           while (attempt < maxRetries) {
             attempt++;
             try {
-  
               const response = await axios.post(data.callbackUrl, payload, {
                 headers: {
                   "x-paygate-signature": signature,
@@ -98,7 +95,9 @@ export const startWebhookService = async () => {
               );
 
               if (attempt < maxRetries) {
-                const delay = attempt * 2000;
+                const baseDelay = Math.pow(2, attempt) * 1000;
+               const jitter = Math.random() * baseDelay;
+               const delay = Math.floor(jitter);
                 console.log(
                   `[Webhook Service] Backing off. Retrying in ${delay}ms...`,
                 );
@@ -108,11 +107,11 @@ export const startWebhookService = async () => {
           }
 
           try {
-           await webhook_del.create({
-              appId: data.appId, 
+            await webhook_del.create({
+              appId: data.appId,
               transactionId: data.transactionId,
               targetUrl: data.callbackUrl,
-              status:data.status,
+              status: data.status,
               payload: payload,
               signature: signature,
               responseCode: responseStatus,
@@ -138,7 +137,6 @@ export const startWebhookService = async () => {
 
       const isConnectionError =
         loopError.message.includes("ECONNREFUSED") ||
-
         loopError.message.includes("CONNECTION_CLOSED");
 
       if (isConnectionError) {
@@ -152,4 +150,3 @@ export const startWebhookService = async () => {
     }
   }
 };
-

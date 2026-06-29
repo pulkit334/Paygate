@@ -1,8 +1,8 @@
 import { isAxiosError } from "axios";
-import { api, MerchantApi } from "./client";
+import { PaymentApi } from "./client";
 
 export const WEBHOOKS = {
-  DELIVERIES: "/webhooks/deliveries",
+  DELIVERIES: "/webhooks",
   RETRY: "/webhooks/retry",
 };
 
@@ -16,12 +16,12 @@ export interface WebhookDelivery {
 }
 
 export const getDeliveries = async (params?: {
-  date?: string;
+  from?: string;
 }): Promise<WebhookDelivery[]> => {
   try {
-    const response = await MerchantApi.get(WEBHOOKS.DELIVERIES, { params });
-    const data = response.data as WebhookDelivery[] | { deliveries: WebhookDelivery[] };
-    return Array.isArray(data) ? data : (data.deliveries ?? []);
+    const response = await PaymentApi.get(WEBHOOKS.DELIVERIES, { params });
+    const data = response.data;
+    return data.data ?? [];
   } catch (err) {
     if (isAxiosError(err)) {
       const code = err?.response?.data;
@@ -34,7 +34,7 @@ export const getDeliveries = async (params?: {
 };
 export const retryDelivery = async (id: string): Promise<void> => {
   try {
-    await api.post(`${WEBHOOKS.RETRY}/${id}`);
+    await PaymentApi.post(`${WEBHOOKS.RETRY}/${id}`);
   } catch (err) {
     if (isAxiosError(err)) {
       const code = err.response?.data?.code;
