@@ -26,13 +26,13 @@ const Contact = () => {
             <div className="hidden md:flex items-center gap-1">
               <Link to="/docs" className="px-4 py-2 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors rounded-lg hover:bg-black/[0.03]">API Docs</Link>
               <Link to="/features" className="px-4 py-2 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors rounded-lg hover:bg-black/[0.03]">Integrations</Link>
-              <span className="px-4 py-2 text-sm font-medium text-text-muted/50 cursor-default">Pricing</span>
+              <Link to="/pricing" className="px-4 py-2 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors rounded-lg hover:bg-black/[0.03]">Pricing</Link>
               <span className="px-4 py-2 text-sm font-medium text-text-muted/50 cursor-default">Changelog</span>
               <span className="px-4 py-2 text-sm font-medium text-text-muted/50 cursor-default">Status</span>
             </div>
             <div className="flex items-center gap-3">
               <Link to="/contact" className="hidden sm:inline-flex px-4 py-2 border border-accent/40 bg-accent/5 rounded-md text-sm font-medium text-accent transition-all">Contact Sales</Link>
-              <Link to="/dashboard" className="px-5 py-2 bg-accent hover:bg-accent-hover rounded-md text-sm font-semibold text-white transition-all active:scale-[0.97]">Get API Access</Link>
+              <Link to="/register" className="px-5 py-2 bg-accent hover:bg-accent-hover rounded-md text-sm font-semibold text-white transition-all active:scale-[0.97]">Get API Access</Link>
             </div>
           </div>
         </div>

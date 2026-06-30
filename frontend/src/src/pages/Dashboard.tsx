@@ -1,59 +1,84 @@
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useCallback } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import Navbar from "../components/Navbar";
 import SummaryCard from "../components/SummaryCard";
 import TransactionTable from "../components/TransactionTable";
-import { getSummary, getDailyVolume } from "../services/analytics.service";
-import type {
-  ISummary,
-  IDailyVolume,
-  IPayment,
-} from "../../utils/interface_dashboard/dashboard";
-import { getPayments } from "../services/payments.service";
+import { fetchDashboardData, refreshDashboardData } from "../toolkit/dashboard/dashboard-slice";
+import type { RootState, AppDispatch } from "../store";
 import {
-  BarChart,
-  Bar,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   Tooltip,
   ResponsiveContainer,
+  CartesianGrid,
 } from "recharts";
 import {
   IndianRupee,
   Activity,
-  CheckCircle,
+  CheckCircle,  
   Clock,
   TrendingUp,
   ArrowUpRight,
   Wallet,
+  RefreshCw,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
+const REFRESH_INTERVAL = 60_000;
 
 const Dashboard = () => {
-  const [summary, setSummary] = useState<ISummary | null>(null);
-  const [payments, setPayments] = useState<IPayment[]>([]);
-  const [dailyVolume, setDailyVolume] = useState<IDailyVolume[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const dispatch = useDispatch<AppDispatch>();
+  const Navigate = useNavigate();
+  // const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const intervalRef = useRef<number | null>(null);
 
-  useEffect(() => {
-    Promise.all([
-      getSummary().catch(() => null),
-      getPayments({ limit: 10 }).catch(() => ({ payments: [] })),
-      getDailyVolume(7).catch(() => []),
-    ])
-      .then(([s, p, d]) => {
-        setSummary(s && typeof s === 'object' ? s : null);
-        setPayments(p?.payments ?? []);
-        setDailyVolume(Array.isArray(d) ? d : []);
-      })
-      .catch(() => setError("Failed to load dashboard data"))
-      .finally(() => setLoading(false));
-  }, []);
+  const { summary, payments, dailyVolume, loading, refreshing, error } =
+    useSelector((state: RootState) => state.dashboard);
 
   const formatAmount = (amount: number) =>
     new Intl.NumberFormat("en-IN", {
       style: "currency",
       currency: "INR",
     }).format(amount);
+
+  const startAutoRefresh = useCallback(() => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    intervalRef.current = setInterval(() => {
+      if (document.visibilityState === "visible") {
+        dispatch(refreshDashboardData());
+      }
+    }, REFRESH_INTERVAL);
+  }, [dispatch]);
+  
+
+
+
+  useEffect(() => {
+    dispatch(fetchDashboardData());
+    startAutoRefresh();
+
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        dispatch(refreshDashboardData());
+        startAutoRefresh();
+      } else if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, [dispatch, startAutoRefresh]);
+
+  const handleRefresh = () => {
+    dispatch(refreshDashboardData());
+  };
 
   return (
     <div className="min-h-screen bg-bg-primary">
@@ -69,6 +94,17 @@ const Dashboard = () => {
             </p>
           </div>
           <div className="flex items-center gap-3 mt-3 sm:mt-0">
+            <button
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="flex items-center gap-2 px-3 py-2 bg-surface border border-border rounded-md text-text-secondary text-sm hover:bg-bg-elevated transition-colors disabled:opacity-50"
+            >
+              <RefreshCw
+                size={14}
+                className={refreshing ? "animate-spin" : ""}
+              />
+              {refreshing ? "Refreshing..." : "Refresh"}
+            </button>
             <div className="flex items-center gap-2 px-4 py-2 bg-success-soft border border-success/20 rounded-md text-success text-sm">
               <TrendingUp size={16} />
               <span className="font-medium">+12.5% this month</span>
@@ -110,12 +146,12 @@ const Dashboard = () => {
                 />
                 <SummaryCard
                   label="Total Transactions"
-                  value={summary?.totalTransactions?.toLocaleString("en-IN") ?? '0'}
+                  value={summary?.totalTransactions?.toLocaleString("en-IN") ?? "0"}
                   icon={<Activity size={20} />}
                 />
                 <SummaryCard
                   label="Success Rate"
-                  value={summary?.successRate != null ? `${summary.successRate}%` : '0%'}
+                  value={summary?.successRate != null ? `${summary.successRate}%` : "0%"}
                   icon={<CheckCircle size={20} />}
                   trend="Stable"
                   trendUp
@@ -146,7 +182,10 @@ const Dashboard = () => {
                   <h2 className="text-lg font-semibold text-text-primary font-display">
                     Recent Transactions
                   </h2>
-                  <span className="text-xs text-accent flex items-center gap-1 cursor-pointer hover:underline">
+                  <span
+                    onClick={() => Navigate("/transactions")}
+                    className="text-xs text-accent flex items-center gap-1 cursor-pointer hover:underline"
+                  >
                     View all <ArrowUpRight size={12} />
                   </span>
                 </div>
@@ -164,7 +203,14 @@ const Dashboard = () => {
                 </div>
                 <div className="bg-surface border border-border rounded-[10px] p-6">
                   <ResponsiveContainer width="100%" height={280}>
-                    <BarChart data={dailyVolume}>
+                    <LineChart data={dailyVolume} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="volumeGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#6C63FF" stopOpacity={0.3} />
+                          <stop offset="100%" stopColor="#6C63FF" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#2A2A38" vertical={false} />
                       <XAxis
                         dataKey="date"
                         tick={{ fill: "#55556A", fontSize: 12 }}
@@ -174,10 +220,14 @@ const Dashboard = () => {
                             month: "short",
                           })
                         }
+                        axisLine={false}
+                        tickLine={false}
                       />
                       <YAxis
                         tick={{ fill: "#55556A", fontSize: 12 }}
                         tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`}
+                        axisLine={false}
+                        tickLine={false}
                       />
                       <Tooltip
                         contentStyle={{
@@ -191,12 +241,15 @@ const Dashboard = () => {
                           "Volume",
                         ]}
                       />
-                      <Bar
+                      <Line
+                        type="monotone"
                         dataKey="amount"
-                        fill="#6C63FF"
-                        radius={[4, 4, 0, 0]}
+                        stroke="#6C63FF"
+                        strokeWidth={2.5}
+                        dot={{ r: 4, fill: "#6C63FF", strokeWidth: 0 }}
+                        activeDot={{ r: 6, fill: "#6C63FF", stroke: "#111118", strokeWidth: 2 }}
                       />
-                    </BarChart>
+                    </LineChart>
                   </ResponsiveContainer>
                 </div>
               </div>
@@ -226,11 +279,7 @@ const Dashboard = () => {
                 </div>
               </div>
               <div className="text-xs text-text-muted">
-                Last updated:{" "}
-                {new Date().toLocaleTimeString("en-IN", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
+                Auto-updates every 60s
               </div>
             </div>
           </>

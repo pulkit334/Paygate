@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 import crypto from "crypto";
 import { merchantClient, PaymentClient } from "../GrpcRef/Grpc";
 import { ApiKeyMiddleware } from "../Middleware/validate_APi_Key";
-import AppError from "../utils/Error"; 
+import AppError from "../utils/Error";
 
 const router = express.Router();
 
@@ -19,7 +19,7 @@ router.post(
       }
       if (!req.body.currency) {
         throw AppError.Validation("Currency is required");
-      } 
+      }
 
       const Grpcpayload = {
         appId: (req as any).app._id,
@@ -33,7 +33,7 @@ router.post(
       };
 
       console.log("gRPC payload:", Grpcpayload);
-      
+
       PaymentClient.CreateOrder(Grpcpayload, (err: any, Response: any) => {
         if (err) {
           return next(AppError.Payment(err.message));
@@ -41,9 +41,9 @@ router.post(
         res.status(200).json(Response);
       });
     } catch (error) {
-      next(error); 
+      next(error);
     }
-  }
+  },
 );
 
 router.post("/verify", async (req: Request, res: Response, next) => {
@@ -77,8 +77,9 @@ router.post("/verify", async (req: Request, res: Response, next) => {
 
 router.get("/transactions", async (req: Request, res: Response, next) => {
   try {
-    const appId = (req as any).app._id;
-    
+    console.log("the transction's would Like ", (req as any ).app._id , (req as any).merchant._id);
+    const appId = (req as any).merchant._id;
+
     if (!appId) throw AppError.Validation("Unauthorized");
 
     const { from, to, limit = "50", offset = "0" } = req.query;

@@ -4,10 +4,11 @@ package paymentpackage;
 
 service PaymentService {
   rpc CreateOrder (CreateOrderRequest) returns (CreateOrderResponse);
-    rpc VerifyOrder (VerifyOrderRequest) returns (VerifyOrderResponse);
-    rpc WebhookBody (PayWebhookRequest) returns (PayWebhookResponse);
-        rpc GetTransctions (GetTransctionRequest) returns (GetTransctionResponse);
-    
+  rpc VerifyOrder (VerifyOrderRequest) returns (VerifyOrderResponse);
+  rpc WebhookBody (PayWebhookRequest) returns (PayWebhookResponse);
+  rpc GetTransctions (GetTransctionRequest) returns (GetTransctionResponse);
+  rpc GetAnalyticsSummary (AnalyticsSummaryRequest) returns (AnalyticsSummaryResponse);
+  rpc GetDailyVolume (DailyVolumeRequest) returns (DailyVolumeResponse);
 }
 
 message CreateOrderRequest {
@@ -101,4 +102,30 @@ message TransactionItem {
   string razorpayPayId = 8;
   string provider = 9;
   string createdAt = 10;
+}
+
+message AnalyticsSummaryRequest {
+  string appId = 1;
+}
+
+message AnalyticsSummaryResponse {
+  double totalReceived = 1;
+  int32 totalTransactions = 2;
+  double successRate = 3;
+  string lastPaymentAt = 4;
+}
+
+message DailyVolumeRequest {
+  string appId = 1;
+  int32 days = 2;
+}
+
+message DailyVolumeItem {
+  string date = 1;
+  double amount = 2;
+  int32 count = 3;
+}
+
+message DailyVolumeResponse {
+  repeated DailyVolumeItem days = 1;
 }

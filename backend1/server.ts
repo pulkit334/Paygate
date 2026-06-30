@@ -6,6 +6,7 @@ import * as grpc from "@grpc/grpc-js";
 import * as protLoader from "@grpc/proto-loader";
 dotenv.config();
 import { createOrder, GetTransction, VerifyOrder } from "./controller/app.payment";
+import { DashboardAnalytics } from "./controller/app.analytics";
 
 import { fileURLToPath } from "url";
 import path from "path";
@@ -24,7 +25,8 @@ const Server = new grpc.Server();
 Server.addService(authPackage.PaymentService.service, {
   CreateOrder: createOrder,
   VerifyOrder: VerifyOrder,
-  GetTransctions : GetTransction
+  GetTransctions : GetTransction,
+  GetDailyVolume: DashboardAnalytics,
 });
 
 // app.use(

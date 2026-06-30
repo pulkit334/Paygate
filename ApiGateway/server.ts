@@ -12,6 +12,7 @@ import PaymentRoutes from "./Routes/PaymentRoutes";
 import WebhookRoutes from "./Routes/webhookRoutes";
 import WebhookHistoryRoutes from "./Routes/WebhookHistoryRoutes";
 import ApiKeyRoutes from "./Routes/ApiKeyRoutes";
+import AnalyticsRoutes from "./Routes/AnalyticsRoutes";
 import { JwtAuthMiddleware } from "./Middleware/jwtAuth";
 import { redisClient } from "./config/redis";
 const app = express();
@@ -60,6 +61,7 @@ app.use("/api/v1", generalLimiter, MerchantRoutes);
 app.use("/api/v1/api-keys", JwtAuthMiddleware, ApiKeyRoutes);
 app.use("/api/v2", paymentLimiter, JwtAuthMiddleware, PaymentRoutes);
 app.use("/api/v2", JwtAuthMiddleware, WebhookHistoryRoutes);
+app.use("/api/v2", AnalyticsRoutes);
 app.use("/webhook", WebhookRoutes);
 
 app.use((err: any, req: any, res: any, next: any) => {
