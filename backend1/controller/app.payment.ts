@@ -1,7 +1,5 @@
 import * as z from "zod";
 import { CreateOrderSchema } from "../schema/app.payment_schema";
-// import dotenv from 'dotenv';
-
 import { PaymentService } from "../services/app.PaymentService";
 import { sendUnaryData, ServerUnaryCall, status } from "@grpc/grpc-js";
 import Transaction from "../models/transction";
@@ -10,8 +8,6 @@ export const createOrder = async (
   call: ServerUnaryCall<any, any>,
   callback: sendUnaryData<any>,
 ) => {
-  
-  console.log("the data inside the createOrder will be ", call.request);
   const result = CreateOrderSchema.safeParse(call.request);
   if (!result.success) {
     const error = z.flattenError(result.error).fieldErrors;
@@ -29,8 +25,6 @@ export const createOrder = async (
       appId,
     );
 
-    console.log(PaymentResponse);
-
     if (!PaymentResponse) {
       return callback({
         code: status.NOT_FOUND,
@@ -38,15 +32,6 @@ export const createOrder = async (
       });
     }
     const response = PaymentResponse as any;
-    console.log("Sending response:", {
-      success: true,
-      orderId: response.providerOrderId,
-      amount: response.amount,
-      currency: response.currency,
-      status: "created",
-      createdAt: new Date().toISOString(),
-      error: "",
-    });
 
     return callback(null, {
       success: true,
@@ -71,7 +56,6 @@ export const VerifyOrder = async (
 ) => {
   try {
     const appId = call.request.app._id;
-
     const result = await PaymentService.VerifyPayment(call.request, appId);
 
     if (!result) {
@@ -95,7 +79,7 @@ export const VerifyOrder = async (
   }
 };
 
-export const GetTransction = async (call: ServerUnaryCall<any, any>, callback: sendUnaryData<any>) => {
+export const GetTransaction = async (call: ServerUnaryCall<any, any>, callback: sendUnaryData<any>) => {
   const appId = call.request.appId;
   const { from, to, limit = 50, offset = 0 } = call.request;
 

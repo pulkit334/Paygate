@@ -1,13 +1,42 @@
 import mongoose, { Schema, Model } from "mongoose";
+
+export interface IApiKey {
+  _id?: mongoose.Types.ObjectId;
+  name: string;
+  publicKey: string;
+  hashedSecret: string;
+  expiresAt: Date | null;
+  isActive: boolean;
+  createdAt: Date;
+}
+
+export interface IProviderKey {
+  provider: string;
+  keyId: string;
+  keySecret: string;
+  isActive: boolean;
+  createdAt: Date;
+}
+
 export interface IApp {
   name: string;
-  publicKey?: string; 
-  hashedSecret?: string; 
+  publicKey?: string;
+  hashedSecret?: string;
   isActive: boolean;
   callbackUrl?: string;
   ownerEmail: string;
   passwordHash: string;
+  providerKeys: IProviderKey[];
+  apiKeys: IApiKey[];
 }
+
+const providerKeySchema = new Schema<IProviderKey>({
+  provider: { type: String, required: true },
+  keyId: { type: String, required: true },
+  keySecret: { type: String, required: true },
+  isActive: { type: Boolean, default: true },
+  createdAt: { type: Date, default: Date.now },
+}, { _id: false });
 
 const appSchema = new Schema<IApp>(
   {
@@ -19,7 +48,7 @@ const appSchema = new Schema<IApp>(
     publicKey: {
       type: String,
       unique: true,
-      sparse: true, // allows multiple docs without publicKey!
+      sparse: true,
     },
     ownerEmail: { type: String, required: true, unique: true },
     passwordHash: { type: String, required: true },
@@ -34,6 +63,23 @@ const appSchema = new Schema<IApp>(
     isActive: {
       type: Boolean,
       default: true,
+    },
+
+    providerKeys: {
+      type: [providerKeySchema],
+      default: [],
+    },
+
+    apiKeys: {
+      type: [{
+        name: { type: String, required: true },
+        publicKey: { type: String, required: true },
+        hashedSecret: { type: String, required: true },
+        expiresAt: { type: Date, default: null },
+        isActive: { type: Boolean, default: true },
+        createdAt: { type: Date, default: Date.now },
+      }],
+      default: [],
     },
   },
   {

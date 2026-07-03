@@ -5,8 +5,10 @@ import { ConnectDb } from "./config/database";
 import * as grpc from "@grpc/grpc-js";
 import * as protLoader from "@grpc/proto-loader";
 dotenv.config();
-import { createOrder, GetTransction, VerifyOrder } from "./controller/app.payment";
-import { DashboardAnalytics } from "./controller/app.analytics";
+import { createOrder, GetTransaction, VerifyOrder } from "./controller/app.payment";
+import { DashboardAnalytics, GetAnalyticsSummary } from "./controller/app.analytics";
+import { UpdateProviderKey, GetProviderKeys, DeleteProviderKey } from "./controller/app.payment-setting";
+import { GetLedger } from "./controller/app.ledger";
 
 import { fileURLToPath } from "url";
 import path from "path";
@@ -25,8 +27,13 @@ const Server = new grpc.Server();
 Server.addService(authPackage.PaymentService.service, {
   CreateOrder: createOrder,
   VerifyOrder: VerifyOrder,
-  GetTransctions : GetTransction,
+  GetTransctions: GetTransaction,
   GetDailyVolume: DashboardAnalytics,
+  GetAnalyticsSummary: GetAnalyticsSummary,
+  UpdateProviderKey: UpdateProviderKey,
+  GetProviderKeys: GetProviderKeys,
+  DeleteProviderKey: DeleteProviderKey,
+  GetLedger: GetLedger,
 });
 
 // app.use(

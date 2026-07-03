@@ -1,4 +1,4 @@
-import express, { Request, Response } from "express";
+import express, { NextFunction, Request, Response } from "express";
 import crypto from "crypto";
 import { merchantClient, PaymentClient } from "../GrpcRef/Grpc";
 import { ApiKeyMiddleware } from "../Middleware/validate_APi_Key";
@@ -31,8 +31,6 @@ router.post(
         customoreEmail: req.body.customoreEmail,
         Provider: req.body.Provider,
       };
-
-      console.log("gRPC payload:", Grpcpayload);
 
       PaymentClient.CreateOrder(Grpcpayload, (err: any, Response: any) => {
         if (err) {
@@ -77,7 +75,6 @@ router.post("/verify", async (req: Request, res: Response, next) => {
 
 router.get("/transactions", async (req: Request, res: Response, next) => {
   try {
-    console.log("the transction's would Like ", (req as any ).app._id , (req as any).merchant._id);
     const appId = (req as any).merchant._id;
 
     if (!appId) throw AppError.Validation("Unauthorized");
@@ -103,4 +100,23 @@ router.get("/transactions", async (req: Request, res: Response, next) => {
   }
 });
 
+router.get("/ledger", async (req: Request, res: Response, next) => {
+  try {
+    const appId = (req as any).merchant._id;
+    if (!appId) throw AppError.Validation("Unauthorized");
+
+    PaymentClient.GetLedger({ appId }, (err: any, Response: any) => {
+      if (err) {
+        return next(AppError.Payment(err.message));
+      }
+      res.status(200).json(Response);
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 export default router;
+
+
+

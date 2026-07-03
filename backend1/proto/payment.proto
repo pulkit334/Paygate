@@ -9,6 +9,10 @@ service PaymentService {
   rpc GetTransctions (GetTransctionRequest) returns (GetTransctionResponse);
   rpc GetAnalyticsSummary (AnalyticsSummaryRequest) returns (AnalyticsSummaryResponse);
   rpc GetDailyVolume (DailyVolumeRequest) returns (DailyVolumeResponse);
+  rpc UpdateProviderKey (UpdateProviderKeyRequest) returns (UpdateProviderKeyResponse);
+  rpc GetProviderKeys (GetProviderKeysRequest) returns (GetProviderKeysResponse);
+  rpc DeleteProviderKey (DeleteProviderKeyRequest) returns (DeleteProviderKeyResponse);
+  rpc GetLedger (GetLedgerRequest) returns (GetLedgerResponse);
 }
 
 message CreateOrderRequest {
@@ -128,4 +132,54 @@ message DailyVolumeItem {
 
 message DailyVolumeResponse {
   repeated DailyVolumeItem days = 1;
+}
+
+message UpdateProviderKeyRequest {
+  string appId = 1;
+  string provider = 2;
+  string keyId = 3;
+  string keySecret = 4;
+}
+
+message UpdateProviderKeyResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message GetProviderKeysRequest {
+  string appId = 1;
+}
+
+message ProviderKeyItem {
+  string provider = 1;
+  string keyId = 2;
+  bool isActive = 3;
+  string createdAt = 4;
+}
+
+message GetProviderKeysResponse {
+  repeated ProviderKeyItem keys = 1;
+}
+
+message DeleteProviderKeyRequest {
+  string appId = 1;
+  string provider = 2;
+}
+
+message DeleteProviderKeyResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message GetLedgerRequest {
+  string appId = 1;
+}
+
+message GetLedgerResponse {
+  bool success = 1;
+  double amount = 2;
+  double balanceBefore = 3;
+  double balanceAfter = 4;
+  string description = 5;
+  string createdAt = 6;
 }

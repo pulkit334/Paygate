@@ -3,15 +3,28 @@ import { useState, useEffect } from 'react'
 import type { FormEvent } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import type { RootState } from '../store'
-import { fetchApiKeys, createApiKey, deleteApiKey } from '../toolkit/user-redux-toll/user-redux'
+import { fetchApiKeys, createApiKey, deleteApiKey, clearNewlyCreatedKey } from '../toolkit/user-redux-toll/user-redux'
 import Navbar from '../components/Navbar'
+import ProviderConnect from '../components/ProviderConnect'
 import SecretKeyModal from '../components/SecretKeyModal'
+import ApiKeysPanel from '../components/ApiKeysPanel'
 import { getSettings, rotateKeys, updateCallbackUrl } from '../services/settings.service'
-import { Key, Link, AlertTriangle, Copy, Check, Shield, RefreshCw } from 'lucide-react'
+import { Key, Link, AlertTriangle, Copy, Check, Shield, RefreshCw, CreditCard, User, Webhook } from 'lucide-react'
+
+type Tab = 'profile' | 'providers' | 'api-keys' | 'webhooks' | 'security'
+
+const tabs: { id: Tab; label: string; icon: typeof Key }[] = [
+  { id: 'profile', label: 'Profile', icon: User },
+  { id: 'providers', label: 'Payment Providers', icon: CreditCard },
+  { id: 'api-keys', label: 'API Keys', icon: Key },
+  { id: 'webhooks', label: 'Webhooks', icon: Webhook },
+  { id: 'security', label: 'Security', icon: Shield },
+]
 
 const Settings = () => {
   const dispatch = useDispatch()
-  const { apiKeys, loading: keysLoading } = useSelector((state: RootState) => state.user)
+  const { apiKeys, loading: keysLoading, newlyCreatedKey } = useSelector((state: RootState) => state.user)
+  const [activeTab, setActiveTab] = useState<Tab>('providers')
 
   const [publicKey, setPublicKey] = useState('')
   const [callbackUrl, setCallbackUrl] = useState('')
@@ -37,7 +50,6 @@ const Settings = () => {
 
   useEffect(() => {
     if (apiKeys.length > 0 && apiKeys[0].publicKey) {
-      console.log("[Settings] Setting publicKey from Redux:", apiKeys[0].publicKey);
       setPublicKey(apiKeys[0].publicKey)
     }
   }, [apiKeys])
@@ -50,9 +62,9 @@ const Settings = () => {
     try {
       await updateCallbackUrl(newCallbackUrl)
       setCallbackUrl(newCallbackUrl)
-      setSuccess('Callback URL updated successfully')
+      setSuccess('Webhook URL updated successfully')
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to update callback URL')
+      setError(err.response?.data?.error || 'Failed to update webhook URL')
     } finally {
       setSaving(false)
     }
@@ -83,10 +95,10 @@ const Settings = () => {
   return (
     <div className="min-h-screen bg-bg-primary">
       <Navbar />
-      <main className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-text-primary font-[family-name:var(--font-display)]">Settings</h1>
-          <p className="text-sm text-text-muted mt-1">Manage your API keys and application configuration</p>
+          <p className="text-sm text-text-muted mt-1">Manage your account, providers, and integration settings</p>
         </div>
 
         {error && (
@@ -100,101 +112,155 @@ const Settings = () => {
           </div>
         )}
 
-        {loading ? (
-          <div className="space-y-6">
-            <div className="bg-surface border border-border rounded-[10px] p-6 animate-pulse h-48" />
-            <div className="bg-surface border border-border rounded-[10px] p-6 animate-pulse h-40" />
-          </div>
-        ) : (
-          <>
-            <div className="bg-surface border border-border rounded-[10px] p-6 mb-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center">
-                  <Key size={18} className="text-accent" />
-                </div>
-                <div>
-                  <h2 className="text-lg font-semibold text-text-primary">API Keys</h2>
-                  <p className="text-sm text-text-muted">Your API credentials for authenticating requests</p>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="text-xs text-text-muted block mb-1.5">Public Key</label>
-                  <div className="flex items-center bg-bg-primary border border-border rounded-lg overflow-hidden group">
-                    <code className="flex-1 px-4 py-3 text-sm font-mono text-text-primary">{publicKey}</code>
-                    <button onClick={() => copyKey(publicKey)}
-                      className="px-4 py-3 border-l border-border text-text-muted hover:text-text-primary hover:bg-black/[0.03] transition-all">
-                      {copied ? <Check size={14} className="text-success" /> : <Copy size={14} />}
-                    </button>
-                  </div>
-                </div>
-
-                <button onClick={() => setShowRotateConfirm(true)}
-                  className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-warning bg-warning-soft border border-warning/20 rounded-lg hover:bg-warning/20 transition-all">
-                  <RefreshCw size={14} /> Rotate Keys
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Sidebar */}
+          <aside className="lg:w-56 shrink-0">
+            <nav className="bg-surface border border-border rounded-[10px] p-2 lg:sticky lg:top-24">
+              {tabs.map(({ id, label, icon: Icon }) => (
+                <button
+                  key={id}
+                  onClick={() => { setActiveTab(id); setError(''); setSuccess('') }}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                    activeTab === id
+                      ? 'bg-accent/10 text-accent'
+                      : 'text-text-secondary hover:text-text-primary hover:bg-black/[0.03]'
+                  }`}
+                >
+                  <Icon size={16} />
+                  {label}
                 </button>
-              </div>
-            </div>
+              ))}
+            </nav>
+          </aside>
 
-            <div className="bg-surface border border-border rounded-[10px] p-6 mb-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center">
-                  <Link size={18} className="text-accent" />
-                </div>
-                <div>
-                  <h2 className="text-lg font-semibold text-text-primary">Callback URL</h2>
-                  <p className="text-sm text-text-muted">Webhook events will be sent to this URL</p>
-                </div>
-              </div>
+          {/* Content */}
+          <div className="flex-1 min-w-0">
 
-              <div className="mb-4">
-                <label className="text-xs text-text-muted block mb-1.5">Current URL</label>
-                <code className="block w-full px-4 py-3 bg-bg-primary border border-border rounded-lg text-sm font-mono text-text-primary">
-                  {callbackUrl || <span className="text-text-muted italic">Not configured</span>}
-                </code>
-              </div>
-
-              <form onSubmit={handleUpdateCallback}>
-                <label className="text-xs text-text-muted block mb-1.5">New URL</label>
-                <div className="flex gap-3">
-                  <input type="url" value={newCallbackUrl} onChange={(e) => setNewCallbackUrl(e.target.value)}
-                    className="flex-1 px-4 py-2.5 bg-bg-primary border border-border rounded-lg text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors text-sm"
-                    placeholder="https://api.myapp.com/webhooks/paygate" />
-                  <button type="submit" disabled={saving}
-                    className="px-6 py-2.5 bg-accent hover:bg-accent-hover disabled:opacity-50 text-white rounded-lg font-medium transition-all text-sm whitespace-nowrap">
-                    {saving ? 'Saving...' : 'Update'}
-                  </button>
-                </div>
-              </form>
-            </div>
-
-            <div className="bg-surface border border-border rounded-[10px] p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-success-soft rounded-lg flex items-center justify-center">
-                  <Shield size={18} className="text-success" />
-                </div>
-                <div>
-                  <h2 className="text-lg font-semibold text-text-primary">Security Summary</h2>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {[
-                  { label: 'JWT Auth', value: 'Enabled', status: 'success' },
-                  { label: 'API Key Auth', value: 'Active', status: 'success' },
-                  { label: 'Rate Limiting', value: '100 req/min', status: 'success' },
-                ].map((item) => (
-                  <div key={item.label} className="bg-bg-primary border border-border rounded-lg p-4 flex items-center justify-between">
-                    <span className="text-sm text-text-muted">{item.label}</span>
-                    <span className={`text-sm font-medium ${
-                      item.status === 'success' ? 'text-success' : 'text-warning'
-                    }`}>{item.value}</span>
+            {/* Profile */}
+            {activeTab === 'profile' && (
+              <div className="bg-surface border border-border rounded-[10px] p-6">
+                <h2 className="text-lg font-semibold text-text-primary mb-1">Profile</h2>
+                <p className="text-sm text-text-muted mb-6">Your account information</p>
+                <div className="space-y-4 max-w-lg">
+                  <div>
+                    <label className="text-xs text-text-muted block mb-1.5">Email</label>
+                    <code className="block w-full px-4 py-3 bg-bg-primary border border-border rounded-lg text-sm font-mono text-text-primary">
+                      developer@example.com
+                    </code>
                   </div>
-                ))}
+                  <div>
+                    <label className="text-xs text-text-muted block mb-1.5">Plan</label>
+                    <div className="flex items-center gap-3">
+                      <code className="flex-1 px-4 py-3 bg-bg-primary border border-border rounded-lg text-sm font-mono text-text-primary">
+                        Starter (Free)
+                      </code>
+                      <button className="px-4 py-2.5 text-sm font-medium text-accent border border-accent/30 rounded-lg hover:bg-accent/5 transition-all whitespace-nowrap">
+                        Upgrade
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-          </>
-        )}
+            )}
+
+            {/* Providers */}
+            {activeTab === 'providers' && (
+              <div className="bg-surface border border-border rounded-[10px] p-6">
+                <ProviderConnect />
+              </div>
+            )}
+
+            {/* API Keys */}
+            {activeTab === 'api-keys' && (
+              <ApiKeysPanel
+                keys={apiKeys.map((k: any) => ({
+                  id: k._id || k.id || '',
+                  name: k.name || 'API Key',
+                  maskedKey: k.publicKey || '',
+                  createdAt: k.createdAt || new Date().toISOString(),
+                  expiresAt: k.expiresAt || null,
+                  isActive: k.isActive !== false,
+                }))}
+                onCreateKey={(name, expiresAt) => {
+                  dispatch(createApiKey({ name, expiresAt }) as any)
+                }}
+                onDeleteKey={(keyId) => {
+                  dispatch(deleteApiKey(keyId) as any)
+                }}
+                isLoading={keysLoading}
+                newlyCreatedKey={newlyCreatedKey}
+                onDismissNewKey={() => dispatch(clearNewlyCreatedKey())}
+              />
+            )}
+
+            {/* Webhooks */}
+            {activeTab === 'webhooks' && (
+              <div className="bg-surface border border-border rounded-[10px] p-6">
+                <h2 className="text-lg font-semibold text-text-primary mb-1">Webhook URL</h2>
+                <p className="text-sm text-text-muted mb-6">Where payment events are sent</p>
+
+                {loading ? (
+                  <div className="animate-pulse h-32 bg-bg-elevated rounded-lg" />
+                ) : (
+                  <div className="space-y-4 max-w-lg">
+                    <div>
+                      <label className="text-xs text-text-muted block mb-1.5">Current URL</label>
+                      <code className="block w-full px-4 py-3 bg-bg-primary border border-border rounded-lg text-sm font-mono text-text-primary">
+                        {callbackUrl || <span className="text-text-muted italic">Not configured</span>}
+                      </code>
+                    </div>
+
+                    <form onSubmit={handleUpdateCallback}>
+                      <label className="text-xs text-text-muted block mb-1.5">Update URL</label>
+                      <div className="flex gap-3">
+                        <input type="url" value={newCallbackUrl} onChange={(e) => setNewCallbackUrl(e.target.value)}
+                          className="flex-1 px-4 py-2.5 bg-bg-primary border border-border rounded-lg text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/20 transition-all text-sm"
+                          placeholder="https://api.myapp.com/webhooks/paygate" />
+                        <button type="submit" disabled={saving}
+                          className="px-6 py-2.5 bg-accent hover:bg-accent-hover disabled:opacity-50 text-white rounded-lg font-medium transition-all text-sm whitespace-nowrap">
+                          {saving ? 'Saving...' : 'Update'}
+                        </button>
+                      </div>
+                    </form>
+
+                    <div className="bg-info-soft border border-info/20 rounded-lg px-4 py-3">
+                      <p className="text-xs text-info font-medium">How webhooks work</p>
+                      <p className="text-xs text-text-muted mt-0.5">
+                        PayGate sends POST requests to your URL when payment events occur.
+                        Each request includes an HMAC-SHA256 signature for verification.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Security */}
+            {activeTab === 'security' && (
+              <div className="bg-surface border border-border rounded-[10px] p-6">
+                <h2 className="text-lg font-semibold text-text-primary mb-1">Security</h2>
+                <p className="text-sm text-text-muted mb-6">Authentication and access controls</p>
+
+                <div className="grid sm:grid-cols-2 gap-4 max-w-lg">
+                  {[
+                    { label: 'JWT Authentication', value: 'Enabled', color: 'text-success', bg: 'bg-success-soft' },
+                    { label: 'API Key Auth', value: 'Active', color: 'text-success', bg: 'bg-success-soft' },
+                    { label: 'Rate Limiting', value: '100 req/min', color: 'text-success', bg: 'bg-success-soft' },
+                    { label: 'Webhook Signing', value: 'HMAC-SHA256', color: 'text-success', bg: 'bg-success-soft' },
+                    { label: 'Encryption at Rest', value: 'AES-256', color: 'text-success', bg: 'bg-success-soft' },
+                    { label: 'Idempotency', value: 'Enabled', color: 'text-success', bg: 'bg-success-soft' },
+                  ].map((item) => (
+                    <div key={item.label} className="bg-bg-primary border border-border rounded-lg p-4">
+                      <div className="text-xs text-text-muted mb-1">{item.label}</div>
+                      <div className={`text-sm font-semibold ${item.color}`}>{item.value}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+          </div>
+        </div>
       </main>
 
       {showRotateConfirm && (
@@ -211,8 +277,7 @@ const Settings = () => {
             </div>
             <p className="text-sm text-text-secondary mb-6 leading-relaxed">
               Current keys will <span className="text-danger font-medium">stop working immediately</span>.
-              Any services using the old keys will need to be updated. Make sure you update all
-              your apps before rotating.
+              Any services using the old keys will need to be updated.
             </p>
             <div className="flex gap-3 justify-end">
               <button onClick={() => setShowRotateConfirm(false)}

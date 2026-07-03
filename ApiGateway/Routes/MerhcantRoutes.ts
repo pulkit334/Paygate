@@ -1,5 +1,6 @@
 import express, { Request, Response, NextFunction } from "express";
 import { merchantClient } from "../GrpcRef/Grpc";
+import { JwtAuthMiddleware } from "../Middleware/jwtAuth";
 import AppError from "../utils/Error";
 
 const router = express.Router();
@@ -80,5 +81,54 @@ router.post("/auth/register", async (req: Request, res: Response, next: NextFunc
     next(error);
   }
 });
+
+router.post(
+  "/register-new/api-key",
+  JwtAuthMiddleware,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const appId = (req as any).merchant._id;
+      const name = req.body.name?.trim();
+      const expiresAt = req.body.expiresAt || null;
+
+      if (!appId) throw AppError.Validation("Unauthorized");
+      if (!name) throw AppError.Validation("Name is required");
+
+      merchantClient.CreateApiKey(
+        { appId, name, expiresAt },
+        (err: any, response: any) => {
+          if (err) {
+            return next(AppError.Payment(err.message));
+          }
+          res.status(201).json(response);
+        },
+      );
+    } catch (err: any) {
+      next(err);
+    }
+  },
+);
+
+router.delete(
+  "/api-keys/:keyId",
+  JwtAuthMiddleware,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const appId = (req as any).merchant._id;
+      const { keyId } = req.params;
+      if (!appId) throw AppError.Validation("Unauthorized");
+      if (!keyId) throw AppError.Validation("keyId is required");
+
+      merchantClient.DeleteApiKey({ keyId, appId }, (err: any, response: any) => {
+        if (err) {
+          return next(AppError.Payment(err.message));
+        }
+        res.status(200).json(response);
+      });
+    } catch (err: any) {
+      next(err);
+    }
+  },
+);
 
 export default router;

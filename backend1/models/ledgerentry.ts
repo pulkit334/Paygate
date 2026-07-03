@@ -7,6 +7,8 @@ export interface ILedger {
   balanceBefore: number;
   balanceAfter: number;
   description?: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const LedgerSchema = new Schema<ILedger>(

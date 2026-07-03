@@ -1,10 +1,13 @@
-import razorpay from "../../config/razerpay";
+import instance from "../../config/razerpay";
 import { PaymentData, PaymentResponse } from "../../types/PaymentTypes";
 import { BaseTemplate } from "../BaseTemplate";
 
 export class RazerPayProvider extends BaseTemplate {
-    constructor() {
+  private appId: string;
+
+  constructor(appId: string) {
     super();
+    this.appId = appId;
   }
 
   protected async validate(data: PaymentData): Promise<void> {
@@ -21,9 +24,9 @@ export class RazerPayProvider extends BaseTemplate {
 
   protected async initiate(data: PaymentData): Promise<Record<string, unknown>> {
     try {
+      const razorpay = await instance(this.appId);
       const order = await razorpay.orders.create({
-
-        amount: data.amount * 100, 
+        amount: data.amount * 100,
         currency: data.currency,
         receipt: data.receipt,
       });

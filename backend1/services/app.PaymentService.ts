@@ -4,16 +4,17 @@ import Transaction from "../models/transction";
 import { PaymentData } from "../types/PaymentTypes";
 import { GatewayFactory } from "../Engine/PaymentEngine";
 import crypto from "crypto";
+import RazerPayService from "../Engine/key/provider";
+
 export class PaymentService {
   static async initiatePayment(PaymentData: any, appId: string) {
-    console.log("the data for the class would be ", PaymentData);
     const {
       amount,
       currency,
       metadata,
       idempotencyKey,
       customerName,
-      customoreEmail,
+      customerEmail,
       Provider,
     } = PaymentData;
 
@@ -24,7 +25,7 @@ export class PaymentService {
           appId,
           amount,
           currency: currency || "INR",
-          customerEmail: customoreEmail,
+          customerEmail,
           customerName,
           metadata,
           idempotencyKey,
@@ -33,8 +34,6 @@ export class PaymentService {
         });
       } catch (err: any) {
         if (err.code === 11000) {
-          console.log("DUPLICATE KEY  ERROR:", err.message);
-
           return await Transaction.findOne({ idempotencyKey });
         }
         throw err;
@@ -44,19 +43,17 @@ export class PaymentService {
         ? (Provider as GatewayType)
         : GatewayType.RAZORPAY;
       const factory = GatewayFactory.getInstance();
-      const paymentEngine = factory.getGateway(targetGateway);
+      const paymentEngine = factory.getGateway(targetGateway, appId);
       const paymentPayload: PaymentData = {
-        amount: amount * 100,
+        amount: amount,
         currency: newTransaction.currency as string,
         receipt: newTransaction._id.toString(),
       };
-      console.log("the gatway Response would be ", paymentPayload);
       const gatewayResponse =
-        await paymentEngine.processPayment(paymentPayload);
+        await paymentEngine.processPayment(paymentPayload, appId);
 
       newTransaction.razorpayOrderId = gatewayResponse.orderId;
       await newTransaction.save();
-      console.log("the order id strureo would be ", gatewayResponse);
       return {
         transactionId: newTransaction._id,
         providerOrderId: gatewayResponse.orderId,
@@ -65,19 +62,13 @@ export class PaymentService {
         providerUsed: targetGateway,
       };
     } catch (error: any) {
-      // FORCE THE ERROR TO SHOW IN TERMINAL
-      console.error("==== RAZORPAY CRASH ====");
-      console.error(error);
-
-      // THROW IT UP TO THE CONTROLLER
       throw new Error(`Service Failure: ${error.message}`);
     }
   }
 
-  static async VerifyPayment(VerficationData: any, appId: string) {
-    // first take the order Id
+  static async VerifyPayment(verificationData: any, appId: string) {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
-      VerficationData;
+      verificationData;
 
     const transaction = await Transaction.findOne({
       razorpayOrderId: razorpay_order_id,
@@ -87,15 +78,16 @@ export class PaymentService {
       return { success: false, message: "Transaction not found" };
     }
 
+    const keySecret = await RazerPayService.GetKeySecret(appId);
     const GeneratedSignature = crypto
-      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
+      .createHmac("sha256", keySecret)
       .update(razorpay_order_id + "|" + razorpay_payment_id)
       .digest("hex");
     if (GeneratedSignature !== razorpay_signature) {
       throw new Error("Fraud detected: Invalid signature");
     }
 
-    if ((transaction.status as string) === "Paid") {
+    if ((transaction.status as string) === "paid") {
       return {
         success: true,
         status: "paid",

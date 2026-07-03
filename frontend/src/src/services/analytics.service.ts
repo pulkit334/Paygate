@@ -6,6 +6,10 @@ export const ANALYTICS = {
   DAILY: "/analytics/daily",
 };
 
+export const LEDGER = {
+  WALLET: "/ledger",
+};
+
 export interface Summary {
   totalReceived: number;
   totalTransactions: number;
@@ -19,35 +23,46 @@ export interface DailyVolume {
   count: number;
 }
 
+export interface LedgerWallet {
+  success: boolean;
+  amount: number;
+  balanceBefore: number;
+  balanceAfter: number;
+  description: string;
+  createdAt: string;
+}
+
 export const getSummary = async (): Promise<Summary> => {
   try {
     const response = await api.get(ANALYTICS.SUMMARY);
     return response.data;
   } catch (err) {
     if (isAxiosError(err)) {
-      const code = err.response?.data?.code;
-      if (code === "USER_EXISTS") {
-        throw new Error("An account with this email already exists", {
-          cause: err,
-        });
-      }
+      throw new Error(err.response?.data?.message || "Failed to fetch summary", { cause: err });
     }
     throw err;
   }
 };
 
-export const getDailyVolume = async ( days: number = 7,): Promise<DailyVolume[]> => {
+export const getDailyVolume = async (days: number = 7): Promise<DailyVolume[]> => {
   try {
     const response = await api.get(ANALYTICS.DAILY, { params: { days } });
     return response.data;
   } catch (err) {
     if (isAxiosError(err)) {
-      const code = err.response?.data?.code;
-      if (code === "USER_EXISTS") {
-        throw new Error("An account with this email already exists", {
-          cause: err,
-        });
-      }
+      throw new Error(err.response?.data?.message || "Failed to fetch daily volume", { cause: err });
+    }
+    throw err;
+  }
+};
+
+export const getLedgerData = async (): Promise<LedgerWallet> => {
+  try {
+    const response = await api.get(LEDGER.WALLET);
+    return response.data;
+  } catch (err) {
+    if (isAxiosError(err)) {
+      throw new Error(err.response?.data?.message || "Failed to fetch ledger data", { cause: err });
     }
     throw err;
   }

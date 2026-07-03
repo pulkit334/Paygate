@@ -14,12 +14,6 @@ const appservice = async (name: string, ownerEmail: string, password: string, ca
       throw new Error("Failed to generate API keys");
     }
     const { publicKey, hashedSecret, Secretkey } = keys;
-    
-
-    const hashedSecretStr =
-      typeof hashedSecret === "string"
-        ? hashedSecret
-        : hashedSecret?.toString("hex");
 
     const passwordHash = await bcrypt.hash(password, 10);
 
@@ -29,7 +23,7 @@ const appservice = async (name: string, ownerEmail: string, password: string, ca
       passwordHash,
       callbackUrl,
       publicKey,
-      hashedSecret: hashedSecretStr,
+      hashedSecret: hashedSecret,
       isActive: true,
     });
 

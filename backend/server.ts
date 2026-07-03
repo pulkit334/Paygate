@@ -14,6 +14,7 @@ import {
   updateCallbackUrl,
   GetSettings,
 } from "./controller/app.controller";
+import { CreateApiKey, ListApiKeys, DeleteApiKey } from "./controller/app.api-keys";
 dotenv.config();
 const PORT = process.env.GRPC_PORT || 50051;
 const app = express();
@@ -38,6 +39,9 @@ server.addService(authPackage.MerchantAuth.service, {
   DeleteApi: DeleteApi,
   UpdateCallbackUrl: updateCallbackUrl,
   GetSettings: GetSettings,
+  CreateApiKey: CreateApiKey,
+  ListApiKeys: ListApiKeys,
+  DeleteApiKey: DeleteApiKey,
 });
 
 const startServer = async () => {

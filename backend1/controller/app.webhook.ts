@@ -74,7 +74,7 @@ const payWebhook = async (
         // 4c. Read Balance Before
         const AccountLedger = await TransactionLedger.findOne({
           appId: txn.appId,
-        }).session(session);
+        }).session(session).sort({createdAt : -1});
         const balanceBefore = AccountLedger?.balanceBefore ?? 0;
         const balanceAfter = Number(balanceBefore) + amountPaise;
 
@@ -117,8 +117,8 @@ const payWebhook = async (
       await session.endSession();
     }
 
-    // 5. Push to payment stream
-    await redisClient.xadd(
+    // 5. Push to payment stream (non-blocking — log failure but don't fail webhook)
+    redisClient.xadd(
       "payment.stream",
       "*",
       "appId",
@@ -133,7 +133,7 @@ const payWebhook = async (
       currency,
       "callbackUrl",
       callbackUrl,
-    );
+    ).catch((err) => console.error("Redis payment.stream write failed:", err.message));
 
     //  gRPC success response
     return callback(null, {

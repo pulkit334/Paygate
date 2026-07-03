@@ -11,6 +11,9 @@ service MerchantAuth {
     rpc DeleteApi (DeleteApiRequest) returns (DeleteApiResponse);
     rpc UpdateCallbackUrl (UpdateCallbackUrlRequest) returns (UpdateCallbackUrlResponse);
     rpc GetSettings (GetSettingsRequest) returns (GetSettingsResponse);
+    rpc CreateApiKey (CreateApiKeyRequest) returns (CreateApiKeyResponse);
+    rpc ListApiKeys (ListApiKeysRequest) returns (ListApiKeysResponse);
+    rpc DeleteApiKey (DeleteApiKeyRequest) returns (DeleteApiKeyResponse);
 }
 
 message AuthRegisterReq {
@@ -104,4 +107,48 @@ message GetSettingsResponse {
   bool success = 1;
   string publicKey = 2;
   string callbackUrl = 3;
+}
+
+message CreateApiKeyRequest {
+  string appId = 1;
+  string name = 2;
+  string expiresAt = 3;
+}
+
+message CreateApiKeyResponse {
+  bool success = 1;
+  string id = 2;
+  string name = 3;
+  string publicKey = 4;
+  string secretKey = 5;
+  string createdAt = 6;
+  string expiresAt = 7;
+}
+
+message ListApiKeysRequest {
+  string appId = 1;
+}
+
+message ApiKeyItem {
+  string id = 1;
+  string name = 2;
+  string maskedKey = 3;
+  string createdAt = 4;
+  string expiresAt = 5;
+  bool isActive = 6;
+}
+
+message ListApiKeysResponse {
+  bool success = 1;
+  repeated ApiKeyItem keys = 2;
+}
+
+message DeleteApiKeyRequest {
+  string keyId = 1;
+  string appId = 2;
+}
+
+message DeleteApiKeyResponse {
+  bool success = 1;
+  string message = 2;
 }

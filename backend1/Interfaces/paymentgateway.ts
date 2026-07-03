@@ -1,4 +1,4 @@
 
 export interface IPaymentGateway {
-  processPayment(data: any): Promise<any>;
+  processPayment(data: any, appId: string): Promise<any>;
 }

@@ -17,7 +17,7 @@ import {
 import {
   IndianRupee,
   Activity,
-  CheckCircle,  
+  CheckCircle,
   Clock,
   TrendingUp,
   ArrowUpRight,
@@ -31,10 +31,9 @@ const REFRESH_INTERVAL = 60_000;
 const Dashboard = () => {
   const dispatch = useDispatch<AppDispatch>();
   const Navigate = useNavigate();
-  // const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const intervalRef = useRef<number | null>(null);
 
-  const { summary, payments, dailyVolume, loading, refreshing, error } =
+  const { summary, payments, dailyVolume, ledger, loading, refreshing, error } =
     useSelector((state: RootState) => state.dashboard);
 
   const formatAmount = (amount: number) =>
@@ -51,9 +50,6 @@ const Dashboard = () => {
       }
     }, REFRESH_INTERVAL);
   }, [dispatch]);
-  
-
-
 
   useEffect(() => {
     dispatch(fetchDashboardData());
@@ -263,7 +259,7 @@ const Dashboard = () => {
                 <div>
                   <p className="text-xs text-text-muted">Wallet Balance</p>
                   <p className="text-lg font-bold text-text-primary">
-                    {formatAmount(0)}
+                    {formatAmount(ledger?.balanceAfter ?? 0)}
                   </p>
                 </div>
               </div>
@@ -274,7 +270,7 @@ const Dashboard = () => {
                 <div>
                   <p className="text-xs text-text-muted">Settlements Pending</p>
                   <p className="text-lg font-bold text-text-primary">
-                    {formatAmount(0)}
+                    {formatAmount(ledger?.amount ?? 0)}
                   </p>
                 </div>
               </div>
