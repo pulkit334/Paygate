@@ -1,7 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
 import morgan from "morgan";
-import helmet from "helmet";
 import cors from "cors";
 import { RedisStore } from "rate-limit-redis";
 import rateLimit from "express-rate-limit";
@@ -14,7 +13,9 @@ import WebhookHistoryRoutes from "./Routes/WebhookHistoryRoutes";
 import ApiKeyRoutes from "./Routes/ApiKeyRoutes";
 import AnalyticsRoutes from "./Routes/AnalyticsRoutes";
 import ProviderKeyRoutes from "./Routes/ProviderKeyRoutes";
+import SessionRoutes from "./Routes/SessionRoutes";
 import { JwtAuthMiddleware } from "./Middleware/jwtAuth";
+import sessionMiddleware from "./Middleware/session";
 import { redisClient } from "./config/redis";
 const app = express();
 
@@ -30,7 +31,9 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
-// app.use(helmet());
+
+// Session middleware (before rate limiters and routes)
+app.use(sessionMiddleware);
 
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -57,6 +60,8 @@ app.get("/health", (req, res) => {
   res.status(200).json({ status: "sahi hai bhi" });
 });
 
+// Session routes (no auth needed)
+app.use("/api/v1", SessionRoutes);
 
 app.use("/api/v1", generalLimiter, MerchantRoutes);
 app.use("/api/v1/api-keys", JwtAuthMiddleware, ApiKeyRoutes);

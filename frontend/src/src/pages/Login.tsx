@@ -1,22 +1,26 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useDispatch } from 'react-redux'
 import { login } from '../services/auth.service'
+import { fetchSession } from '../toolkit/user-redux-toll/user-redux'
 
 const Login = () => {
   const navigate = useNavigate()
+  const dispatch = useDispatch()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
 const handleSubmit = async (e: React.SyntheticEvent) => {
-  e.preventDefault(); 
+  e.preventDefault();
   setLoading(true)
   setError('')
   try {
-    const res = await login({ email, password })
-    console.log("the token value of the login request would be ",res)
-    document.cookie = `token=${res?.token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`
+    await login({ email, password })
+    // Session cookie is set automatically by the browser
+    // Fetch session data into Redux
+    await dispatch(fetchSession())
     navigate('/dashboard')
   } catch (err: unknown) {
     setError(err instanceof Error ? err.message : 'Login failed')

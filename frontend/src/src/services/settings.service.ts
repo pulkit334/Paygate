@@ -53,7 +53,6 @@ export const getSettings = async (): Promise<AppSettings> => {
   } catch (err) {
     if (isAxiosError(err)) {
       const code = err?.response?.data;
-      console.log(err);
       if (code == "Internal Server Error") {
         throw new Error("Invalid callback URL format", { cause: err });
       }

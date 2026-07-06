@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { MerchantApi } from "../../services/client";
+import { getSession, switchApp, logoutSession, logoutApp, type AppInfo } from "../../services/auth.service";
 
 interface ApiKey {
   _id: string;
@@ -16,6 +17,10 @@ interface UserState {
   loading: boolean;
   error: string | null;
   newlyCreatedKey: string | null;
+  activeApp: string | null;
+  activeAppExpired: boolean;
+  userApps: AppInfo[];
+  sessionLoaded: boolean;
 }
 
 const initialState: UserState = {
@@ -23,7 +28,63 @@ const initialState: UserState = {
   loading: false,
   error: null,
   newlyCreatedKey: null,
+  activeApp: null,
+  activeAppExpired: false,
+  userApps: [],
+  sessionLoaded: false,
 };
+
+// Fetch current session info
+export const fetchSession = createAsyncThunk(
+  "user/fetchSession",
+  async (_, { rejectWithValue }) => {
+    try {
+      const session = await getSession();
+      return session;
+    } catch (err: any) {
+      return rejectWithValue(err.response?.data?.message || "Failed to fetch session");
+    }
+  },
+);
+
+// Switch active app
+export const switchActiveApp = createAsyncThunk(
+  "user/switchApp",
+  async (appId: string, { rejectWithValue }) => {
+    try {
+      await switchApp(appId);
+      return appId;
+    } catch (err: any) {
+      return rejectWithValue(err.response?.data?.message || "Failed to switch app");
+    }
+  },
+);
+
+// Logout from all apps
+export const logoutAllApps = createAsyncThunk(
+  "user/logoutAll",
+  async (_, { rejectWithValue }) => {
+    try {
+      await logoutSession();
+      return true;
+    } catch (err: any) {
+      return rejectWithValue(err.response?.data?.message || "Failed to logout");
+    }
+  },
+);
+
+// Logout from a specific app
+export const logoutSingleApp = createAsyncThunk(
+  "user/logoutApp",
+  async (appId: string, { rejectWithValue }) => {
+    try {
+      const result = await logoutApp(appId);
+      return { appId, result };
+    } catch (err: any) {
+      return rejectWithValue(err.response?.data?.message || "Failed to logout from app");
+    }
+  },
+);
 
 export const fetchApiKeys = createAsyncThunk(
   "user/fetchApiKeys",
@@ -99,9 +160,54 @@ export const userSlice = createSlice({
     clearNewlyCreatedKey: (state) => {
       state.newlyCreatedKey = null;
     },
+    resetUser: (state) => {
+      state.apiKeys = [];
+      state.loading = false;
+      state.error = null;
+      state.newlyCreatedKey = null;
+      state.activeApp = null;
+      state.activeAppExpired = false;
+      state.userApps = [];
+      state.sessionLoaded = false;
+    },
   },
   extraReducers: (builder) => {
     builder
+      // Session
+      .addCase(fetchSession.fulfilled, (state, action) => {
+        state.activeApp = action.payload.activeApp;
+        state.activeAppExpired = action.payload.activeAppExpired;
+        state.userApps = action.payload.userApps;
+        state.sessionLoaded = true;
+      })
+      .addCase(fetchSession.rejected, (state) => {
+        state.activeApp = null;
+        state.activeAppExpired = false;
+        state.userApps = [];
+        state.sessionLoaded = true;
+      })
+      .addCase(switchActiveApp.fulfilled, (state, action) => {
+        state.activeApp = action.payload;
+        state.activeAppExpired = false;
+      })
+      .addCase(logoutAllApps.fulfilled, (state) => {
+        state.activeApp = null;
+        state.activeAppExpired = false;
+        state.userApps = [];
+        state.apiKeys = [];
+      })
+      .addCase(logoutSingleApp.fulfilled, (state, action) => {
+        const { appId, result } = action.payload;
+        state.userApps = state.userApps.filter((a) => a.appId !== appId);
+        if (result.activeApp) {
+          state.activeApp = result.activeApp;
+        } else if (result.authenticated === false) {
+          state.activeApp = null;
+          state.activeAppExpired = false;
+          state.userApps = [];
+        }
+      })
+      // API Keys
       .addCase(fetchApiKeys.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -131,5 +237,5 @@ export const userSlice = createSlice({
   },
 });
 
-export const { clearNewlyCreatedKey } = userSlice.actions;
+export const { clearNewlyCreatedKey, resetUser } = userSlice.actions;
 export default userSlice.reducer;

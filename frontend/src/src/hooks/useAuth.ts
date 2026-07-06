@@ -1,18 +1,27 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-
-const hasAuthCookie = () =>
-  document.cookie.split('; ').some(c => c.startsWith('token='))
+import { getSession } from '../services/auth.service'
 
 export const useAuth = () => {
   const navigate = useNavigate()
-  const authed = hasAuthCookie()
+  const [authed, setAuthed] = useState<boolean | null>(null)
 
   useEffect(() => {
-    if (!authed) {
-      navigate('/')
+    const checkSession = async () => {
+      try {
+        const session = await getSession()
+        setAuthed(session.authenticated)
+        if (!session.authenticated) {
+          navigate('/login')
+        }
+      } catch {
+        setAuthed(false)
+        navigate('/login')
+      }
     }
-  }, [authed, navigate])
 
-  return { authed }
+    checkSession()
+  }, [navigate])
+
+  return { authed: authed ?? false }
 }

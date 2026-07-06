@@ -8,13 +8,8 @@ const __dirname = path.dirname(__filename);
 
 const projectRoot = path.resolve(__dirname, "../../");
 
-console.log("projectRoot:", projectRoot);
-
 const GrpcPath = path.join(projectRoot, "backend/proto/merchant.proto");
 const GRPCPaymentServicePath = path.join(projectRoot, "backend1/proto/payment.proto");
-
-console.log("GrpcPath:", GrpcPath);
-console.log("GRPCPaymentServicePath:", GRPCPaymentServicePath);
 
 const packageDefinition = protoLoader.loadSync(GrpcPath, {});
 const protoDescriptor = grpc.loadPackageDefinition(packageDefinition) as any;

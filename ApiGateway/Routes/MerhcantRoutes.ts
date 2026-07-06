@@ -1,7 +1,9 @@
 import express, { Request, Response, NextFunction } from "express";
 import { merchantClient } from "../GrpcRef/Grpc";
 import { JwtAuthMiddleware } from "../Middleware/jwtAuth";
+import { JWT_TTL_MS } from "../Middleware/session";
 import AppError from "../utils/Error";
+import jwt from "jsonwebtoken";
 
 const router = express.Router();
 
@@ -38,14 +40,55 @@ router.post("/auth/login", async (req: Request, res: Response, next: NextFunctio
         return next(AppError.Auth(err.message, 401));
       }
 
-      res.cookie("rememberme", 1, {
-        maxAge: 60 * 60 * 24 * 1000,
-        secure: process.env.NODE_ENV === "production",
-        httpOnly: true, 
-        sameSite: "lax",
-      });
+      // Decode JWT to get appId and expiry
+      const decoded = jwt.decode(response.token) as { appId: string; exp?: number } | null;
+      if (!decoded || !decoded.appId) {
+        return next(AppError.Auth("Invalid token received"));
+      }
 
-      res.status(200).json(response);
+      const appId = decoded.appId;
+      const now = Date.now();
+      const issuedAt = now;
+      // Use JWT's own exp if available, otherwise calculate from our TTL
+      const expiresAt = decoded.exp
+        ? decoded.exp * 1000  // convert from seconds to ms
+        : now + JWT_TTL_MS;
+
+      // Initialize session data if needed
+      if (!req.session.tokens) {
+        req.session.tokens = {};
+      }
+      if (!req.session.userApps) {
+        req.session.userApps = [];
+      }
+
+      // Store token with metadata
+      req.session.tokens[appId] = {
+        jwt: response.token,
+        issuedAt,
+        expiresAt,
+      };
+
+      // Add to userApps if not already present
+      if (!req.session.userApps.includes(appId)) {
+        req.session.userApps.push(appId);
+      }
+
+      // Set as active app
+      req.session.activeApp = appId;
+
+      req.session.save((saveErr) => {
+        if (saveErr) {
+          return next(AppError.Auth("Failed to create session"));
+        }
+
+        res.status(200).json({
+          success: true,
+          appId,
+          userApps: req.session.userApps,
+          tokenExpiresAt: expiresAt,
+        });
+      });
     });
   } catch (error) {
     next(error);
@@ -72,7 +115,10 @@ router.post("/auth/register", async (req: Request, res: Response, next: NextFunc
 
     merchantClient.Auth(grpcPayload, (err: GrpcError | null, response: RegisterResponse) => {
       if (err) {
-        return next(AppError.Auth(err.message));
+        const isDuplicate = err.message?.toLowerCase().includes("already registered");
+        return next(isDuplicate
+          ? AppError.UniqueConstraint(err.message, "email")
+          : AppError.Auth(err.message));
       }
 
       res.status(201).json(response);

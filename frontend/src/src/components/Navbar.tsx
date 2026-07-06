@@ -1,13 +1,24 @@
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, ArrowLeftRight, Webhook, Settings, LogOut, BookOpen, Menu, X, ChevronDown, Bell } from 'lucide-react'
+import { useDispatch } from 'react-redux'
+import { LayoutDashboard, ArrowLeftRight, Webhook, Settings, LogOut, BookOpen, Menu, X } from 'lucide-react'
+import { logoutSession } from '../services/auth.service'
+import { resetUser } from '../toolkit/user-redux-toll/user-redux'
+import AppSwitcher from './AppSwitcher'
 
 const Navbar = () => {
   const location = useLocation()
   const navigate = useNavigate()
+  const dispatch = useDispatch()
   const [mobileOpen, setMobileOpen] = useState(false)
-  const handleLogout = () => {
-    document.cookie = 'token=; path=/; max-age=0'
+
+  const handleLogout = async () => {
+    try {
+      await logoutSession()
+    } catch {
+      // Session might already be invalid
+    }
+    dispatch(resetUser())
     navigate('/')
   }
 
@@ -52,6 +63,8 @@ const Navbar = () => {
           </div>
 
           <div className="flex items-center gap-2">
+            <AppSwitcher />
+
             <button onClick={handleLogout}
               className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-text-secondary hover:text-danger hover:bg-danger/10 transition-all">
               <LogOut size={16} />
@@ -80,9 +93,12 @@ const Navbar = () => {
                 </Link>
               )
             })}
+            <div className="py-2">
+              <AppSwitcher />
+            </div>
             <hr className="border-border/50 my-2" />
             <button onClick={handleLogout}
-              className="flex items-center gap-3 px-3 py-3 rounded-md text-sm font-medium text-text-secondary hover:text-danger hover:bg-danger/10 transition-all w-full">
+              className="flex items-center gap-3 px-3 py-3 rounded-md text-sm font-medium text-text-secondary hover:text-danger hover:bg-danger/10 w-full">
               <LogOut size={16} /> Logout
             </button>
           </div>

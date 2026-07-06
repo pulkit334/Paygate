@@ -13,8 +13,6 @@ const ApiKeyMiddleware = (req: Request, res: Response, next: NextFunction) => {
       throw AppError.Validation("Invalid API key format");
     }
 
-    console.log("Validating API key:", apiKey);
-
     merchantClient.ValidateApiKey({ apiKey }, (err: any, response: any) => {
       if (err) {
         return next(AppError.Service("Auth service unavailable"));

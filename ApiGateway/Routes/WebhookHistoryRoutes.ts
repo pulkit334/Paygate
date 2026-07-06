@@ -1,11 +1,13 @@
 import express, { Request, Response, NextFunction } from "express";
 import axios from "axios";
+import { JwtAuthMiddleware } from "../Middleware/jwtAuth";
 import AppError from "../utils/Error";
 
 const router = express.Router();
 
 router.get(
   "/webhooks",
+  JwtAuthMiddleware,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { from, limit, offset } = req.query;
