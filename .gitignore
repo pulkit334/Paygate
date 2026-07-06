@@ -7,3 +7,5 @@
 **/.env
 **/.env.local
 
+**/backend1/integration-testing
+**/ApiGateway/integration-testing

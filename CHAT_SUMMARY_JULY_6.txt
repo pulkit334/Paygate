@@ -1,0 +1,195 @@
+# PayGate Project - Chat Summary
+## Date: July 6, 2026
+
+---
+
+## What Was Done Today
+
+### 1. Integration Testing Setup
+
+#### backend1/integration-testing/ (4 files)
+- `mock-razorpay.cjs` — Intercepts Razorpay SDK via `--require` flag
+- `test-app.ts` — Express wrapper around gRPC controllers
+- `setup.ts` — MongoDB connect/disconnect/clear
+- `payment.test.ts` — 4 tests (create, validation, transactions, provider-keys)
+
+Run: `npm run test:integration` (uses `tsx --require ./integration-testing/mock-razorpay.cjs --test integration-testing/payment.test.ts`)
+
+#### ApiGateway/integration-testing/ (1 file)
+- `payment.test.ts` — 4 tests (create, validation, verify, transactions)
+
+Run: `npx tsx --test integration-testing/payment.test.ts`
+
+### 2. Ledger Backfill Script
+- Created `backend1/scripts/backfill-ledger.ts`
+- Finds all `status: "paid"` transactions
+- Creates ledger entries with running balance
+- Safe to run multiple times (skips existing entries)
+- Run: `npx tsx scripts/backfill-ledger.ts`
+
+### 3. Cleanup
+- Deleted dead files: `__snapshots__/`, `mock-razorpay.mjs`, `mocks/razorpay.ts`
+- Removed duplicate Razorpay mock from `test-app.ts`
+- Trimmed tests to 4 each
+
+---
+
+## Payment Status Explained
+
+| Status | Meaning |
+|--------|---------|
+| `created` | Order exists on Razorpay, user hasn't completed payment |
+| `paid` | Payment confirmed via webhook |
+| `failed` | User's payment was rejected (card declined, etc.) |
+| `refunded` | Money returned |
+
+- "Created" = user opened Razorpay but closed without paying OR payment still processing
+- Proxy retries (5 times) only affect ORDER CREATION, not the payment itself
+- If payment fails on Razorpay side, user must try again manually
+
+## Wallet Balance
+- Shows ₹0.00 because no payments are "paid" yet
+- Once a payment is confirmed via webhook, ledger updates and balance increases
+- Razorpay settles to bank in T+2 days
+
+---
+
+## Multi-App Payment Architecture
+
+### Current Setup (supports 2-3 apps)
+```
+App 1: sk_live_abc123 → Razorpay key_id: rzp_test_xxx
+App 2: sk_live_def456 → Razorpay key_id: rzp_test_xxx (same)
+App 3: sk_live_ghi789 → Razorpay key_id: rzp_test_xxx (same)
+```
+
+- Different API keys per app (can revoke independently)
+- Same Razorpay account (one dashboard, one bank settlement)
+- Per-app tracking via `appId` in transactions
+
+### ProviderKey entries (same Razorpay creds for all apps)
+```javascript
+{ appId: app1_id, provider: "razorpay", keyId: "rzp_test_xxx", keySecret: "secret_xxx" }
+{ appId: app2_id, provider: "razorpay", keyId: "rzp_test_xxx", keySecret: "secret_xxx" }
+{ appId: app3_id, provider: "razorpay", keyId: "rzp_test_xxx", keySecret: "secret_xxx" }
+```
+
+---
+
+## Multi-Profile System (Planned)
+
+### Production-Ready Architecture
+```
+Browser:
+  HTTP-only cookie: session_id=abc123    (secure, can't read via JS)
+  localStorage: { activeAppId: "def" }   (just UI state)
+
+Server (Redis):
+  session_id: abc123
+  └─ userId: "user123"
+     activeAppId: "def"
+     tokens: {
+       "app_abc": "jwt_xxx",
+       "app_def": "jwt_yyy"
+     }
+```
+
+### Why This Approach
+- HTTP-only cookie = XSS protection
+- SameSite=Strict + CSRF token = CSRF protection
+- Redis stores all tokens, cookie only holds session ID
+- Server-side token refresh, user never sees tokens
+- Same pattern used by Vercel, Stripe Dashboard, Linear
+
+### UI Design
+```
+Sidebar bottom:
+  ┌──────────────────────┐
+  │ 🟢 Store      ▼      │  ← active app
+  │ ──────────────────── │
+  │ 🟢 SaaS              │  ← other apps
+  │ ──────────────────── │
+  │ + Add new app        │  ← opens login
+  └──────────────────────┘
+```
+
+### Redux State
+```
+apps: []           // all saved app sessions
+activeAppId: ""    // which one is active
+```
+
+### Actions
+- `switchApp(appId)` → sets activeAppId, refetches dashboard
+- `addApp(appData)` → pushes to apps array, sets as active
+- `removeApp(appId)` → removes from array
+
+### What to Add
+- `express-session` + `connect-redis` for session middleware
+- `sessions` collection in MongoDB (or Redis) keyed by userId
+- `/switch-app` endpoint that updates the cookie
+
+---
+
+## Load Testing (After Deploy)
+
+### Tools
+- **Artillery** — YAML config, popular
+- **k6** — JS scripts, good for thresholds
+- **autocannon** — simplest, Node.js native
+
+### For Your Stack
+- gRPC backend is the bottleneck, not the gateway
+- Razorpay test keys handle ~100 req/sec
+- MongoDB Atlas free tier caps at ~500 connections
+- Mock Razorpay in load tests (test YOUR server, not Razorpay)
+
+### Start with autocannon (zero setup)
+```bash
+npx autocannon -c 50 -d 10 http://localhost:6283/api/v2/create
+```
+
+---
+
+## Study Resources for Multi-Profile System
+
+1. HTTP-only cookies vs localStorage — "httpOnly cookie vs localStorage authentication"
+2. Express sessions — "express session middleware tutorial"
+3. Redis session store — "express session redis store connect-redis"
+4. Multi-workspace pattern — "multi-tenant authentication pattern"
+5. Vercel's approach — "vercel multi team authentication architecture"
+6. Stripe Dashboard — "stripe multi-account dashboard switching"
+
+Key terms: session-based authentication vs JWT, multi-tenant SaaS authentication, workspace switching pattern, cookie-based session management
+
+Time: 2-3 hours total
+
+---
+
+## Run Commands
+
+```bash
+# Backend1 integration tests
+cd D:\Major_project\backend1
+npm run test:integration
+
+# ApiGateway integration tests
+cd D:\Major_project\ApiGateway
+npx tsx --test integration-testing/payment.test.ts
+
+# Ledger backfill
+cd D:\Major_project\backend1
+npx tsx scripts/backfill-ledger.ts
+```
+
+---
+
+## Important Notes
+- Backend1 uses CommonJS (`"module": "commonjs"`)
+- ApiGateway uses ESM (`"type": "module"`)
+- Both use `tsx` for TypeScript execution
+- `supertest` + `@types/supertest` installed in both
+- `mock.method()` from `node:test` works for mocking gRPC clients
+- `Module._load` patching via `--require` works for mocking npm packages
+- Express 5 is used in ApiGateway
+- Proto files: `backend/proto/merchant.proto` and `backend1/proto/payment.proto`
