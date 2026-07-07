@@ -12,7 +12,7 @@ interface ApiKey {
   expiresAt: string | null;
 }
 
-interface UserState {
+interface UserState { 
   apiKeys: ApiKey[];
   loading: boolean;
   error: string | null;
@@ -197,14 +197,14 @@ export const userSlice = createSlice({
         state.apiKeys = [];
       })
       .addCase(logoutSingleApp.fulfilled, (state, action) => {
-        const { appId, result } = action.payload;
-        state.userApps = state.userApps.filter((a) => a.appId !== appId);
-        if (result.activeApp) {
-          state.activeApp = result.activeApp;
-        } else if (result.authenticated === false) {
+        const { result } = action.payload;
+        if (result.authenticated === false) {
           state.activeApp = null;
           state.activeAppExpired = false;
           state.userApps = [];
+        } else if (result.userApps) {
+          state.userApps = result.userApps;
+          state.activeApp = result.activeApp;
         }
       })
       // API Keys

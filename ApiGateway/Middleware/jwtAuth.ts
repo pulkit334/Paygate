@@ -12,7 +12,9 @@ const JwtAuthMiddleware = (req: Request, res: Response, next: NextFunction) => {
     const tokenData = req.session.tokens?.[appId];
 
     if (!tokenData) {
-      throw AppError.Validation("No token found for active app. Please login to this app.");
+      throw AppError.Validation(
+        "No token found for active app. Please login to this app.",
+      );
     }
 
     const now = Date.now();
@@ -26,20 +28,23 @@ const JwtAuthMiddleware = (req: Request, res: Response, next: NextFunction) => {
       });
     }
 
-    merchantClient.MiddlewareAuth({ token: tokenData.jwt }, (err: any, response: any) => {
-      if (err) {
-        return next(AppError.Auth("Token verification failed"));
-      }
-      if (!response?.valid) {
-        return next(AppError.Auth("Invalid token"));
-      }
+    merchantClient.MiddlewareAuth(
+      { token: tokenData.jwt },
+      (err: any, response: any) => {
+        if (err) {
+          return next(AppError.Auth("Token verification failed"));
+        }
+        if (!response?.valid) {
+          return next(AppError.Auth("Invalid token"));
+        }
 
-      (req as any).merchant = {
-        _id: response.appId,
-      };
+        (req as any).merchant = {
+          _id: response.appId,
+        };
 
-      next();
-    });
+        next();
+      },
+    );
   } catch (error) {
     next(error);
   }

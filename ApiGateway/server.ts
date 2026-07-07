@@ -32,7 +32,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 
-// Session middleware (before rate limiters and routes)
 app.use(sessionMiddleware);
 
 const generalLimiter = rateLimit({
@@ -59,10 +58,7 @@ const paymentLimiter = rateLimit({
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "sahi hai bhi" });
 });
-
-// Session routes (no auth needed)
 app.use("/api/v1", SessionRoutes);
-
 app.use("/api/v1", generalLimiter, MerchantRoutes);
 app.use("/api/v1/api-keys", JwtAuthMiddleware, ApiKeyRoutes);
 app.use("/api/v2", paymentLimiter, JwtAuthMiddleware, PaymentRoutes);
@@ -78,7 +74,7 @@ app.use((err: any, req: any, res: any, next: any) => {
       type: err.type,
     });
   }
-  res.status(500).json({ error: "Internal server error" });
+  res.status(500).json({ error: "Internal server error", message : err});
 });
 
 process.on("uncaughtException", (err) => {

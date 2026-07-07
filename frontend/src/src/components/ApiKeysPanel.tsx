@@ -190,10 +190,6 @@ const CreateKeyModal = ({
       name.trim(),
       expiresAt ? new Date(expiresAt) : null,
     )
-// const result =  await 
-
-
-
   }
 
   return (

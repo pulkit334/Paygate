@@ -1,19 +1,12 @@
-
-
-
-
-
-
 class AppError extends Error {
   constructor(
     message: string,
-    public type: string,  
-    public statusCode: number
+    public type: string,
+    public statusCode: number,
   ) {
     super(message);
     this.name = type;
   }
-
 
   static Validation(message: string) {
     return new AppError(message, "ValidationError", 400);
@@ -22,7 +15,7 @@ class AppError extends Error {
   static Auth(message: string, statusCode: number = 401) {
     return new AppError(message, "AuthError", statusCode);
   }
-  
+
   static Payment(message: string) {
     return new AppError(message, "PaymentError", 400);
   }
@@ -39,6 +32,9 @@ class AppError extends Error {
     return new AppError(message, "DatabaseConnectionError", 503);
   }
 
+static SessionLimitExceeded(message: string) {
+  return new AppError(message, "SessionLimitExceededError", 403);
+}
   static UniqueConstraint(message: string, field?: string) {
     const err = new AppError(message, "UniqueConstraintError", 409);
     (err as any).field = field;

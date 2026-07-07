@@ -17,14 +17,25 @@ const protoDescriptor = grpc.loadPackageDefinition(packageDefinition) as any;
 const packageDefinitionPaymentService = protoLoader.loadSync(GRPCPaymentServicePath, {});
 const protoDescriptorPaymentone = grpc.loadPackageDefinition(packageDefinitionPaymentService) as any;
 
+
+const GRPC_DEADLINE_MS = 10_000;
+
 const merchantClient = new protoDescriptor.authpackage.MerchantAuth(
   "localhost:50001",
   grpc.credentials.createInsecure(),
+  {
+    "grpc.keepalive_time_ms": 30_000,
+    "grpc.keepalive_timeout_ms": 10_000,
+  },
 );
 
 const PaymentClient = new protoDescriptorPaymentone.paymentpackage.PaymentService(
   "localhost:50051",
   grpc.credentials.createInsecure(),
+  {
+    "grpc.keepalive_time_ms": 30_000,
+    "grpc.keepalive_timeout_ms": 10_000,
+  },
 );
 
-export { merchantClient, PaymentClient };
+export { merchantClient, PaymentClient, GRPC_DEADLINE_MS };

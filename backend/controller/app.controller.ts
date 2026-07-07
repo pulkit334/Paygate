@@ -60,22 +60,22 @@ export const LoginController = async (
     const { ownerEmail, password } = result.data;
 
     let app = null;
-    const cached = await redisClient.get(`user:${ownerEmail}`);
+    // const cached = await redisClient.get(`user:${ownerEmail}`);
 
-    if (cached) {
-      app = JSON.parse(cached);
-    } else {
-      app = await appSchema.findOne({ ownerEmail }).select("_id passwordHash");
+    // if (cached) {
+    //   app = JSON.parse(cached);
+    // } else {
+    app = await appSchema.findOne({ ownerEmail }).select("_id passwordHash");
 
-      if (app) {
-        await redisClient.set(
-          `user:${ownerEmail}`,
-          JSON.stringify(app),
-          "EX",
-          300,
-        );
-      }
-    }
+    //   if (app) {
+    //     await redisClient.set(
+    //       `user:${ownerEmail}`,
+    //       JSON.stringify(app),
+    //       "EX",
+    //       300,
+    //     );
+    //   }  
+    // }
 
     if (!app) {
       return callback({
@@ -91,8 +91,6 @@ export const LoginController = async (
         message: `Invalid Password`,
       });
     }
-
-    console.log(process.env.JWT_SECRET);
     const token = jwt.sign(
       { appId: app._id },
       process.env.JWT_SECRET as string,

@@ -9,7 +9,7 @@ const sections = [
   { id: 'getting-started', label: 'Getting Started', icon: BookOpen },
   { id: 'authentication', label: 'Authentication', icon: Shield },
   { id: 'payments', label: 'Payments API', icon: Terminal },
-  { id: 'sdk', label: 'React SDK', icon: Package },
+  { id: 'integration', label: 'Integration', icon: Package },
   { id: 'webhooks', label: 'Webhooks', icon: Code },
   { id: 'errors', label: 'Error Codes', icon: SettingsIcon },
 ]
@@ -165,41 +165,58 @@ curl -X POST https://api.paygate.io/v2/create \\
       </div>
     ),
   },
-  'sdk': {
-    title: 'React SDK',
+  'integration': {
+    title: 'Integration',
     body: (
       <div className="space-y-6">
         <p className="text-text-secondary leading-relaxed">
-          Our React SDK provides a drop-in PaymentModal component. Import it into any app and start collecting payments immediately.
+          Integrate PayGate into your app with 3 API calls using axios.
         </p>
 
-        <h3 className="text-lg font-semibold text-text-primary">Installation</h3>
-        <CodeBlock code={`npm install @paygate/widget`} />
+        <h3 className="text-lg font-semibold text-text-primary">1. Install axios</h3>
+        <CodeBlock code={`npm install axios`} />
 
-        <h3 className="text-lg font-semibold text-text-primary">Usage</h3>
-        <CodeBlock code={`import { PaymentModal } from '@paygate/widget';
+        <h3 className="text-lg font-semibold text-text-primary">2. Create a payment order</h3>
+        <CodeBlock code={`import axios from 'axios';
 
-function CheckoutPage() {
-  return (
-    <PaymentModal
-      amount={2499}
-      currency="INR"
-      merchantPublicKey="pk_live_..."
-      onSuccess={(transactionId) => {
-        console.log('Payment succeeded:', transactionId);
-      }}
-      onFailure={(error) => {
-        console.error('Payment failed:', error);
-      }}
-    />
-  );
-}`} />
+const API = axios.create({
+  baseURL: 'https://api.paygate.com/v2',
+  headers: { Authorization: \`Bearer \${yourApiKey}\` },
+});
+
+const { data } = await API.post('/create', {
+  amount: 2499, // in paise
+  currency: 'INR',
+  customerEmail: 'customer@example.com',
+});
+
+const { orderId, razorpayKey } = data;`} />
+
+        <h3 className="text-lg font-semibold text-text-primary">3. Open Razorpay checkout</h3>
+        <CodeBlock code={`const rzp = new window.Razorpay({
+  key: razorpayKey,
+  amount: 2499,
+  currency: 'INR',
+  order_id: orderId,
+  handler: async (response) => {
+    // Step 4: Verify payment
+    const { data } = await API.post('/verify', {
+      razorpay_order_id: response.razorpay_order_id,
+      razorpay_payment_id: response.razorpay_payment_id,
+      razorpay_signature: response.razorpay_signature,
+    });
+
+    console.log('Payment verified:', data.transactionId);
+  },
+});
+
+rzp.open();`} />
 
         <div className="bg-warning/10 border border-warning/20 rounded-[10px] p-5 mt-6">
           <p className="text-sm text-warning font-medium">Important</p>
           <p className="text-sm text-text-secondary mt-1">
-            Never expose your secret key in client-side code. The PaymentModal only needs your
-            public key. All secret key operations happen server-side.
+            Never expose your secret key in client-side code. Use your publishable API key
+            for client-side requests. Secret key operations happen server-side.
           </p>
         </div>
       </div>

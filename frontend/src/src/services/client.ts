@@ -1,8 +1,5 @@
   import axios, { type AxiosInstance } from "axios";
 
-  // Session-based auth: no need to attach Authorization header
-  // The session cookie (pg.sid) is sent automatically by the browser
-
   const attachInterceptors = (instance: AxiosInstance) => {
     instance.interceptors.response.use(
       (response) => response,
@@ -14,6 +11,10 @@
 
         if (status === 401 && !isAuthRoute) {
           window.location.replace("/login");
+        }
+
+        if (status === 403 && error.response?.data?.type === "SessionLimitExceededError") {
+          error.message = error.response.data.error;
         }
 
         return Promise.reject(error);

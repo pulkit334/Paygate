@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+
 import { useSelector, useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import type { RootState, AppDispatch } from '../store'
@@ -11,12 +12,17 @@ const AppSwitcher = () => {
   const navigate = useNavigate()
   const { activeApp, userApps } = useSelector((state: RootState) => state.user)
   const [open, setOpen] = useState(false)
+  const [now, setNow] = useState(() => Date.now())
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 60_000)
+    return () => clearInterval(id)
+  }, [])
 
   if (!activeApp || userApps.length === 0) return null
 
   const formatTimeLeft = (expiresAt: number): string => {
-    const now = Date.now()
-    const diff = expiresAt - now
+    const diff = expiresAt - now;
     if (diff <= 0) return 'Expired'
     const hours = Math.floor(diff / (1000 * 60 * 60))
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
@@ -35,7 +41,6 @@ const AppSwitcher = () => {
     }
 
     if (app.expired) {
-      // Token expired — redirect to login for this app
       setOpen(false)
       navigate('/login')
       return

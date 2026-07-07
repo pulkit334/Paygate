@@ -3,12 +3,10 @@ import AppError from "../utils/Error";
 
 const router = express.Router();
 
-// Helper: check if a token is expired
 const isTokenExpired = (expiresAt: number): boolean => {
-  return Date.now() > expiresAt + 30 * 1000; // 30s buffer
+  return Date.now() > expiresAt + 30 * 1000;
 };
 
-// Helper: build app list with status
 const buildAppsList = (session: any) => {
   const apps: Array<{
     appId: string;
@@ -33,7 +31,6 @@ const buildAppsList = (session: any) => {
   return apps;
 };
 
-// GET /session - get current session info with per-app status
 router.get("/session", (req: Request, res: Response) => {
   if (!req.session.activeApp) {
     return res.status(200).json({
@@ -43,8 +40,11 @@ router.get("/session", (req: Request, res: Response) => {
     });
   }
 
+
   const activeToken = req.session.tokens?.[req.session.activeApp];
-  const activeAppExpired = activeToken ? isTokenExpired(activeToken.expiresAt) : true;
+  const activeAppExpired = activeToken
+    ? isTokenExpired(activeToken.expiresAt)
+    : true;
 
   res.status(200).json({
     authenticated: true,
@@ -53,8 +53,6 @@ router.get("/session", (req: Request, res: Response) => {
     userApps: buildAppsList(req.session),
   });
 });
-
-// POST /session/switch - switch active app (validates token isn't expired)
 router.post("/session/switch", (req: Request, res: Response) => {
   const { appId } = req.body;
 
@@ -63,12 +61,12 @@ router.post("/session/switch", (req: Request, res: Response) => {
   }
 
   const tokenData = req.session.tokens?.[appId];
-
   if (!tokenData) {
-    throw AppError.Validation("App not found in session. Please login to this app first.");
+    throw AppError.Validation(
+      "App not found in session. Please login to this app first.",
+    );
   }
 
-  // Validate token isn't expired before switching
   if (isTokenExpired(tokenData.expiresAt)) {
     return res.status(401).json({
       error: "TOKEN_EXPIRED",
@@ -79,14 +77,17 @@ router.post("/session/switch", (req: Request, res: Response) => {
 
   req.session.activeApp = appId;
 
-  res.status(200).json({
-    success: true,
-    activeApp: appId,
-    expiresAt: tokenData.expiresAt,
+  req.session.save((saveErr) => {
+    if (saveErr) {
+      return res.status(500).json({ error: "Failed to save session" });
+    }
+    res.status(200).json({
+      success: true,
+      activeApp: appId,
+      expiresAt: tokenData.expiresAt,
+    });
   });
 });
-
-// POST /session/logout - destroy session (logout from ALL apps, ALL devices)
 router.post("/session/logout", (req: Request, res: Response) => {
   const sid = req.sessionID;
 
@@ -103,9 +104,10 @@ router.post("/session/logout", (req: Request, res: Response) => {
   });
 });
 
-// DELETE /session/apps/:appId - logout from a specific app only
+
+
 router.delete("/session/apps/:appId", (req: Request, res: Response) => {
-  const { appId } = req.params;
+  const appId = req.params.appId as string;
 
   if (!req.session.tokens || !req.session.tokens[appId]) {
     throw AppError.Validation("App not found in session");
@@ -113,7 +115,9 @@ router.delete("/session/apps/:appId", (req: Request, res: Response) => {
 
   // Remove the app token from session
   delete req.session.tokens[appId];
-  req.session.userApps = (req.session.userApps || []).filter((id: string) => id !== appId);
+  req.session.userApps = (req.session.userApps || []).filter(
+    (id: string) => id !== appId,
+  );
 
   // If we logged out of the active app, switch to another one
   if (req.session.activeApp === appId) {

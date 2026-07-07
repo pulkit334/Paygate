@@ -1,16 +1,24 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { LayoutDashboard, ArrowLeftRight, Webhook, Settings, LogOut, BookOpen, Menu, X } from 'lucide-react'
 import { logoutSession } from '../services/auth.service'
-import { resetUser } from '../toolkit/user-redux-toll/user-redux'
+import { resetUser, fetchSession } from '../toolkit/user-redux-toll/user-redux'
+import type { RootState, AppDispatch } from '../store'
 import AppSwitcher from './AppSwitcher'
 
 const Navbar = () => {
   const location = useLocation()
   const navigate = useNavigate()
-  const dispatch = useDispatch()
+  const dispatch = useDispatch<AppDispatch>()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const sessionLoaded = useSelector((state: RootState) => state.user.sessionLoaded)
+
+  useEffect(() => {
+    if (!sessionLoaded) {
+      dispatch(fetchSession())
+    }
+  }, [dispatch, sessionLoaded])
 
   const handleLogout = async () => {
     try {

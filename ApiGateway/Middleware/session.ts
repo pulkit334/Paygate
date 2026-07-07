@@ -1,6 +1,6 @@
 import session from "express-session";
-import { RedisStore } from "connect-redis";
-import Redis from "ioredis";
+import RedisStore from "connect-redis";
+import { redisClient } from "../config/redis";
 
 export interface AppToken {
   jwt: string;
@@ -21,26 +21,30 @@ const JWT_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 export { SESSION_TTL_MS, JWT_TTL_MS };
 
-const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
+const isProduction = process.env.NODE_ENV === "production";
 
-const sessionClient = new Redis(REDIS_URL);
-
-sessionClient.on("error", (err) => console.error("Session Redis error:", err));
+const SESSION_SECRET = process.env.SESSION_SECRET;
+if (!SESSION_SECRET && isProduction) {
+  throw new Error(
+    "SESSION_SECRET environment variable must be set in production",
+  );
+}
+const sessionSecret = SESSION_SECRET || "paygate-session-secret-dev-only";
 
 const sessionMiddleware = session({
   store: new RedisStore({
-    client: sessionClient,
+    client: redisClient,
     prefix: "pg:sess:",
     ttl: SESSION_TTL_MS / 1000,
-  }) as any,
-  secret: process.env.SESSION_SECRET || "paygate-session-secret-change-in-production",
+  }),
+  secret: sessionSecret,
   name: "pg.sid",
   resave: false,
   saveUninitialized: false,
   cookie: {
     maxAge: SESSION_TTL_MS,
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: false,
     sameSite: "lax",
   },
 });

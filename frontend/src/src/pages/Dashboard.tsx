@@ -101,10 +101,7 @@ const Dashboard = () => {
               />
               {refreshing ? "Refreshing..." : "Refresh"}
             </button>
-            <div className="flex items-center gap-2 px-4 py-2 bg-success-soft border border-success/20 rounded-md text-success text-sm">
-              <TrendingUp size={16} />
-              <span className="font-medium">+12.5% this month</span>
-            </div>
+
           </div>
         </div>
 

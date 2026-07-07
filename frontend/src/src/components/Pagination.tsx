@@ -20,10 +20,6 @@ const Pagination = ({
   const end = Math.min(totalPages, start + visiblePages - 1);
 
   const pages = Array.from({ length: end - start + 1 }, (_, i) => start + i);
-  // easir .one
-  // for (let page = start; page <= end; page++) {
-  //   pages.push(page);
-  // }
   return (
     <div className="flex items-center justify-center gap-6 mt-6">
       <div className="flex items-center gap-1">

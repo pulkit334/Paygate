@@ -162,11 +162,7 @@ const Webhooks = () => {
       });
     }
   };
-  console.log(
-    "the type of the deliveries would be ",
-    typeof deliveries,
-    deliveries,
-  );
+
   const succeeded = deliveries.filter(
     (d) => d.status === "success" || d.status === "delivered",
   ).length;
