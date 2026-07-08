@@ -5,6 +5,7 @@ import Docs from "./pages/Docs";
 import Contact from "./pages/Contact";
 import Pricing from "./pages/Pricing";
 import Dashboard from "./pages/Dashboard";
+import Charts from "./pages/Charts";
 import Transactions from "./pages/Transactions";
 import Webhooks from "./pages/Webhooks";
 import Settings from "./pages/Settings";
@@ -18,6 +19,7 @@ const router = createBrowserRouter([
   { path: "/contact", element: <Contact /> },
   { path: "/pricing", element: <Pricing /> },
   { path: "/dashboard", element: <Dashboard /> },
+  { path: "/charts", element: <Charts /> },
   { path: "/transactions", element: <Transactions /> },
   { path: "/webhooks", element: <Webhooks /> },
   { path: "/settings", element: <Settings /> },

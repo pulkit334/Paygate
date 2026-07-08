@@ -189,9 +189,17 @@ const Dashboard = () => {
                   <h2 className="text-lg font-semibold text-text-primary font-display">
                     Daily Volume
                   </h2>
-                  <div className="flex items-center gap-2 text-xs text-text-muted">
-                    <div className="w-2 h-2 rounded-full bg-accent" />
-                    Last 7 days
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 text-xs text-text-muted">
+                      <div className="w-2 h-2 rounded-full bg-accent" />
+                      Last 7 days
+                    </div>
+                    <span
+                      onClick={() => Navigate("/charts")}
+                      className="text-xs text-accent flex items-center gap-1 cursor-pointer hover:underline"
+                    >
+                      Expand <ArrowUpRight size={12} />
+                    </span>
                   </div>
                 </div>
                 <div className="bg-surface border border-border rounded-[10px] p-6">

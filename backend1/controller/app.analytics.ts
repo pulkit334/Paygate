@@ -15,28 +15,49 @@ export const GetAnalyticsSummary = async (
       });
     }
 
-    const [result] = await Transaction.aggregate([
-      {
-        $match: {
-          appId: new mongoose.Types.ObjectId(appId),
-          status: "paid",
+    const [allResult, paidResult] = await Promise.all([
+      Transaction.aggregate([
+        {
+          $match: {
+            appId: new mongoose.Types.ObjectId(appId),
+          },
         },
-      },
-      {
-        $group: {
-          _id: null,
-          totalReceived: { $sum: "$amount" },
-          totalTransactions: { $sum: 1 },
-          lastPaymentAt: { $max: "$createdAt" },
+        {
+          $group: {
+            _id: null,
+            totalTransactions: { $sum: 1 },
+          },
         },
-      },
+      ]),
+      Transaction.aggregate([
+        {
+          $match: {
+            appId: new mongoose.Types.ObjectId(appId),
+            status: "paid",
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            totalReceived: { $sum: "$amount" },
+            paidCount: { $sum: 1 },
+            lastPaymentAt: { $max: "$createdAt" },
+          },
+        },
+      ]),
     ]);
 
-    const totalReceived = result?.totalReceived ?? 0;
-    const totalTransactions = result?.totalTransactions ?? 0;
-    const lastPaymentAt = result?.lastPaymentAt ?? null;
+    const totalTransactions = allResult[0]?.totalTransactions ?? 0;
+    const totalReceived = paidResult[0]?.totalReceived ?? 0;
+    const paidCount = paidResult[0]?.paidCount ?? 0;
+    const lastPaymentAt = paidResult[0]?.lastPaymentAt ?? null;
 
-    const successRate = totalTransactions > 0 ? 100 : 0;
+
+
+
+    const successRate = totalTransactions > 0
+      ? Math.round((paidCount / totalTransactions) * 100)
+      : 0;
 
     callback(null, {
       totalReceived,
@@ -64,16 +85,18 @@ export const DashboardAnalytics = async (
         message: "appId is required",
       });
     }
+    const days = Math.max(1, parseInt(call.request.days, 10) || 7);
     const fromDate = new Date();
-    fromDate.setDate(fromDate.getDate() - 6);
+    fromDate.setDate(fromDate.getDate() - (days - 1));
     fromDate.setHours(0, 0, 0, 0);
 
     const TransactionResult = await Transaction.aggregate([
       {
         $match: {
           appId: new mongoose.Types.ObjectId(appId),
+          status: "paid",
           createdAt: {
-            $gte: fromDate,
+            $gte: fromDate, 
             $lte: new Date(),
           },
         },
@@ -110,7 +133,17 @@ export const DashboardAnalytics = async (
       },
     ]);
 
-    callback(null, { days: TransactionResult });
+    const dataMap = new Map(TransactionResult.map((d) => [d.date, d]));
+    
+    const filled = [];
+    for (let i = 0; i < days; i++) {
+      const d = new Date(fromDate);
+      d.setDate(d.getDate() + i);
+      const key = d.toISOString().slice(0, 10);
+      filled.push(dataMap.get(key) ?? { date: key, amount: 0, count: 0 });
+    }
+
+    callback(null, { days: filled });
   } catch (err) {
     callback({
       code: status.INTERNAL,
