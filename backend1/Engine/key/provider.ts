@@ -1,4 +1,5 @@
 import ProviderKey from "../../models/providerKey";
+import { decrypt } from "../../util/encryption";
 
 class RazerPayService {
 
@@ -20,7 +21,7 @@ class RazerPayService {
       .select("keySecret")
       .lean();
     if (!key) throw new Error("Razorpay Secretkey ID not configured");
-    return key.keySecret;
+    return decrypt(key.keySecret);
   }
 
 

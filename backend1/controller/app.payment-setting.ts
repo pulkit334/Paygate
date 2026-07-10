@@ -1,5 +1,6 @@
 import { sendUnaryData, ServerUnaryCall, status } from "@grpc/grpc-js";
 import ProviderKey from "../models/providerKey";
+import { encrypt } from "../util/encryption";
 
 export const UpdateProviderKey = async (
   call: ServerUnaryCall<any, any>,
@@ -19,11 +20,11 @@ export const UpdateProviderKey = async (
 
     if (existing) {
       existing.keyId = keyId;
-      existing.keySecret = keySecret;
+      existing.keySecret = encrypt(keySecret);
       existing.isActive = true;
       await existing.save();
     } else {
-      await ProviderKey.create({ appId, provider, keyId, keySecret, isActive: true });
+      await ProviderKey.create({ appId, provider, keyId, keySecret: encrypt(keySecret), isActive: true });
     }
 
     callback(null, { success: true, message: `${provider} keys updated successfully` });
