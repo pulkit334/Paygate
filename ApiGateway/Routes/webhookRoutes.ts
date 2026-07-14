@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
-import { PaymentClient } from "../GrpcRef/Grpc";
-import AppError from "../utils/Error";
+import { PaymentClient } from "../GrpcRef/Grpc.js";
+import AppError from "../utils/Error.js";
 
 const router = express.Router();
 

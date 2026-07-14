@@ -9,7 +9,7 @@ import ProviderConnect from '../components/ProviderConnect'
 import SecretKeyModal from '../components/SecretKeyModal'
 import ApiKeysPanel from '../components/ApiKeysPanel'
 import { getSettings, rotateKeys, updateCallbackUrl } from '../services/settings.service'
-import { Key, Link, AlertTriangle, Copy, Check, Shield, RefreshCw, CreditCard, User, Webhook } from 'lucide-react'
+import { Key, AlertTriangle, Check, Shield, CreditCard, User, Webhook } from 'lucide-react'
 
 type Tab = 'profile' | 'providers' | 'api-keys' | 'webhooks' | 'security'
 
@@ -26,7 +26,7 @@ const Settings = () => {
   const { apiKeys, loading: keysLoading, newlyCreatedKey } = useSelector((state: RootState) => state.user)
   const [activeTab, setActiveTab] = useState<Tab>('providers')
 
-  const [publicKey, setPublicKey] = useState('')
+  const [, setPublicKey] = useState('')
   const [callbackUrl, setCallbackUrl] = useState('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -35,7 +35,6 @@ const Settings = () => {
   const [newCallbackUrl, setNewCallbackUrl] = useState('')
   const [showRotateConfirm, setShowRotateConfirm] = useState(false)
   const [newKeys, setNewKeys] = useState<{ publicKey: string; secretKey: string } | null>(null)
-  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     dispatch(fetchApiKeys() as any)
@@ -82,11 +81,7 @@ const Settings = () => {
     }
   }
 
-  const copyKey = (text: string) => {
-    navigator.clipboard.writeText(text)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
+
 
   if (newKeys) {
     return <SecretKeyModal publicKey={newKeys.publicKey} onSaved={() => setNewKeys(null)} />

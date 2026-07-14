@@ -1,5 +1,5 @@
 import express, { Request, Response, NextFunction } from "express";
-import AppError from "../utils/Error";
+import AppError from "../utils/Error.js";
 
 const router = express.Router();
 

@@ -3,12 +3,13 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
-RUN npm run build 2>/dev/null || true
+RUN npm run build
 
 FROM node:20-alpine
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci --omit=dev
 COPY --from=builder /app/dist ./dist
-EXPOSE 4000
+COPY --from=builder /app/proto ./dist/proto
+EXPOSE 50002
 CMD ["node", "dist/server.js"]

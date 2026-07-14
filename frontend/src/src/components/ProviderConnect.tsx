@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { CreditCard, Check, Eye, EyeOff, X, Plug, Loader2 } from 'lucide-react'
+import { Check, Eye, EyeOff, X, Plug, Loader2 } from 'lucide-react'
 import {
   getProviderKeys,
   saveProviderKey,

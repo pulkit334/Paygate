@@ -1,4 +1,4 @@
-import AppError from "./Error";
+import AppError from "./Error.js";
 
 const GrpcStatus = {
   OK: 0,

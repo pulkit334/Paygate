@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
+import type { AppDispatch } from '../store'
 import { login } from '../services/auth.service'
 import { fetchSession } from '../toolkit/user-redux-toll/user-redux'
 
 const Login = () => {
   const navigate = useNavigate()
-  const dispatch = useDispatch()
+  const dispatch = useDispatch<AppDispatch>()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)

@@ -10,5 +10,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci --omit=dev
 COPY --from=builder /app/dist ./dist
-EXPOSE 4000
+RUN mkdir -p /app/backend/proto /app/backend1/proto
+COPY --from=builder /app/proto/merchant.proto /app/backend/proto/merchant.proto
+COPY --from=builder /app/proto/payment.proto /app/backend1/proto/payment.proto
+EXPOSE 6283
 CMD ["node", "dist/server.js"]

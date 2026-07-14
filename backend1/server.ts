@@ -13,7 +13,7 @@ import { GetLedger } from "./controller/app.ledger";
 import { fileURLToPath } from "url";
 import path from "path";
 
-const PORT = process.env.PORT || 60001;
+const PORT = process.env.GRPC_PORT || 50051;
 
 //Load the Path First
 const PROTO_PATH = path.resolve(__dirname, "./proto/payment.proto");

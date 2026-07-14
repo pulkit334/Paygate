@@ -1,6 +1,6 @@
 import express, { Request, Response, NextFunction } from "express";
-import AppError from "../utils/Error";
-import { merchantClient } from "../GrpcRef/Grpc";
+import AppError from "../utils/Error.js";
+import { merchantClient } from "../GrpcRef/Grpc.js";
 
 const router = express.Router();
 

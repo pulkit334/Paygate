@@ -5,26 +5,38 @@ import cors from "cors";
 import { RedisStore } from "rate-limit-redis";
 import rateLimit from "express-rate-limit";
 dotenv.config();
-import AppError from "./utils/Error";
-import MerchantRoutes from "./Routes/MerhcantRoutes";
-import PaymentRoutes from "./Routes/PaymentRoutes";
-import WebhookRoutes from "./Routes/webhookRoutes";
-import WebhookHistoryRoutes from "./Routes/WebhookHistoryRoutes";
-import ApiKeyRoutes from "./Routes/ApiKeyRoutes";
-import AnalyticsRoutes from "./Routes/AnalyticsRoutes";
-import ProviderKeyRoutes from "./Routes/ProviderKeyRoutes";
-import SessionRoutes from "./Routes/SessionRoutes";
-import { JwtAuthMiddleware } from "./Middleware/jwtAuth";
-import sessionMiddleware from "./Middleware/session";
-import { redisClient } from "./config/redis";
+import AppError from "./utils/Error.js";
+import MerchantRoutes from "./Routes/MerhcantRoutes.js";
+import PaymentRoutes from "./Routes/PaymentRoutes.js";
+import WebhookRoutes from "./Routes/webhookRoutes.js";
+import WebhookHistoryRoutes from "./Routes/WebhookHistoryRoutes.js";
+import ApiKeyRoutes from "./Routes/ApiKeyRoutes.js";
+import AnalyticsRoutes from "./Routes/AnalyticsRoutes.js";
+import ProviderKeyRoutes from "./Routes/ProviderKeyRoutes.js";
+import SessionRoutes from "./Routes/SessionRoutes.js";
+import { JwtAuthMiddleware } from "./Middleware/jwtAuth.js";
+import sessionMiddleware from "./Middleware/session.js";
+import { redisClient } from "./config/redis.js";
 const app = express();
 
 app.use("/webhook/razorpay", express.raw({ type: "application/json" }));
 
 // CORS
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:5173')
+  .split(',')
+  .map(origin => origin.trim());
+
 app.use(cors({
-  origin : "http://localhost:5173",
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS: ' + origin));
+    }
+  },
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
 // Global middleware

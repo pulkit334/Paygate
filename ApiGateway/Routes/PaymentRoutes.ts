@@ -1,8 +1,8 @@
 import express, { NextFunction, Request, Response } from "express";
 import crypto from "crypto";
-import { merchantClient, PaymentClient } from "../GrpcRef/Grpc";
-import { ApiKeyMiddleware } from "../Middleware/validate_APi_Key";
-import AppError from "../utils/Error";
+import { merchantClient, PaymentClient } from "../GrpcRef/Grpc.js";
+import { ApiKeyMiddleware } from "../Middleware/validate_APi_Key.js";
+import AppError from "../utils/Error.js";
 
 const router = express.Router();
 

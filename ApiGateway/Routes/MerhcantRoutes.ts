@@ -1,9 +1,9 @@
 import express, { Request, Response, NextFunction } from "express";
-import { merchantClient, GRPC_DEADLINE_MS } from "../GrpcRef/Grpc";
-import { JwtAuthMiddleware } from "../Middleware/jwtAuth";
-import { JWT_TTL_MS } from "../Middleware/session";
-import AppError from "../utils/Error";
-import { mapGrpcError } from "../utils/grpcErrors";
+import { merchantClient, GRPC_DEADLINE_MS } from "../GrpcRef/Grpc.js";
+import { JwtAuthMiddleware } from "../Middleware/jwtAuth.js";
+import { JWT_TTL_MS } from "../Middleware/session.js";
+import AppError from "../utils/Error.js";
+import { mapGrpcError } from "../utils/grpcErrors.js";
 import jwt from "jsonwebtoken";
 
 const router = express.Router();

@@ -1,4 +1,4 @@
-import { Link, redirect, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowRight,
   Code,
@@ -14,7 +14,6 @@ import {
   Globe,
 } from "lucide-react";
 import { FadeIn } from "../hooks/useInView";
-import { useEffect } from "react";
 import { getSession } from "../services/auth.service";
 
 const providers = [

@@ -1,6 +1,6 @@
 import session from "express-session";
 import RedisStore from "connect-redis";
-import { redisClient } from "../config/redis";
+import { redisClient } from "../config/redis.js";
 
 export interface AppToken {
   jwt: string;

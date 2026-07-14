@@ -1,7 +1,7 @@
 import express, { Request, Response, NextFunction } from "express";
 import axios from "axios";
-import { JwtAuthMiddleware } from "../Middleware/jwtAuth";
-import AppError from "../utils/Error";
+import { JwtAuthMiddleware } from "../Middleware/jwtAuth.js";
+import AppError from "../utils/Error.js";
 
 const router = express.Router();
 
@@ -17,7 +17,8 @@ router.get(
         throw AppError.Validation("Unauthorized");
       }
 
-      const response = await axios.get("http://localhost:4000/api/webhooks", {
+      const WEBHOOK_SERVICE_URL = process.env.WEBHOOK_SERVICE_URL || "http://localhost:4000";
+      const response = await axios.get(`${WEBHOOK_SERVICE_URL}/api/webhooks`, {
         params: { appId, from, limit, offset },
       });
 

@@ -1,25 +1,84 @@
-version: '3.8'
-
 services:
+  # 1. Redis - Session Store
   redis:
     image: redis:alpine
     container_name: paygate-redis
     ports:
       - "6379:6379"
     command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
-  backend1:
-    build: ./backend1 
+  # 2. Backend - Merchant Service  (legacy/standalone)
+  backend:
+    build: ./backend
+    container_name: paygate-backend
     ports:
-      - "3000:3000"
+      - "50002:50002"
+    env_file:
+      - ./backend/.env
     environment:
       - REDIS_URL=redis://redis:6379
+      - GRPC_PORT=50002
     depends_on:
+      redis:
+        condition: service_healthy
+
+  # 3. Backend 1 - Payment Service (gRPC)
+  backend1:
+    build: ./backend1
+    container_name: paygate-backend1
+    ports:
+      - "50051:50051"
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - GRPC_PORT=50051
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  # 4. Backend 2 - Webhook Service (HTTP)
+  backend2:
+    build: ./backend2
+    container_name: paygate-backend2
+    ports:
+      - "4000:4000"
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - PORT=4000
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  # 4. API Gateway (Express) - Public Entry Point
+  apigateway:
+    build: ./ApiGateway
+    container_name: paygate-apigateway
+    ports:
+      - "6283:6283"
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - MERCHANT_GRPC_URL=backend:50002
+      - PAYMENT_GRPC_URL=backend1:50051
+      - WEBHOOK_SERVICE_URL=http://backend2:4000
+      - ALLOWED_ORIGINS=http://localhost:5173
+    depends_on:
+      - backend1
+      - backend2
       - redis
 
-  backend2:
-    build: ./backend2  
-    environment:
-      - REDIS_URL=redis://redis:6379
+  # 5. Frontend (React) - Static Files via Nginx
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_BASE_URL1: http://localhost:6283/api/v1
+        VITE_BASE_URL2: http://localhost:6283/api/v2
+    container_name: paygate-frontend
+    ports:
+      - "5173:80"
     depends_on:
-      - redis
+      - apigateway

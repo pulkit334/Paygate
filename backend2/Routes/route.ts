@@ -16,7 +16,7 @@ router.post("/test-webhook", async (req, res) => {
       "*",
       "appId", appId || "test_app",
       "transactionId", `txn_${Date.now()}`,
-      "callbackUrl", callbackUrl || "http://localhost:4000/api/flaky",
+      "callbackUrl", callbackUrl || `${process.env.WEBHOOK_SERVICE_URL || "http://localhost:4000"}/api/flaky`,
       "amount", "5000",
       "currency", "INR",
       "status", "success"

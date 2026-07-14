@@ -16,7 +16,7 @@ import {
 } from "./controller/app.controller";
 import { CreateApiKey, ListApiKeys, DeleteApiKey } from "./controller/app.api-keys";
 dotenv.config();
-const PORT = process.env.GRPC_PORT || 50051;
+const PORT = process.env.GRPC_PORT || 50002;
 const app = express();
 app.use(express.json());
 // 1. LOAD THE PROTO CONTRACT FILE

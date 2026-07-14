@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
-import { merchantClient } from "../GrpcRef/Grpc";
-import AppError from "../utils/Error";
+import { merchantClient } from "../GrpcRef/Grpc.js";
+import AppError from "../utils/Error.js";
 
 const ApiKeyMiddleware = (req: Request, res: Response, next: NextFunction) => {
   try {

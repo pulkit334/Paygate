@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
-import { PaymentClient } from "../GrpcRef/Grpc";
-import { JwtAuthMiddleware } from "../Middleware/jwtAuth";
-import AppError from "../utils/Error";
+import { PaymentClient } from "../GrpcRef/Grpc.js";
+import { JwtAuthMiddleware } from "../Middleware/jwtAuth.js";
+import AppError from "../utils/Error.js";
 
 const router = express.Router();
 
