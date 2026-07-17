@@ -15,9 +15,10 @@ const payWebhook = async (
   try {
     // 1. Verify HMAC signature
     const signature = call.request.signature as string;
+    const rawBody = call.request.raw_body as string;
     const expectedSignature = crypto
-      .createHmac("sha256", process.env.RAZORPAY_WEBHOOK_SECRET as string)
-      .update(JSON.stringify(call.request.body))
+      .createHmac("sha256", process.env.WEBHOOK_SIGNING_SECRET as string)
+      .update(rawBody)
       .digest("hex");
 
     if (signature !== expectedSignature) {
@@ -28,8 +29,9 @@ const payWebhook = async (
       });
     }
 
-    // 2. Only handle payment.captured
-    const event = call.request.body.event;
+    // 2. Parse raw body for event and payment details
+    const webhookData = JSON.parse(rawBody);
+    const event = webhookData.event;
     if (event !== "payment.captured") {
       return callback({
         code: status.INVALID_ARGUMENT,
@@ -39,10 +41,10 @@ const payWebhook = async (
 
     // 3. Extract payment details
     const razorpayOrderId: string =
-      call.request.body.payload.payment.entity.order_id;
-    const razorpayPayId: string = call.request.body.payload.payment.entity.id;
-    const amountPaise: number = call.request.body.payload.payment.entity.amount;
-    const currency: string = call.request.body.payload.payment.entity.currency;
+      webhookData.payload.payment.entity.order_id;
+    const razorpayPayId: string = webhookData.payload.payment.entity.id;
+    const amountPaise: number = webhookData.payload.payment.entity.amount;
+    const currency: string = webhookData.payload.payment.entity.currency;
 
     // 4. Transactional DB writes
     let appId: string = "";

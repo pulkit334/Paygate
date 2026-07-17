@@ -22,8 +22,8 @@
     );
   };
 
-  const BASE_URL1 = (import.meta as any).env?.VITE_BASE_URL1 || "http://localhost:6283/api/v1";
-  const BASE_URL2 = (import.meta as any).env?.VITE_BASE_URL2 || "http://localhost:6283/api/v2";
+  const BASE_URL1 = (import.meta as any).env?.VITE_BASE_URL1 || "http://13.206.54.168:6283/api/v1";
+  const BASE_URL2 = (import.meta as any).env?.VITE_BASE_URL2 || "http://13.206.54.168:6283/api/v2";
 
   export const MerchantApi = axios.create({
     baseURL: BASE_URL1,

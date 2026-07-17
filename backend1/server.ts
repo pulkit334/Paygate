@@ -9,6 +9,7 @@ import { createOrder, GetTransaction, VerifyOrder } from "./controller/app.payme
 import { DashboardAnalytics, GetAnalyticsSummary } from "./controller/app.analytics";
 import { UpdateProviderKey, GetProviderKeys, DeleteProviderKey } from "./controller/app.payment-setting";
 import { GetLedger } from "./controller/app.ledger";
+import payWebhook from "./controller/app.webhook";
 
 import { fileURLToPath } from "url";
 import path from "path";
@@ -17,7 +18,7 @@ const PORT = process.env.GRPC_PORT || 50051;
 
 //Load the Path First
 const PROTO_PATH = path.resolve(__dirname, "./proto/payment.proto");
-const packageDefinition = protLoader.loadSync(PROTO_PATH) as any;
+const packageDefinition = protLoader.loadSync(PROTO_PATH, { keepCase: true }) as any;
 const protoDescriptor = grpc.loadPackageDefinition(packageDefinition) as any;
 const authPackage = protoDescriptor.paymentpackage;
 
@@ -27,6 +28,7 @@ const Server = new grpc.Server();
 Server.addService(authPackage.PaymentService.service, {
   CreateOrder: createOrder,
   VerifyOrder: VerifyOrder,
+  WebhookBody: payWebhook,
   GetTransctions: GetTransaction,
   GetDailyVolume: DashboardAnalytics,
   GetAnalyticsSummary: GetAnalyticsSummary,

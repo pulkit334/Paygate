@@ -1,7 +1,7 @@
 import * as z from "zod";
 
 export const CreateOrderSchema = z.object({
-  amount: z.number().int().positive(),
+  amount: z.number().positive(),
   currency: z.enum(["INR", "USD"]).default("INR"), 
   customerName: z.string().min(2),
   metadata: z.union([z.record(z.string(), z.unknown()), z.string()]).optional(),

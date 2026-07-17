@@ -6,16 +6,22 @@ const router = express.Router();
 
 router.post("/razorpay", async (req: Request, res: Response, next) => {
   try {
-    if (!req.headers["x-razorpay-signature"]) {
-      throw AppError.Validation("Missing x-razorpay-signature header");
-    }
-    if (!req.body) {
-      throw AppError.Validation("Missing webhook body");
-    }
+    const signature = (req.headers["x-razorpay-signature"] as string) || "";
+    const rawBody = Buffer.isBuffer(req.body) ? req.body.toString() : JSON.stringify(req.body);
+    const parsedBody = typeof req.body === "string" ? JSON.parse(req.body) : JSON.parse(req.body.toString());
 
-    const result = await PaymentClient.payWebhook({
-      signature: req.headers["x-razorpay-signature"],
-      body: req.body,
+    const result = await new Promise((resolve, reject) => {
+      PaymentClient.WebhookBody(
+        {
+          signature,
+          body: parsedBody,
+          raw_body: rawBody,
+        },
+        (err: any, response: any) => {
+          if (err) reject(err);
+          else resolve(response);
+        },
+      );
     });
 
     res.status(200).json({ success: true });

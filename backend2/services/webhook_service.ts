@@ -59,7 +59,7 @@ export const startWebhookService = async () => {
           const payload = {
             event: "payment.success",
             appId: data.appId,
-            transactionId: data.transactionId,
+            transactionId: data.orderId,
             amount: data.amount,
             currency: data.currency,
           };
@@ -109,7 +109,7 @@ export const startWebhookService = async () => {
           try {
             await webhook_del.create({
               appId: data.appId,
-              transactionId: data.transactionId,
+              transactionId: data.orderId,
               targetUrl: data.callbackUrl,
               status: deliveryStatus as "success" | "failed",
               payload: payload,

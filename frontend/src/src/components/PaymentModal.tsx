@@ -8,7 +8,8 @@ interface PaymentModalProps {
   amount: number
   currency?: string
   customerEmail?: string
-  onSuccess?: (transactionId: string) => void
+  metadata?: Record<string, unknown>
+  onSuccess?: (data: { transactionId: string; orderId: string; paymentId: string }) => void
   onFailure?: (error: string) => void
 }
 
@@ -19,7 +20,7 @@ declare global {
   }
 }
 
-const PaymentModal = ({ open, onClose, amount, currency = 'INR', customerEmail, onSuccess, onFailure }: PaymentModalProps) => {
+const PaymentModal = ({ open, onClose, amount, currency = 'INR', customerEmail, metadata, onSuccess, onFailure }: PaymentModalProps) => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [status, setStatus] = useState<'idle' | 'processing' | 'success' | 'failed'>('idle')
@@ -36,6 +37,7 @@ const PaymentModal = ({ open, onClose, amount, currency = 'INR', customerEmail, 
         amount: Math.round(amount * 100),
         currency,
         customerEmail: customerEmail || 'customer@example.com',
+        ...(metadata ? { metadata } : {}),
       })
 
       const { orderId, razorpayKey } = orderRes.data
@@ -55,7 +57,11 @@ const PaymentModal = ({ open, onClose, amount, currency = 'INR', customerEmail, 
               razorpay_signature: response.razorpay_signature,
             })
             setStatus('success')
-            onSuccess?.(verifyRes.data.transactionId || response.razorpay_payment_id)
+            onSuccess?.({
+              transactionId: verifyRes.data.transactionId || response.razorpay_payment_id,
+              orderId: response.razorpay_order_id,
+              paymentId: response.razorpay_payment_id,
+            })
           } catch {
             setStatus('failed')
             setError('Payment verification failed')

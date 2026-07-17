@@ -221,13 +221,38 @@ export const ListApis = async (
 
     const app = await appSchema
       .findById(appId)
-      .select("publicKey isActive createdAt");
+      .select("publicKey isActive createdAt apiKeys");
 
     if (!app) {
       return callback({
         code: status.NOT_FOUND,
         message: "App not found",
       });
+    }
+
+    const allKeys = [];
+
+    if (app.publicKey) {
+      allKeys.push({
+        _id: "legacy",
+        name: "Default Key",
+        publicKey: app.publicKey,
+        isActive: app.isActive,
+        createdAt: (app as any).createdAt?.toISOString() || "",
+      });
+    }
+
+    if ((app as any).apiKeys && (app as any).apiKeys.length > 0) {
+      for (const key of (app as any).apiKeys) {
+        allKeys.push({
+          _id: key._id?.toString() || "",
+          name: key.name || "API Key",
+          publicKey: key.publicKey || "",
+          isActive: key.isActive,
+          expiresAt: key.expiresAt?.toISOString() || null,
+          createdAt: key.createdAt?.toISOString() || "",
+        });
+      }
     }
 
     return callback(null, {
@@ -238,6 +263,7 @@ export const ListApis = async (
         isActive: app.isActive,
         createdAt: (app as any).createdAt?.toISOString() || "",
       },
+      keys: allKeys,
     });
   } catch (error: any) {
     return callback({

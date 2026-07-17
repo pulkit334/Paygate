@@ -61,7 +61,7 @@ const transactionSchema = new Schema<ITransaction>(
       type: String,
     },
     callbackUrl: {
-      type: string,
+      type: String,
     },
     paymentMethod: { type: String },
     customerEmail: { type: String },

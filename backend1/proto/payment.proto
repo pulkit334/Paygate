@@ -25,7 +25,8 @@ message CreateOrderRequest {
   string idempotencyKey = 7;
   string Provider = 8;
   string customoreEmail = 9;
-  string metadata = 10; 
+  string metadata = 10;
+  string callbackUrl = 11;
 }
 
 message CreateOrderResponse {
@@ -71,6 +72,7 @@ message WebhookBody {
 message PayWebhookRequest {
   string signature = 1;
   WebhookBody body = 2;
+  string raw_body = 3;
 }
 
 message PayWebhookResponse {

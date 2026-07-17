@@ -26,10 +26,11 @@ router.post(
         amount: req.body.amount,
         currency: req.body.currency,
         customerName: req.body.customerName,
-        metadata: req.body.metadata || "",
+        metadata: typeof req.body.metadata === "object" ? JSON.stringify(req.body.metadata) : (req.body.metadata || ""),
         idempotencyKey: req.body.idempotencyKey || crypto.randomUUID(),
-        customoreEmail: req.body.customoreEmail,
-        Provider: req.body.Provider,
+        customoreEmail: req.body.customerEmail || req.body.customoreEmail || "",
+        Provider: req.body.Provider || "razorpay",
+        callbackUrl: req.body.callbackUrl || "",
       };
 
       PaymentClient.CreateOrder(Grpcpayload, (err: any, Response: any) => {
@@ -44,7 +45,7 @@ router.post(
   },
 );
 
-router.post("/verify", async (req: Request, res: Response, next) => {
+router.post("/verify", ApiKeyMiddleware, async (req: Request, res: Response, next) => {
   try {
     if (!req.body.razorpay_order_id) {
       throw AppError.Validation("razorpay_order_id is required");
@@ -57,12 +58,13 @@ router.post("/verify", async (req: Request, res: Response, next) => {
     }
 
     const GrpcPayLoad = {
+      appId: (req as any).app._id,
       razorpay_order_id: req.body.razorpay_order_id,
       razorpay_payment_id: req.body.razorpay_payment_id,
       razorpay_signature: req.body.razorpay_signature,
     };
 
-    PaymentClient.Verify(GrpcPayLoad, (err: any, Response: any) => {
+    PaymentClient.VerifyOrder(GrpcPayLoad, (err: any, Response: any) => {
       if (err) {
         return next(AppError.Payment(err.message));
       }

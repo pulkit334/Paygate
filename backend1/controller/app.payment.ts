@@ -40,6 +40,7 @@ export const createOrder = async (
       currency: response.currency,
       status: "created",
       createdAt: new Date().toISOString(),
+      razorkey: response.razorkey || "",
       error: "",
     });
   } catch (error: any) {
@@ -55,7 +56,7 @@ export const VerifyOrder = async (
   callback: sendUnaryData<any>,
 ) => {
   try {
-    const appId = call.request.app._id;
+    const appId = call.request.appId;
     const result = await PaymentService.VerifyPayment(call.request, appId);
 
     if (!result) {
@@ -65,10 +66,17 @@ export const VerifyOrder = async (
       });
     }
 
+    if (!result.success) {
+      return callback({
+        code: status.INVALID_ARGUMENT,
+        message: result.message || "Verification failed",
+      });
+    }
+
     return callback(null, {
       success: true,
-      status: "verified",
-      message: "Signature verified securely. Safe to show success screen.",
+      status: result.status || "verified",
+      message: result.message || "Signature verified securely. Safe to show success screen.",
       error: "",
     });
   } catch (error: any) {

@@ -11,10 +11,10 @@ const projectRoot = path.resolve(__dirname, "../../");
 const GrpcPath = path.join(projectRoot, "backend/proto/merchant.proto");
 const GRPCPaymentServicePath = path.join(projectRoot, "backend1/proto/payment.proto");
 
-const packageDefinition = protoLoader.loadSync(GrpcPath, {});
+const packageDefinition = protoLoader.loadSync(GrpcPath, { keepCase: true });
 const protoDescriptor = grpc.loadPackageDefinition(packageDefinition) as any;
 
-const packageDefinitionPaymentService = protoLoader.loadSync(GRPCPaymentServicePath, {});
+const packageDefinitionPaymentService = protoLoader.loadSync(GRPCPaymentServicePath, { keepCase: true });
 const protoDescriptorPaymentone = grpc.loadPackageDefinition(packageDefinitionPaymentService) as any;
 
 

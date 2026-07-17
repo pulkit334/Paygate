@@ -36,7 +36,7 @@ app.use(cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key'],
 }));
 
 // Global middleware
@@ -73,7 +73,7 @@ app.get("/health", (req, res) => {
 app.use("/api/v1", SessionRoutes);
 app.use("/api/v1", generalLimiter, MerchantRoutes);
 app.use("/api/v1/api-keys", JwtAuthMiddleware, ApiKeyRoutes);
-app.use("/api/v2", paymentLimiter, JwtAuthMiddleware, PaymentRoutes);
+app.use("/api/v2/payment", paymentLimiter, PaymentRoutes);
 app.use("/api/v2", JwtAuthMiddleware, WebhookHistoryRoutes);
 app.use("/api/v2", AnalyticsRoutes);
 app.use("/api/v2", ProviderKeyRoutes);

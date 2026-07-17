@@ -1,7 +1,7 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
-ARG VITE_BASE_URL1=http://localhost:6283/api/v1
-ARG VITE_BASE_URL2=http://localhost:6283/api/v2
+ARG VITE_BASE_URL1=http://13.206.54.168:6283/api/v1
+ARG VITE_BASE_URL2=http://13.206.54.168:6283/api/v2
 ENV VITE_BASE_URL1=$VITE_BASE_URL1
 ENV VITE_BASE_URL2=$VITE_BASE_URL2
 COPY src/package*.json ./
