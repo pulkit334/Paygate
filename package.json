@@ -14,8 +14,7 @@
     "proto-loader-gen-types": "^1.0.0",
     "ts-node": "^10.9.2",
     "ts6": "npm:typescript@^6.0.3",
-    "ts7": "npm:typescript@^7.0.1-rc",
-    "typescript": "^6.0.3"
+    "typescript": "6.0.3"
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.14.4",
