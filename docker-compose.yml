@@ -1,62 +1,71 @@
 services:
-  # 1. Redis - Session Store
   redis:
     image: redis:alpine
     container_name: paygate-redis
+    restart: always
     ports:
       - "6379:6379"
     command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 3s
       retries: 5
 
-  # 2. Backend - Merchant Service  (legacy/standalone)
   backend:
-    build: ./backend
+    image: pulkitxr/major_project-backend:v2
+    restart: always
     container_name: paygate-backend
     ports:
       - "50002:50002"
-    env_file:
-      - ./backend/.env
     environment:
       - REDIS_URL=redis://redis:6379
       - GRPC_PORT=50002
+      - Db=mongodb+srv://pulkittales12_db_user:BGvisZXQIpK1Penc@majorproject.uzl2v4i.mongodb.net/payment_gateway_hub
+      - JWT_SECRET=PK8UBB
     depends_on:
       redis:
         condition: service_healthy
 
-  # 3. Backend 1 - Payment Service (gRPC)
   backend1:
-    build: ./backend1
+    image: pulkitxr/major_project-backend1:v13
+    restart: always
     container_name: paygate-backend1
     ports:
       - "50051:50051"
     environment:
       - REDIS_URL=redis://redis:6379
       - GRPC_PORT=50051
+      - Db=mongodb+srv://pulkittales12_db_user:BGvisZXQIpK1Penc@majorproject.uzl2v4i.mongodb.net/payment_gateway_hub
+      - JWT_SECRET=PK8UBB
+      - RAZORPAY_KEY_ID=rzp_test_Rqeqwh3jxZUoO6
+      - RAZORPAY_KEY_SECRET=MQCPqJ2mZrw822aXYquwq4a1
+      - ENCRYPTION_KEY=306edd896da862db417378a7aafb6a255191651c6e1281a7a7f2a79b9476ecf2
+      - RAZORPAY_WEBHOOK_SECRET=Xmac
     depends_on:
       redis:
         condition: service_healthy
 
-  # 4. Backend 2 - Webhook Service (HTTP)
   backend2:
-    build: ./backend2
+    image: pulkitxr/major_project-backend2:v2
     container_name: paygate-backend2
+    restart: always
     ports:
       - "4000:4000"
     environment:
       - REDIS_URL=redis://redis:6379
       - PORT=4000
+      - Db=mongodb+srv://pulkittales12_db_user:BGvisZXQIpK1Penc@majorproject.uzl2v4i.mongodb.net/payment_gateway_hub
     depends_on:
       redis:
         condition: service_healthy
 
-  # 4. API Gateway (Express) - Public Entry Point
   apigateway:
-    build: ./ApiGateway
+    image: pulkitxr/major_project-apigateway:v15
     container_name: paygate-apigateway
+    restart: always
     ports:
       - "6283:6283"
     environment:
@@ -64,21 +73,24 @@ services:
       - MERCHANT_GRPC_URL=backend:50002
       - PAYMENT_GRPC_URL=backend1:50051
       - WEBHOOK_SERVICE_URL=http://backend2:4000
-      - ALLOWED_ORIGINS=http://localhost:5173
+      - ALLOWED_ORIGINS=https://paygates.in,http://13.206.54.168:5173
+      - JWT_SECRET=PK8UBB
+      - SESSION_SECRET=XBSHHDHGHDHD
+      - WEBHOOK_SIGNING_SECRET=Xmac
     depends_on:
+      - backend
       - backend1
       - backend2
       - redis
 
-  # 5. Frontend (React) - Static Files via Nginx
   frontend:
-    build:
-      context: ./frontend
-      args:
-        VITE_BASE_URL1: http://localhost:6283/api/v1
-        VITE_BASE_URL2: http://localhost:6283/api/v2
+    image: pulkitxr/major_project-frontend:v2
+    restart: always
     container_name: paygate-frontend
     ports:
       - "5173:80"
     depends_on:
       - apigateway
+
+volumes:
+  redis-data:

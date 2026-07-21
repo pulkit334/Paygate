@@ -13,11 +13,15 @@ import WebhookHistoryRoutes from "./Routes/WebhookHistoryRoutes.js";
 import ApiKeyRoutes from "./Routes/ApiKeyRoutes.js";
 import AnalyticsRoutes from "./Routes/AnalyticsRoutes.js";
 import ProviderKeyRoutes from "./Routes/ProviderKeyRoutes.js";
+import TransactionRoutes from "./Routes/TransactionRoutes.js";
 import SessionRoutes from "./Routes/SessionRoutes.js";
 import { JwtAuthMiddleware } from "./Middleware/jwtAuth.js";
 import sessionMiddleware from "./Middleware/session.js";
 import { redisClient } from "./config/redis.js";
 const app = express();
+
+// Behind nginx (TLS termination) — trust X-Forwarded-Proto so secure cookies are set
+app.set("trust proxy", 1);
 
 app.use("/webhook/razorpay", express.raw({ type: "application/json" }));
 
@@ -76,6 +80,7 @@ app.use("/api/v1/api-keys", JwtAuthMiddleware, ApiKeyRoutes);
 app.use("/api/v2/payment", paymentLimiter, PaymentRoutes);
 app.use("/api/v2", JwtAuthMiddleware, WebhookHistoryRoutes);
 app.use("/api/v2", AnalyticsRoutes);
+app.use("/api/v2", TransactionRoutes);
 app.use("/api/v2", ProviderKeyRoutes);
 app.use("/webhook", WebhookRoutes);
 

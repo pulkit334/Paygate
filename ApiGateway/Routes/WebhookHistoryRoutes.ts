@@ -17,7 +17,8 @@ router.get(
         throw AppError.Validation("Unauthorized");
       }
 
-      const WEBHOOK_SERVICE_URL = process.env.WEBHOOK_SERVICE_URL || "http://localhost:4000";
+      const WEBHOOK_SERVICE_URL =
+        process.env.WEBHOOK_SERVICE_URL || "http://localhost:4000";
       const response = await axios.get(`${WEBHOOK_SERVICE_URL}/api/webhooks`, {
         params: { appId, from, limit, offset },
       });

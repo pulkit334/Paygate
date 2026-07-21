@@ -1,0 +1,22 @@
+ docker logs paygate-apigateway
+ docker logs -f paygate-apigateway [for live logs]
+ For Merchant Service->
+  docker logs -f paygate-backend
+
+
+Just restart all:
+docker-compose down && docker-compose up -d
+Or force recreate everything:
+docker rm -f paygate-redis paygate-frontend paygate-apigateway paygate-backend paygate-backend1 paygate-backend2
+docker-compose up -d
+
+
+
+
+
+
+
+
+Login Credentials-> 
+test@example.com
+test1234

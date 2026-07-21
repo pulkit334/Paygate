@@ -1,4 +1,4 @@
-import RedisLib from 'ioredis';
+import { Redis as RedisLib } from 'ioredis';
 import dotenv from 'dotenv';
 dotenv.config();
 

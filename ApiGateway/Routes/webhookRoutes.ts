@@ -7,8 +7,19 @@ const router = express.Router();
 router.post("/razorpay", async (req: Request, res: Response, next) => {
   try {
     const signature = (req.headers["x-razorpay-signature"] as string) || "";
-    const rawBody = Buffer.isBuffer(req.body) ? req.body.toString() : JSON.stringify(req.body);
-    const parsedBody = typeof req.body === "string" ? JSON.parse(req.body) : JSON.parse(req.body.toString());
+    let rawBody: string;
+    let parsedBody: any;
+
+    if (Buffer.isBuffer(req.body)) {
+      rawBody = req.body.toString();
+      parsedBody = JSON.parse(rawBody);
+    } else if (typeof req.body === "string") {
+      rawBody = req.body;
+      parsedBody = JSON.parse(rawBody);
+    } else {
+      parsedBody = req.body;
+      rawBody = JSON.stringify(req.body);
+    }
 
     const result = await new Promise((resolve, reject) => {
       PaymentClient.WebhookBody(
