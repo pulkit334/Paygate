@@ -7,5 +7,14 @@
 **/.env
 **/.env.local
 
+# Ignore Docker files
+**/Dockerfile
+**/docker-compose.yml
+**/docker-compose.prod.yml
+
+# Ignore integration testing
 **/backend1/integration-testing
 **/ApiGateway/integration-testing
+
+# Ignore test files
+**/backend1/test-race.ts

@@ -67,12 +67,9 @@ export const login = async (data: LoginRequest): Promise<LoginResponse> => {
     return response.data
   } catch (err) {
     if (isAxiosError(err)) {
-      const code = err.response?.data?.code
-      if (code === 'USER_NOT_FOUND') {
-        throw new Error('Invalid email or password', { cause: err })
-      }
-      if (code === 'ACCOUNT_DISABLED') {
-        throw new Error('Account has been disabled', { cause: err })
+      const serverMessage = err.response?.data?.error 
+      if (serverMessage) {
+        throw new Error(serverMessage, { cause: err })
       }
     }
     throw err

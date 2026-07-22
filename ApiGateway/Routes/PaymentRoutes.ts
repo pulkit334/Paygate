@@ -2,6 +2,7 @@ import express, { NextFunction, Request, Response } from "express";
 import crypto from "crypto";
 import { merchantClient, PaymentClient } from "../GrpcRef/Grpc.js";
 import { ApiKeyMiddleware } from "../Middleware/validate_APi_Key.js";
+import { JwtAuthMiddleware } from "../Middleware/jwtAuth.js";
 import AppError from "../utils/Error.js";
 
 const router = express.Router();
@@ -75,7 +76,7 @@ router.post("/verify", ApiKeyMiddleware, async (req: Request, res: Response, nex
   }
 });
 
-router.get("/transactions", async (req: Request, res: Response, next) => {
+router.get("/transactions", JwtAuthMiddleware, async (req: Request, res: Response, next) => {
   try {
     const appId = (req as any).merchant._id;
 
@@ -102,7 +103,7 @@ router.get("/transactions", async (req: Request, res: Response, next) => {
   }
 });
 
-router.get("/ledger", async (req: Request, res: Response, next) => {
+router.get("/ledger", JwtAuthMiddleware, async (req: Request, res: Response, next) => {
   try {
     const appId = (req as any).merchant._id;
     if (!appId) throw AppError.Validation("Unauthorized");

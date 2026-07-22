@@ -1,6 +1,7 @@
 import { sendUnaryData, ServerUnaryCall, status } from "@grpc/grpc-js";
 import mongoose from "mongoose";
 import Transaction from "../models/transction";
+import Balance from "../models/balance";
 
 export const GetAnalyticsSummary = async (
   call: ServerUnaryCall<any, any>,
@@ -15,7 +16,7 @@ export const GetAnalyticsSummary = async (
       });
     }
 
-    const [allResult, paidResult] = await Promise.all([
+    const [allResult, paidResult, balanceResult] = await Promise.all([
       Transaction.aggregate([
         {
           $match: {
@@ -45,12 +46,14 @@ export const GetAnalyticsSummary = async (
           },
         },
       ]),
+      Balance.findOne({ appId: new mongoose.Types.ObjectId(appId) }),
     ]);
 
     const totalTransactions = allResult[0]?.totalTransactions ?? 0;
     const totalReceived = paidResult[0]?.totalReceived ?? 0;
     const paidCount = paidResult[0]?.paidCount ?? 0;
     const lastPaymentAt = paidResult[0]?.lastPaymentAt ?? null;
+    const currentBalance = balanceResult?.amount ?? 0;
 
 
 

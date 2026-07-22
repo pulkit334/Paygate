@@ -17,6 +17,10 @@
           error.message = error.response.data.error;
         }
 
+        if (error.response?.data?.error) {
+          error.message = error.response.data.error;
+        }
+
         return Promise.reject(error);
       },
     );

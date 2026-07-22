@@ -10,14 +10,6 @@ export interface IApiKey {
   createdAt: Date;
 }
 
-export interface IProviderKey {
-  provider: string;
-  keyId: string;
-  keySecret: string;
-  isActive: boolean;
-  createdAt: Date;
-}
-
 export interface IApp {
   name: string;
   publicKey?: string;
@@ -26,17 +18,8 @@ export interface IApp {
   callbackUrl?: string;
   ownerEmail: string;
   passwordHash: string;
-  providerKeys: IProviderKey[];
   apiKeys: IApiKey[];
 }
-
-const providerKeySchema = new Schema<IProviderKey>({
-  provider: { type: String, required: true },
-  keyId: { type: String, required: true },
-  keySecret: { type: String, required: true },
-  isActive: { type: Boolean, default: true },
-  createdAt: { type: Date, default: Date.now },
-}, { _id: false });
 
 const appSchema = new Schema<IApp>(
   {
@@ -63,11 +46,6 @@ const appSchema = new Schema<IApp>(
     isActive: {
       type: Boolean,
       default: true,
-    },
-
-    providerKeys: {
-      type: [providerKeySchema],
-      default: [],
     },
 
     apiKeys: {
