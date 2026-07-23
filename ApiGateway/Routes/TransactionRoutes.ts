@@ -7,7 +7,6 @@ const router = express.Router();
 
 router.get(
   "/transactions",
-  JwtAuthMiddleware,
   async (req: Request, res: Response, next) => {
     try {
       const appId = (req as any).merchant._id;
@@ -30,7 +29,6 @@ router.get(
 
 router.get(
   "/ledger",
-  JwtAuthMiddleware,
   async (req: Request, res: Response, next) => {
     try {
       const appId = (req as any).merchant._id;

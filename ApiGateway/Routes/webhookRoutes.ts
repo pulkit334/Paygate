@@ -6,6 +6,7 @@ const router = express.Router();
 
 router.post("/razorpay", async (req: Request, res: Response, next) => {
   try {
+    console.debug("the sigraito is ",req.headers);
     const signature = (req.headers["x-razorpay-signature"] as string) || "";
     let rawBody: string;
     let parsedBody: any;

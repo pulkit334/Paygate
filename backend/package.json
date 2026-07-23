@@ -11,7 +11,7 @@
     "test": "jest --coverage",
     "generate-types": "proto-loader-gen-types --grpcLib=@grpc/grpc-js --outDir=proto/types/ proto/merchant.proto",
     "dev": "tsx watch server.ts",
-    "start": "ts-node server.ts"
+    "start": "tsx server.ts"
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.14.4",
@@ -33,6 +33,7 @@
     "@types/morgan": "^1.9.10",
     "jest": "^30.4.2",
     "ts-jest": "^29.4.11",
+    "tsx": "^4.22.4",
     "typescript": "7.0.2"
   }
 }

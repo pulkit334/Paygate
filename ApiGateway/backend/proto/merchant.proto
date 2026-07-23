@@ -1,0 +1,154 @@
+syntax = "proto3";
+
+package authpackage;
+
+service MerchantAuth {
+    rpc Auth (AuthRegisterReq) returns (AuthRegisterRes);
+    rpc Login (AuthLoginReq) returns (AuthLoginRes);
+    rpc ValidateApiKey (ValidateRequest) returns (ValidateResponse);
+    rpc MiddlewareAuth (ValidateIncomingRequest) returns (ValidateOutgoingResponse);
+    rpc ListApis (ListApisRequest) returns (ListApisResponse);
+    rpc DeleteApi (DeleteApiRequest) returns (DeleteApiResponse);
+    rpc UpdateCallbackUrl (UpdateCallbackUrlRequest) returns (UpdateCallbackUrlResponse);
+    rpc GetSettings (GetSettingsRequest) returns (GetSettingsResponse);
+    rpc CreateApiKey (CreateApiKeyRequest) returns (CreateApiKeyResponse);
+    rpc ListApiKeys (ListApiKeysRequest) returns (ListApiKeysResponse);
+    rpc DeleteApiKey (DeleteApiKeyRequest) returns (DeleteApiKeyResponse);
+}
+
+message AuthRegisterReq {
+    string name = 1;
+    string ownerEmail = 2;
+    string password = 3;
+    string callbackUrl = 4;
+}
+
+message AuthRegisterRes {
+  bool success = 1;
+  string message = 2;
+  string appId = 3;
+  string name = 4;       
+  string publicKey = 5;
+  string secretKey = 6;
+}
+
+message AuthLoginReq {
+    string ownerEmail = 1;
+    string password = 2;
+}
+
+message AuthLoginRes {
+    string token = 1;
+}
+
+message ValidateRequest {
+  string apiKey = 1;
+}
+
+message ValidateResponse {
+  bool valid = 1;
+  string appId = 2;
+  string merchantId = 3;
+  string message = 4;
+}
+
+
+message ValidateIncomingRequest {
+  string token = 1;     
+}
+
+message ValidateOutgoingResponse {
+  bool valid = 1;
+  string appId = 2;         
+  string message = 3;
+}
+
+message ListApisRequest {
+  string appId = 1;
+}
+
+message ListApisResponse {
+  bool success = 1;
+  ApiData data = 2;
+}
+
+message ApiData {
+  string _id = 1;
+  string publicKey = 2;
+  bool isActive = 3;
+  string createdAt = 4;
+}
+
+message DeleteApiRequest {
+  string appId = 1;
+}
+
+message DeleteApiResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message UpdateCallbackUrlRequest {
+  string appId = 1;
+  string callbackUrl = 2;
+}
+
+message UpdateCallbackUrlResponse {
+  bool success = 1;
+  string message = 2;
+  string callbackUrl = 3;
+}
+
+message GetSettingsRequest {
+  string appId = 1;
+}
+
+message GetSettingsResponse {
+  bool success = 1;
+  string publicKey = 2;
+  string callbackUrl = 3;
+}
+
+message CreateApiKeyRequest {
+  string appId = 1;
+  string name = 2;
+  string expiresAt = 3;
+}
+
+message CreateApiKeyResponse {
+  bool success = 1;
+  string id = 2;
+  string name = 3;
+  string publicKey = 4;
+  string secretKey = 5;
+  string createdAt = 6;
+  string expiresAt = 7;
+}
+
+message ListApiKeysRequest {
+  string appId = 1;
+}
+
+message ApiKeyItem {
+  string id = 1;
+  string name = 2;
+  string maskedKey = 3;
+  string createdAt = 4;
+  string expiresAt = 5;
+  bool isActive = 6;
+}
+
+message ListApiKeysResponse {
+  bool success = 1;
+  repeated ApiKeyItem keys = 2;
+}
+
+message DeleteApiKeyRequest {
+  string keyId = 1;
+  string appId = 2;
+}
+
+message DeleteApiKeyResponse {
+  bool success = 1;
+  string message = 2;
+}

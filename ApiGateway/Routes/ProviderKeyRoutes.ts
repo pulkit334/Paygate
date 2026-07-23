@@ -7,7 +7,6 @@ const router = express.Router();
 
 router.get(
   "/provider-keys",
-  JwtAuthMiddleware,
   async (req: Request, res: Response, next) => {
     try {
       const appId = (req as any).merchant._id;
@@ -25,7 +24,6 @@ router.get(
 
 router.post(
   "/provider-keys",
-  JwtAuthMiddleware,
   async (req: Request, res: Response, next) => {
     try {
       const appId = (req as any).merchant._id;
@@ -51,7 +49,6 @@ router.post(
 
 router.delete(
   "/provider-keys/:provider",
-  JwtAuthMiddleware,
   async (req: Request, res: Response, next) => {
     try {
       const appId = (req as any).merchant._id;

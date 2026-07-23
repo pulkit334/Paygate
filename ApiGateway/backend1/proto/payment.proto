@@ -1,0 +1,187 @@
+syntax = "proto3";
+
+package paymentpackage;
+
+service PaymentService {
+  rpc CreateOrder (CreateOrderRequest) returns (CreateOrderResponse);
+  rpc VerifyOrder (VerifyOrderRequest) returns (VerifyOrderResponse);
+  rpc WebhookBody (PayWebhookRequest) returns (PayWebhookResponse);
+  rpc GetTransctions (GetTransctionRequest) returns (GetTransctionResponse);
+  rpc GetAnalyticsSummary (AnalyticsSummaryRequest) returns (AnalyticsSummaryResponse);
+  rpc GetDailyVolume (DailyVolumeRequest) returns (DailyVolumeResponse);
+  rpc UpdateProviderKey (UpdateProviderKeyRequest) returns (UpdateProviderKeyResponse);
+  rpc GetProviderKeys (GetProviderKeysRequest) returns (GetProviderKeysResponse);
+  rpc DeleteProviderKey (DeleteProviderKeyRequest) returns (DeleteProviderKeyResponse);
+  rpc GetLedger (GetLedgerRequest) returns (GetLedgerResponse);
+}
+
+message CreateOrderRequest {
+  string appId = 1;
+  double amount = 2;
+  string currency = 3;
+  string receipt = 4;
+  string notes = 5;
+  string customerName = 6;
+  string idempotencyKey = 7;
+  string Provider = 8;
+  string customoreEmail = 9;
+  string metadata = 10;
+  string callbackUrl = 11;
+}
+
+message CreateOrderResponse {
+  bool success = 1;
+  string orderId = 2;      
+  double amount = 3;
+  string currency = 4;
+  string receipt = 5;
+  string status = 6;     
+  string createdAt = 7;
+  string error = 8;      
+}
+message VerifyOrderRequest {
+  string appId = 1;
+  string razorpay_order_id = 2;
+  string razorpay_payment_id = 3;
+  string razorpay_signature = 4;
+}
+
+message VerifyOrderResponse {
+  bool success = 1;
+  string status = 2;     
+  string message = 3;
+  string error = 4;       
+}
+// Webhook messages
+message WebhookPaymentEntity {
+  string order_id = 1;
+  string id = 2;
+  double amount = 3;
+  string currency = 4;
+}
+
+message WebhookPayload {
+  WebhookPaymentEntity payment = 1;
+}
+
+message WebhookBody {
+  string event = 1;
+  WebhookPayload payload = 2;
+}
+
+message PayWebhookRequest {
+  string signature = 1;
+  WebhookBody body = 2;
+  string raw_body = 3;
+}
+
+message PayWebhookResponse {
+  bool success = 1;
+  string message = 2;
+  string error = 3;
+}
+
+
+
+message GetTransctionRequest {
+  string appId = 1;
+  string from = 2;
+  string to = 3;
+  int32 limit = 4;
+  int32 offset = 5;
+}
+
+message GetTransctionResponse {
+  bool success = 1;
+  repeated TransactionItem transactions = 2;
+  int32 total = 3;
+}
+
+message TransactionItem {
+  string transactionId = 1;
+  int32 amount = 2;
+  string currency = 3;
+  string status = 4;
+  string customerEmail = 5;
+  string customerName = 6;
+  string razorpayOrderId = 7;
+  string razorpayPayId = 8;
+  string provider = 9;
+  string createdAt = 10;
+}
+
+message AnalyticsSummaryRequest {
+  string appId = 1;
+}
+
+message AnalyticsSummaryResponse {
+  double totalReceived = 1;
+  int32 totalTransactions = 2;
+  double successRate = 3;
+  string lastPaymentAt = 4;
+}
+
+message DailyVolumeRequest {
+  string appId = 1;
+  int32 days = 2;
+}
+
+message DailyVolumeItem {
+  string date = 1;
+  double amount = 2;
+  int32 count = 3;
+}
+
+message DailyVolumeResponse {
+  repeated DailyVolumeItem days = 1;
+}
+
+message UpdateProviderKeyRequest {
+  string appId = 1;
+  string provider = 2;
+  string keyId = 3;
+  string keySecret = 4;
+}
+
+message UpdateProviderKeyResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message GetProviderKeysRequest {
+  string appId = 1;
+}
+
+message ProviderKeyItem {
+  string provider = 1;
+  string keyId = 2;
+  bool isActive = 3;
+  string createdAt = 4;
+}
+
+message GetProviderKeysResponse {
+  repeated ProviderKeyItem keys = 1;
+}
+
+message DeleteProviderKeyRequest {
+  string appId = 1;
+  string provider = 2;
+}
+
+message DeleteProviderKeyResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message GetLedgerRequest {
+  string appId = 1;
+}
+
+message GetLedgerResponse {
+  bool success = 1;
+  double amount = 2;
+  double balanceBefore = 3;
+  double balanceAfter = 4;
+  string description = 5;
+  string createdAt = 6;
+}

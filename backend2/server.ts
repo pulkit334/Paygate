@@ -6,6 +6,7 @@ import morgan from "morgan";
 import webhookRoutes from "./Routes/route";
 dotenv.config();
 import { startWebhookService } from "./services/webhook_service";
+import { BackgroundDLQ } from "./config/dlq";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -30,4 +31,5 @@ app.listen(PORT, async () => {
   await waitForConnection();
   console.log(`Server is listening on port ${PORT}`);
   startWebhookService();
+  BackgroundDLQ();
 });

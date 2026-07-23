@@ -12,7 +12,7 @@ export const GetLedger = async (
       return callback({
         code: status.INVALID_ARGUMENT,
         message: "appId is required",
-      });
+      }); 
     }
 
     const latestEntry = await TransactionLedger.findOne({

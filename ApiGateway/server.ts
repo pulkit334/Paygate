@@ -26,22 +26,24 @@ app.set("trust proxy", 1);
 app.use("/webhook/razorpay", express.raw({ type: "application/json" }));
 
 // CORS
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:5173')
-  .split(',')
-  .map(origin => origin.trim());
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || "http://localhost:5173")
+  .split(",")
+  .map((origin) => origin.trim());
 
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS: ' + origin));
-    }
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key'],
-}));
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS: " + origin));
+      }
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "x-api-key"],
+  }),
+);
 
 // Global middleware
 app.use(express.json());
@@ -79,9 +81,9 @@ app.use("/api/v1", generalLimiter, MerchantRoutes);
 app.use("/api/v1/api-keys", JwtAuthMiddleware, ApiKeyRoutes);
 app.use("/api/v2/payment", paymentLimiter, PaymentRoutes);
 app.use("/api/v2", JwtAuthMiddleware, WebhookHistoryRoutes);
-app.use("/api/v2", AnalyticsRoutes);
-app.use("/api/v2", TransactionRoutes);
-app.use("/api/v2", ProviderKeyRoutes);
+app.use("/api/v2", JwtAuthMiddleware, AnalyticsRoutes);
+app.use("/api/v2", JwtAuthMiddleware, TransactionRoutes);
+app.use("/api/v2", JwtAuthMiddleware, ProviderKeyRoutes);
 app.use("/webhook", WebhookRoutes);
 
 app.use((err: any, req: any, res: any, next: any) => {
@@ -91,7 +93,7 @@ app.use((err: any, req: any, res: any, next: any) => {
       type: err.type,
     });
   }
-  res.status(500).json({ error: "Internal server error", message : err});
+  res.status(500).json({ error: "Internal server error", message: err });
 });
 
 process.on("uncaughtException", (err) => {

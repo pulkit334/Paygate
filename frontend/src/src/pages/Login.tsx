@@ -19,8 +19,6 @@ const handleSubmit = async (e: React.SyntheticEvent) => {
   setError('')
   try {
     await login({ email, password })
-    // Session cookie is set automatically by the browser
-    // Fetch session data into Redux
     await dispatch(fetchSession())
     navigate('/dashboard')
   } catch (err: unknown) {
