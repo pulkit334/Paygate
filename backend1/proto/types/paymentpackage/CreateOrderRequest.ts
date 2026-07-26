@@ -1,6 +1,3 @@
-// Original file: proto/payment.proto
-
-
 export interface CreateOrderRequest {
   'appId'?: (string);
   'amount'?: (number | string);

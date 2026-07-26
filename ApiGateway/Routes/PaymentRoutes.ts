@@ -43,7 +43,7 @@ router.post(
     } catch (error) {
       next(error);
     }
-  },
+  },  
 );
 
 router.post("/verify", ApiKeyMiddleware, async (req: Request, res: Response, next) => {

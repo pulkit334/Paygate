@@ -15,6 +15,7 @@ interface ProviderConfig {
   keyPlaceholder: string
   keyLabel: string
   secretLabel: string
+  comingSoon?: boolean
 }
 
 const PROVIDERS: ProviderConfig[] = [
@@ -28,6 +29,15 @@ const PROVIDERS: ProviderConfig[] = [
     secretLabel: 'Key Secret',
   },
   {
+    id: 'cashfree',
+    name: 'Cashfree',
+    icon: 'C',
+    color: '#2962FF',
+    keyPlaceholder: 'CF...',
+    keyLabel: 'App ID',
+    secretLabel: 'Secret Key',
+  },
+  {
     id: 'stripe',
     name: 'Stripe',
     icon: 'S',
@@ -35,6 +45,7 @@ const PROVIDERS: ProviderConfig[] = [
     keyPlaceholder: 'pk_live_...',
     keyLabel: 'Publishable Key',
     secretLabel: 'Secret Key',
+    comingSoon: true,
   },
 ]
 
@@ -114,11 +125,11 @@ const ProviderConnect = () => {
           </div>
           <div>
             <h2 className="text-lg font-semibold text-text-primary">Payment Providers</h2>
-            <p className="text-sm text-text-muted">Connect your Razorpay, Stripe, or other provider accounts</p>
+            <p className="text-sm text-text-muted">Connect your Razorpay, Cashfree, or other provider accounts</p>
           </div>
         </div>
         <div className="grid sm:grid-cols-2 gap-4">
-          {[1, 2].map((i) => (
+          {[1, 2, 3].map((i) => (
             <div key={i} className="bg-surface border border-border rounded-[10px] p-5 animate-pulse h-32" />
           ))}
         </div>
@@ -134,22 +145,25 @@ const ProviderConnect = () => {
         </div>
         <div>
           <h2 className="text-lg font-semibold text-text-primary">Payment Providers</h2>
-          <p className="text-sm text-text-muted">Connect your Razorpay, Stripe, or other provider accounts</p>
+            <p className="text-sm text-text-muted">Connect your Razorpay, Cashfree, or other provider accounts</p>
         </div>
       </div>
 
       <div className="grid sm:grid-cols-2 gap-4">
         {PROVIDERS.map((provider) => {
           const isConnected = !!connected[provider.id]
+          const isComingSoon = provider.comingSoon
           return (
             <div
               key={provider.id}
               className={`relative border rounded-[10px] p-5 transition-all ${
-                isConnected
-                  ? 'bg-surface border-success/30 hover:border-success/50'
-                  : 'bg-surface border-border hover:border-border-accent cursor-pointer'
+                isComingSoon
+                  ? 'bg-surface border-border opacity-60'
+                  : isConnected
+                    ? 'bg-surface border-success/30 hover:border-success/50'
+                    : 'bg-surface border-border hover:border-border-accent cursor-pointer'
               }`}
-              onClick={() => !isConnected && handleConnect(provider)}
+              onClick={() => !isConnected && !isComingSoon && handleConnect(provider)}
             >
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
@@ -202,9 +216,15 @@ const ProviderConnect = () => {
                 </div>
               )}
 
-              {!isConnected && (
+              {!isConnected && !isComingSoon && (
                 <div className="text-xs text-accent font-medium mt-1">
                   Click to connect →
+                </div>
+              )}
+
+              {isComingSoon && (
+                <div className="text-xs text-text-muted font-medium mt-1">
+                  Coming Soon
                 </div>
               )}
             </div>

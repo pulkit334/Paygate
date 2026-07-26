@@ -1,37 +1,24 @@
 import ProviderKey from "../../models/providerKey";
 import { decrypt } from "../../util/encryption";
 
-class RazerPayService {
-
-  static async getKeyId(appId: string): Promise<string> {
-    const key = await ProviderKey.findOne({
+class GatewayCredentialService {
+  static async GetInstance(appId: string, providerName: string) {
+    const keyRecord = await ProviderKey.findOne({
       appId,
-      provider: { $regex: "^razorpay$", $options: "i" },
+      provider: { $regex: `^${providerName}$`, $options: "i" },
       isActive: true,
-    });
-    if (!key) throw new Error("Razorpay Key ID not configured for appId: " + appId);
-    return key.keyId;
-  }
-  static async GetKeySecret(appId: string): Promise<string> {
-    const key = await ProviderKey.findOne({
-      appId,
-      provider: { $regex: "^razorpay$", $options: "i" },
-      isActive: true,   
-    })
-      .select("keySecret")
-      .lean();
-    if (!key) throw new Error("Razorpay Secretkey not configured for appId: " + appId);
-    return decrypt(key.keySecret);
-  }
+    }).lean();
 
+    if (!keyRecord) {
+      throw new Error(
+        `${providerName} credentials not configured or inactive for appId: ${appId}`,
+      );
+    }
+    const key_Id = keyRecord.keyId;
+    const secret_Key = decrypt(keyRecord.keySecret);
 
-static async GetInstance(appId: string) {
-  const [Key_id, secretKey] = await Promise.all([
-    this.getKeyId(appId),
-    this.GetKeySecret(appId),
-  ]);
-  return { Key_id, secretKey };
-}
+    return { key_Id, secret_Key };
+  }
 }
 
-export default RazerPayService;
+export default GatewayCredentialService;

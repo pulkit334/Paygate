@@ -1,47 +1,52 @@
-import instance from "../../config/razerpay";
-import { PaymentData, PaymentResponse } from "../../types/PaymentTypes";
-import { BaseTemplate } from "../BaseTemplate";
+import instance from "../../config/providerconfig";
+import { IPaymentResponse } from "../../Interfaces/PaymentAdapters";
+import { CPaymentData } from "../../Interfaces/paymentgateway";
 
+import { BaseTemplate } from "../BaseTemplate";
+import { RazorpayAdapter } from "../adapters/Razerpayadapter";
 export class RazerPayProvider extends BaseTemplate {
   private appId: string;
-
-  constructor(appId: string) {
+  constructor(
+    appId: string,
+    private adapter: RazorpayAdapter,
+  ) {
     super();
     this.appId = appId;
   }
 
-  protected async validate(data: PaymentData): Promise<void> {
-    if (!data.amount || data.amount <= 0) {
+  protected async validate(data: CPaymentData): Promise<void> {
+    if (!data.order_amount || data.order_amount <= 0) {
       throw new Error("[Razorpay] Invalid amount provided.");
     }
-    if (!data.currency) {
+    if (!data.order_currency) {
       throw new Error("[Razorpay] Currency is required.");
     }
-    if (!data.receipt) {
+    if (!data.order_id) {
       throw new Error("[Razorpay] Receipt ID is required.");
     }
   }
 
-  protected async initiate(data: PaymentData): Promise<Record<string, unknown>> {
+  protected async initiate(
+    data: CPaymentData,
+  ): Promise<Record<string, unknown>> {
     try {
       const razorpay = await instance(this.appId);
       const order = await razorpay.orders.create({
-        amount: data.amount * 100,
-        currency: data.currency,
-        receipt: data.receipt,
+        amount: data.order_amount * 100,
+        currency: data.order_currency,
+        receipt: data.order_id,
       });
       return order as unknown as Record<string, unknown>;
     } catch (error: any) {
-      throw new Error(`[Razorpay] Failed to initiate order: ${error.message || error}`);
+      throw new Error(
+        `[Razorpay] Failed to initiate order: ${error.message || error}`,
+      );
     }
   }
 
-  protected async confirm(order: Record<string, unknown>): Promise<PaymentResponse> {
-    return {
-      orderId: String(order.id),
-      amount: Number(order.amount) / 100, 
-      currency: String(order.currency),
-      status: String(order.status),
-    };
+  protected async confirm(
+    order: Record<string, unknown>,
+  ): Promise<IPaymentResponse> {
+    return this.adapter.normalize(order);
   }
 }

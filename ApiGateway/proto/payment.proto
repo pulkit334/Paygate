@@ -35,9 +35,11 @@ message CreateOrderResponse {
   double amount = 3;
   string currency = 4;
   string receipt = 5;
-  string status = 6;     
+  string status = 6;
   string createdAt = 7;
-  string error = 8;      
+  string error = 8;
+  string razorkey = 9;
+  string paymentSessionId = 10;
 }
 message VerifyOrderRequest {
   string appId = 1;

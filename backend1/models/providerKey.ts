@@ -20,7 +20,7 @@ const providerKeySchema = new Schema<IProviderKey>(
     provider: {
       type: String,
       required: true,
-      enum: ["razorpay", "stripe"],
+      enum: ["razorpay", "stripe","cashfree"],
     },
     keyId: {
       type: String,

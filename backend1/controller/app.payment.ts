@@ -41,6 +41,7 @@ export const createOrder = async (
       status: "created",
       createdAt: new Date().toISOString(),
       razorkey: response.razorkey || "",
+      paymentSessionId: response.paymentSessionId || "",
       error: "",
     });
   } catch (error: any) {

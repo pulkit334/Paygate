@@ -11,6 +11,7 @@ import Webhooks from "./pages/Webhooks";
 import Settings from "./pages/Settings";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import {SessionChecker} from "../utils/sessionchecker";;
 
 const router = createBrowserRouter([
   { path: "/", element: <Landing /> },
@@ -18,11 +19,50 @@ const router = createBrowserRouter([
   { path: "/docs", element: <Docs /> },
   { path: "/contact", element: <Contact /> },
   { path: "/pricing", element: <Pricing /> },
-  { path: "/dashboard", element: <Dashboard /> },
-  { path: "/charts", element: <Charts /> },
-  { path: "/transactions", element: <Transactions /> },
-  { path: "/webhooks", element: <Webhooks /> },
-  { path: "/settings", element: <Settings /> },
+  {
+    path: "/dashboard",
+    element: (
+      <SessionChecker>
+        <Dashboard />{" "}
+      </SessionChecker>
+    ),
+  },
+  {
+    path: "/charts",
+    element: (
+      <SessionChecker>
+        {" "}
+        <Charts />
+      </SessionChecker>
+    ),
+  },
+  {
+    path: "/transactions",
+    element: (
+      <SessionChecker>
+        {" "}
+        <Transactions />
+      </SessionChecker>
+    ),
+  },
+  {
+    path: "/webhooks",
+    element: (
+      <SessionChecker>
+        {" "}
+        <Webhooks />
+      </SessionChecker>
+    ),
+  },
+  {
+    path: "/settings",
+    element: (
+      <SessionChecker>
+        {" "}
+        <Settings />
+      </SessionChecker>
+    ),
+  },
   { path: "/login", element: <Login /> },
   { path: "/register", element: <Register /> },
 ]);
