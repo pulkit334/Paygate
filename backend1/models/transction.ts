@@ -1,10 +1,9 @@
-import mongoose, { Schema, Model, mongo } from "mongoose";
-import { string } from "zod";
+import mongoose, { Schema, Model } from "mongoose";
 
 export interface ITransaction {
   appId: mongoose.Types.ObjectId;
-  razorpayOrderId: string;
-  razorpayPayId?: string;
+   GatewayOrderId : string,
+   GatewayPayId : string
   idempotencyKey: string;
   amount: number;
   currency: string | unknown;
@@ -28,15 +27,16 @@ const transactionSchema = new Schema<ITransaction>(
       ref: "App",
       required: true,
     },
-    razorpayOrderId: {
-      type: String,
-      unique: true,
-      sparse: true,
+
+    GatewayOrderId : {
+      type : String,
+      unique : true ,
+      sparse : true 
     },
-    razorpayPayId: {
-      type: String,
-      sparse: true,
-      unique: true,
+    GatewayPayId : {
+      type : String,
+      sparse : true ,
+      unique : true 
     },
 
     idempotencyKey: {

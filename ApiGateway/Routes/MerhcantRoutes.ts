@@ -54,7 +54,7 @@ router.post(
         grpcPayload,
         { deadline },
         (err: GrpcError | null, response: LoginResponse) => {
-          if (err) {
+          if (err) {3
             return next(mapGrpcError(err, "Login"));
           }
           const decoded = jwt.decode(response.token) as {
@@ -73,7 +73,7 @@ router.post(
             ? decoded.exp * 1000 // convert from seconds to ms
             : now + JWT_TTL_MS;
 
-          // Initialize session data if needed
+          // Initialize session data if needed->
           if (!req.session.tokens) {
             req.session.tokens = {};
           }

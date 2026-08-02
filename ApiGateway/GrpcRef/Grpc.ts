@@ -20,8 +20,8 @@ const protoDescriptorPaymentone = grpc.loadPackageDefinition(packageDefinitionPa
 
 const GRPC_DEADLINE_MS = 10_000;
 
-const MERCHANT_GRPC_URL = process.env.MERCHANT_GRPC_URL || "localho st:50002";
-const PAYMENT_GRPC_URL = process.env.PAYMENT_GRPC_URL || "localhost:50051";
+const MERCHANT_GRPC_URL=process.env.MERCHANT_GRPC_URL || "localhost:50002";
+const PAYMENT_GRPC_URL=process.env.PAYMENT_GRPC_URL || "localhost:50051";
 
 const merchantClient = new protoDescriptor.authpackage.MerchantAuth(
   MERCHANT_GRPC_URL,

@@ -1,12 +1,10 @@
-import crypto from "crypto";
 import mongoose from "mongoose";
 import Transaction from "../models/transction";
 import TransactionLedger from "../models/ledgerentry";
 import Balance from "../models/balance";
 import { redisClient } from "../config/redis";
 import { sendUnaryData, ServerUnaryCall, status } from "@grpc/grpc-js";
-
-
+import { WebhookFactory } from "../Engine/Factory/webhookfactory";
 
 
 const payWebhook = async (
@@ -14,50 +12,29 @@ const payWebhook = async (
   callback: sendUnaryData<any>,
 ) => {
   try {
-    // 1. Verify HMAC signature
-    const signature = call.request.signature as string;
-    const rawBody = call.request.raw_body as string;
-    const expectedSignature = crypto
-      .createHmac("sha256", process.env.WEBHOOK_SIGNING_SECRET as string)
-      .update(rawBody)
-      .digest("hex");
+    const { signature, raw_body: rawBody, provider = "RAZORPAY", timestamp } = call.request;
 
-    if (signature !== expectedSignature) {
-      console.warn("Razorpay webhook: invalid signature");
-      return callback({
-        code: status.UNAUTHENTICATED,
-        message: "Invalid signature",
-      });
+    const adapter = WebhookFactory.get(provider);
+    if (!adapter.verifySignature(rawBody, signature, timestamp)) {
+      console.warn("Provider webhook: invalid signature");
+      return callback({ code: status.UNAUTHENTICATED, message: "Invalid signature" });
     }
 
-    // 2. Parse raw body for event and payment details
-    const webhookData = JSON.parse(rawBody);
-    const event = webhookData.event;
-
-    if (event !== "payment.captured") {
-      return callback({
-        code: status.INVALID_ARGUMENT,
-        message: "Unauthorized event type",
-      });
+    const evt = adapter.normalize(rawBody);
+    if (!evt.captured) {
+      return callback({ code: status.INVALID_ARGUMENT, message: "Unauthorized event type" });
     }
 
-    // 3. Extract payment details
-    const razorpayOrderId: string = webhookData.payload.payment.entity.order_id;
-    const razorpayPayId: string = webhookData.payload.payment.entity.id;
-    const amountPaise: number = webhookData.payload.payment.entity.amount;
-    const currency: string = webhookData.payload.payment.entity.currency;
+    const existingTxn = await Transaction.findOne({ GatewayOrderId: evt.gatewayOrderId });
 
-    const existingTxn = await Transaction.findOne({ razorpayOrderId });
-    
     if (!existingTxn) {
-      throw new Error(`Transaction not found for orderId: ${razorpayOrderId}`);
-    }
-    
-    if (existingTxn.amount !== amountPaise) {
-      throw new Error(`Amount mismatch. Expected ${existingTxn.amount}, got ${amountPaise}`);
+      throw new Error(`Transaction not found for orderId: ${evt.gatewayOrderId}`);
     }
 
-    // IDEMPOTENCY: If already marked paid, return success instantly without doing duplicate work
+    if (existingTxn.amount !== evt.amountPaise) {
+      throw new Error(`Amount mismatch. Expected ${existingTxn.amount}, got ${evt.amountPaise}`);
+    }
+
     if (existingTxn.status === "paid") {
       return callback(null, {
         success: true,
@@ -69,73 +46,65 @@ const payWebhook = async (
     let appId: string = existingTxn.appId.toString();
     let callbackUrl: string = existingTxn.callbackUrl ?? "";
 
-    // 5. Transactional DB writes
     const session = await mongoose.startSession();
     try {
       await session.withTransaction(async () => {
-       //secure  row lockl
-        const txn = await Transaction.findOne({ razorpayOrderId }).session(session);
-        if (!txn || txn.status === "paid") return; // Safety check if parallel threads compete
+        const txn = await Transaction.findOne({ GatewayOrderId: evt.gatewayOrderId }).session(session);
+        if (!txn || txn.status === "paid") return;
 
-        // 5a. Atomically increment balance (no race condition)
         const updated = await Balance.findOneAndUpdate(
           { appId: txn.appId },
-          { $inc: { amount: amountPaise } },
+          { $inc: { amount: evt.amountPaise } },
           { upsert: true, new: true, session }
         );
         const balanceAfter = updated.amount;
-        const balanceBefore = balanceAfter - amountPaise;
+        const balanceBefore = balanceAfter - evt.amountPaise;
 
-        // 5b. Update transaction object status
         txn.status = "paid";
-        txn.razorpayPayId = razorpayPayId;
+        txn.GatewayPayId = evt.gatewayPayId;
         txn.paidAt = new Date();
         await txn.save({ session });
 
-        // 5c. Create ledger entry
         await TransactionLedger.create(
           [
             {
               appId: txn.appId,
               transactionId: txn._id.toString(),
-              amount: amountPaise,
+              amount: evt.amountPaise,
               balanceBefore,
               balanceAfter,
-              description: `Payment captured — order ${razorpayOrderId}`,
+              description: `Payment captured — order ${evt.gatewayOrderId}`,
             },
           ],
           { session },
         );
 
-        // 5d. Push to Redis Stream for async balance updates (no race condition)
         await redisClient.xadd(
           "AccountSummaryUpdate",
           "*",
           "appId", appId,
-          "totalReceived", amountPaise.toString(),
+          "totalReceived", evt.amountPaise.toString(),
           "totalTransactions", "1",
-          "successCount", "1",    
+          "successCount", "1",
         );
       });
     } finally {
       await session.endSession();
     }
 
-    // 6. Push event notice to secondary processing stream (Non-blocking background workflow)
     redisClient
       .xadd(
         "payment.stream",
         "*",
         "appId", appId,
-        "orderId", razorpayOrderId,
-        "payId", razorpayPayId,
-        "amount", amountPaise.toString(),
-        "currency", currency,
+        "orderId", evt.gatewayOrderId,
+        "payId", evt.gatewayPayId,
+        "amount", evt.amountPaise.toString(),
+        "currency", evt.currency,
         "callbackUrl", callbackUrl,
       )
       .catch((err) => console.error("Redis payment.stream write failed:", err.message));
 
-    // gRPC final success callback acknowledgment response
     return callback(null, {
       success: true,
       message: "Webhook received and processed successfully",
@@ -143,7 +112,7 @@ const payWebhook = async (
     });
 
   } catch (error: any) {
-    console.error("Razorpay webhook processing error:", error?.message ?? error);
+    console.error("Webhook processing error:", error?.message ?? error);
     return callback({
       code: status.INTERNAL,
       message: error.message || "Internal server error",

@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import { PaymentClient } from "../GrpcRef/Grpc.js";
 import { JwtAuthMiddleware } from "../Middleware/jwtAuth.js";
 import AppError from "../utils/Error.js";
+import { callWithPolicy } from "../GrpcRef/paymentGrpcclient.js";
 
 const router = express.Router();
 
@@ -12,12 +13,10 @@ router.get(
       const appId = (req as any).merchant._id;
       if (!appId) throw AppError.Validation("Unauthorized");
 
-      PaymentClient.GetProviderKeys({ appId }, (err: any, response: any) => {
-        if (err) return next(AppError.Payment(err.message));
-        res.status(200).json(response);
-      });
-    } catch (error) {
-      next(error);
+      const response = await callWithPolicy(PaymentClient, "GetProviderKeys", { appId });
+      res.status(200).json(response);
+    } catch (error: any) {
+      next(error instanceof AppError ? error : AppError.Payment(error.message));
     }
   }
 );
@@ -34,15 +33,10 @@ router.post(
         throw AppError.Validation("provider, keyId, and keySecret are required");
       }
 
-      PaymentClient.UpdateProviderKey(
-        { appId, provider, keyId, keySecret },
-        (err: any, response: any) => {
-          if (err) return next(AppError.Payment(err.message));
-          res.status(200).json(response);
-        }
-      );
-    } catch (error) {
-      next(error);
+      const response = await callWithPolicy(PaymentClient, "UpdateProviderKey", { appId, provider, keyId, keySecret });
+      res.status(200).json(response);
+    } catch (error: any) {
+      next(error instanceof AppError ? error : AppError.Payment(error.message));
     }
   }
 );
@@ -56,15 +50,10 @@ router.delete(
 
       const { provider } = req.params;
 
-      PaymentClient.DeleteProviderKey(
-        { appId, provider },
-        (err: any, response: any) => {
-          if (err) return next(AppError.Payment(err.message));
-          res.status(200).json(response);
-        }
-      );
-    } catch (error) {
-      next(error);
+      const response = await callWithPolicy(PaymentClient, "DeleteProviderKey", { appId, provider });
+      res.status(200).json(response);
+    } catch (error: any) {
+      next(error instanceof AppError ? error : AppError.Payment(error.message));
     }
   }
 );

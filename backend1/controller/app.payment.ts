@@ -40,7 +40,7 @@ export const createOrder = async (
       currency: response.currency,
       status: "created",
       createdAt: new Date().toISOString(),
-      razorkey: response.razorkey || "",
+      razorkey: response.razorkey?.key_Id || response.razorkey || "",
       paymentSessionId: response.paymentSessionId || "",
       error: "",
     });
@@ -76,7 +76,7 @@ export const VerifyOrder = async (
 
     return callback(null, {
       success: true,
-      status: result.status || "verified",
+      status: ("status" in result ? result.status : "verified") || "verified",
       message: result.message || "Signature verified securely. Safe to show success screen.",
       error: "",
     });
@@ -117,8 +117,8 @@ export const GetTransaction = async (call: ServerUnaryCall<any, any>, callback: 
         status: t.status,
         customerEmail: t.customerEmail,
         customerName: t.customerName,
-        razorpayOrderId: t.razorpayOrderId,
-        razorpayPayId: t.razorpayPayId || "",
+        gatewayOrderId: t.GatewayOrderId,
+        gatewayPayId: t.GatewayPayId || "",
         provider: t.Provider || "",
         createdAt: t.createdAt?.toISOString() || "",
       })),

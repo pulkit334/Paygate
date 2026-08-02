@@ -24,6 +24,7 @@ const app = express();
 app.set("trust proxy", 1);
 
 app.use("/webhook/razorpay", express.raw({ type: "application/json" }));
+app.use("/webhook/cashfree", express.raw({ type: "application/json" }));
 
 // CORS
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || "http://localhost:5173")
@@ -46,7 +47,10 @@ app.use(
 );
 
 // Global middleware
-app.use(express.json());
+app.use((req, res, next) => {
+  if (req.path.startsWith("/webhook")) return next();
+  express.json()(req, res, next);
+});
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 

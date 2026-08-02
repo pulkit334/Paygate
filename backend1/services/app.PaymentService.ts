@@ -6,6 +6,8 @@ import { normalizeToCPaymentData } from "../util/normalizePaymentData";
 import crypto from "crypto";
 import RazerPayService from "../Engine/key/provider";
 import mongoose from "mongoose";
+import GatewayCredentialService from "../Engine/key/provider";
+import { VerifyAdapterFactory } from "../Engine/VerifyEngine";
 
 export class PaymentService {
   static async initiatePayment(PaymentData: any, appId: string) {
@@ -77,17 +79,12 @@ export class PaymentService {
         appId,
       );
 
-         
-
-
-      newTransaction.razorpayOrderId = gatewayResponse.xorderId;
+      newTransaction.GatewayOrderId = gatewayResponse.orderId;
       await newTransaction.save();
 
-      let razorkey: string;
-      try {
-        razorkey = await RazerPayService.getKeyId(appId);
-      } catch {
-        razorkey = process.env.RAZORPAY_KEY_ID || "";
+      let razorkey: Record<string, string> | undefined;
+      if (targetGateway === GatewayType.RAZORPAY) {
+        razorkey = await GatewayCredentialService.GetInstance(appId, "razorpay");
       }
 
       return {
@@ -96,7 +93,7 @@ export class PaymentService {
         amount: newTransaction.amount,
         currency: newTransaction.currency,
         providerUsed: targetGateway,
-        razorkey,
+        ...(razorkey && { razorkey }),
         paymentSessionId: gatewayResponse.paymentSessionId || "",
       };
     } catch (error: any) {
@@ -104,51 +101,18 @@ export class PaymentService {
     }
   }
 
-  static async VerifyPayment(verificationData: any, appId: string) {
-    const razorpay_order_id =
-      verificationData.razorpay_order_id || verificationData.razorpayOrderId;
-    const razorpay_payment_id =
-      verificationData.razorpay_payment_id ||
-      verificationData.razorpayPaymentId;
-    const razorpay_signature =
-      verificationData.razorpay_signature || verificationData.razorpaySignature;
+static async VerifyPayment(verificationData: any, appId: string) {
+  const orderId =
+    verificationData.razorpay_order_id ||
+    verificationData.razorpayOrderId ||
+    verificationData.order_id;
 
-    const transaction = await Transaction.findOne({
-      razorpayOrderId: razorpay_order_id,
-      appId,
-    });
-    if (!transaction) {
-      return { success: false, message: "Transaction not found" };
-    }
+  const transaction = await Transaction.findOne({ GatewayOrderId: orderId, appId });
+if (!transaction) {
+  return { success: false, status: "failed", message: "Transaction not found" };
+}
 
-    const keySecret = await RazerPayService.GetKeySecret(appId);
-    const GeneratedSignature = crypto
-      .createHmac("sha256", keySecret)
-      .update(razorpay_order_id + "|" + razorpay_payment_id)
-      .digest("hex");
-    if (GeneratedSignature !== razorpay_signature) {
-      return {
-        success: false,
-        status: "failed",
-        message: "Invalid signature: payment signature verification failed",
-      };
-    }
-
-    if ((transaction.status as string) === "paid") {
-      return {
-        success: true,
-        status: "paid",
-        message: "Payment verified and Ledger is already updated.",
-      };
-    }
-
-    transaction.razorpayPayId = razorpay_payment_id;
-    await transaction.save();
-
-    return {
-      success: true,
-      status: "processing",
-      message: "Signature verified securely. Safe to show success screen.",
-    };
-  }
+  const adapter = VerifyAdapterFactory.get(transaction.Provider as string);
+  return adapter.verify(verificationData, appId, transaction);
+}
 }

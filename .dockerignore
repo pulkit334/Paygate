@@ -1,0 +1,15 @@
+**/node_modules
+**/dist
+**/.env
+**/.env.local
+.git
+frontend
+backend
+backend1
+backend2
+*.md
+*.txt
+*.json
+!package.json
+!package-lock.json
+!**/tsconfig.json

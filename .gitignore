@@ -7,8 +7,7 @@
 **/.env
 **/.env.local
 
-# Ignore Docker files
-**/Dockerfile
+# Ignore compose files (contain secrets) — Dockerfiles are tracked
 **/docker-compose.yml
 **/docker-compose.prod.yml
 

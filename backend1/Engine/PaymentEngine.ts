@@ -22,16 +22,16 @@ export class GatewayFactory {
     switch (type) {
       case GatewayType.RAZORPAY:
         const RealProvider = new RazerPayProvider(appId,new RazorpayAdapter());
-        const ProxyFactory = new PaymentGatewayProxy(RealProvider, 5);
+        const ProxyFactory = new PaymentGatewayProxy(RealProvider);
         return ProxyFactory;
       case GatewayType.PAYTM:
       case GatewayType.CASHFREE:
         const RealProvider2 = new CashfreeProvider(appId,new CashfreeAdapter());
-        const ProxyFactory2 = new PaymentGatewayProxy(RealProvider2,5);
+        const ProxyFactory2 = new PaymentGatewayProxy(RealProvider2);
         return ProxyFactory2;
       case GatewayType.STRIPE:
         throw new Error(
-          `[GatewayFactory] Provider ${type} is registered but not implemented.`,
+          `[GatewayFactory] Provider ${type} is registered but not  implemented.`,
         );
 
       default:

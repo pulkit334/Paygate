@@ -1,6 +1,7 @@
 import express, { Request, Response, NextFunction } from "express";
 import AppError from "../utils/Error.js";
 import { merchantClient } from "../GrpcRef/Grpc.js";
+import { callWithPolicy } from "../GrpcRef/paymentGrpcclient.js";
 
 const router = express.Router();
 
@@ -13,14 +14,10 @@ router.get("/settings", async (req: Request, res: Response, next: NextFunction) 
       throw AppError.Validation("Unauthorized");
     }
 
-    merchantClient.GetSettings({ appId }, (err: any, response: any) => {
-      if (err) {
-        return next(AppError.Payment(err.message));
-      }
-      res.status(200).json(response);
-    });
-  } catch (error) {
-    next(error);
+    const response = await callWithPolicy(merchantClient, "GetSettings", { appId });
+    res.status(200).json(response);
+  } catch (error: any) {
+    next(error instanceof AppError ? error : AppError.Payment(error.message));
   }
 });
 
@@ -33,14 +30,10 @@ router.get("/", async (req: Request, res: Response, next: NextFunction) => {
       throw AppError.Validation("Unauthorized");
     }
 
-    merchantClient.ListApis({ appId }, (err: any, response: any) => {
-      if (err) {
-        return next(AppError.Payment(err.message));
-      }
-      res.status(200).json(response);
-    });
-  } catch (error) {
-    next(error);
+    const response = await callWithPolicy(merchantClient, "ListApis", { appId });
+    res.status(200).json(response);
+  } catch (error: any) {
+    next(error instanceof AppError ? error : AppError.Payment(error.message));
   }
 });
 
@@ -53,14 +46,10 @@ router.delete("/", async (req: Request, res: Response, next: NextFunction) => {
       throw AppError.Validation("Unauthorized");
     }
 
-    merchantClient.DeleteApi({ appId }, (err: any, response: any) => {
-      if (err) {
-        return next(AppError.Payment(err.message));
-      }
-      res.status(200).json(response);
-    });
-  } catch (error) {
-    next(error);
+    const response = await callWithPolicy(merchantClient, "DeleteApi", { appId });
+    res.status(200).json(response);
+  } catch (error: any) {
+    next(error instanceof AppError ? error : AppError.Payment(error.message));
   }
 });
 
@@ -77,14 +66,10 @@ router.put("/updateCallbackUrl", async (req: Request, res: Response, next: NextF
       throw AppError.Validation("callbackUrl is required");
     }
 
-    merchantClient.UpdateCallbackUrl({ appId, callbackUrl }, (err: any, response: any) => {
-      if (err) {
-        return next(AppError.Payment(err.message));
-      }
-      res.status(200).json(response);
-    });
-  } catch (error) {
-    next(error);
+    const response = await callWithPolicy(merchantClient, "UpdateCallbackUrl", { appId, callbackUrl });
+    res.status(200).json(response);
+  } catch (error: any) {
+    next(error instanceof AppError ? error : AppError.Payment(error.message));
   }
 });
 

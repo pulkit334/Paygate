@@ -10,6 +10,6 @@
     "sourceMap": true,
     "resolveJsonModule": true
   },
-  "include": ["./**/*.ts"],
+  "include": ["./**/*.ts", "Engine/adapters/verfiicationadapters"],
   "exclude": ["node_modules", "dist"]
 }

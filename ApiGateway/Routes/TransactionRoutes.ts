@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import { PaymentClient } from "../GrpcRef/Grpc.js";
 import { JwtAuthMiddleware } from "../Middleware/jwtAuth.js";
 import AppError from "../utils/Error.js";
+import { callWithPolicy } from "../GrpcRef/paymentGrpcclient.js";
 
 const router = express.Router();
 
@@ -17,12 +18,10 @@ router.get(
       const from = (req.query.from as string) || "";
       const to = (req.query.to as string) || "";
 
-      PaymentClient.GetTransctions({ appId, from, to, limit, offset }, (err: any, response: any) => {
-        if (err) return next(AppError.Payment(err.message));
-        res.status(200).json(response);
-      });
-    } catch (error) {
-      next(error);
+      const response = await callWithPolicy(PaymentClient, "GetTransctions", { appId, from, to, limit, offset });
+      res.status(200).json(response);
+    } catch (error: any) {
+      next(error instanceof AppError ? error : AppError.Payment(error.message));
     }
   },
 );
@@ -34,12 +33,10 @@ router.get(
       const appId = (req as any).merchant._id;
       if (!appId) throw AppError.Validation("Unauthorized");
 
-      PaymentClient.GetLedger({ appId }, (err: any, response: any) => {
-        if (err) return next(AppError.Payment(err.message));
-        res.status(200).json(response);
-      });
-    } catch (error) {
-      next(error);
+      const response = await callWithPolicy(PaymentClient, "GetLedger", { appId });
+      res.status(200).json(response);
+    } catch (error: any) {
+      next(error instanceof AppError ? error : AppError.Payment(error.message));
     }
   },
 );

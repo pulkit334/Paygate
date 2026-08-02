@@ -15,6 +15,13 @@ service PaymentService {
   rpc GetLedger (GetLedgerRequest) returns (GetLedgerResponse);
 }
 
+message PayWebhookRequest {
+  string signature = 1;
+  string raw_body = 2;
+  string provider = 3;
+  string timestamp = 4;
+  WebhookBody body = 5;
+}
 message CreateOrderRequest {
   string appId = 1;
   double amount = 2;
@@ -35,9 +42,9 @@ message CreateOrderResponse {
   double amount = 3;
   string currency = 4;
   string receipt = 5;
-  string status = 6;
+  string status = 6;     
   string createdAt = 7;
-  string error = 8;
+  string error = 8;      
   string razorkey = 9;
   string paymentSessionId = 10;
 }
@@ -69,12 +76,6 @@ message WebhookPayload {
 message WebhookBody {
   string event = 1;
   WebhookPayload payload = 2;
-}
-
-message PayWebhookRequest {
-  string signature = 1;
-  WebhookBody body = 2;
-  string raw_body = 3;
 }
 
 message PayWebhookResponse {

@@ -3,6 +3,8 @@ export interface PaymentData {
   currency: string;
   receipt: string;
   customerEmail?: string;
+
+  
 }
 
 export interface CPaymentData {

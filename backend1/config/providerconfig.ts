@@ -2,16 +2,22 @@ import Razorpay from "razorpay";
 import GatewayCredentialService from "../Engine/key/provider";
 import { Cashfree,CFEnvironment } from "cashfree-pg";
 
-const instance = async (appId: string) => {
+export interface RazorpayCredentials {
+  key_id: string;
+  key_secret: string;
+}
+
+export const getRazorpayCredentials = async (appId: string): Promise<RazorpayCredentials> => {
   try {
-    const keys = await GatewayCredentialService.GetInstance(appId,"razorpay");
+    const keys = await GatewayCredentialService.GetInstance(appId, "razorpay");
     if (!keys.key_Id || !keys.secret_Key) {
       throw new Error("Key_id or secretKey is undefined from DB");
     }
-    return new Razorpay({
+
+    return {
       key_id: keys.key_Id,
       key_secret: keys.secret_Key,
-    });
+    };
   } catch (dbError: any) {
     console.error(`[Razorpay] DB key lookup failed: ${dbError.message}. Falling back to env vars.`);
     const envKeyId = process.env.RAZORPAY_KEY_ID;
@@ -19,11 +25,17 @@ const instance = async (appId: string) => {
     if (!envKeyId || !envKeySecret) {
       throw new Error("No Razorpay keys found in DB or env vars");
     }
-    return new Razorpay({
+
+    return {
       key_id: envKeyId,
       key_secret: envKeySecret,
-    });
+    };
   }
+};
+
+const instance = async (appId: string) => {
+  const credentials = await getRazorpayCredentials(appId);
+  return new Razorpay(credentials);
 };
 
 export default instance;

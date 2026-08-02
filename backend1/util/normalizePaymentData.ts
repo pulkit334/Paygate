@@ -3,7 +3,9 @@ import { PaymentData, CPaymentData } from "../Interfaces/paymentgateway";
 
 export function normalizeToCPaymentData(data: PaymentData): CPaymentData {
   if (!data.amount || !data.currency || !data.receipt) {
-    throw new Error(`[Normalize] Missing required payment fields: ${JSON.stringify(data)}`);
+    throw new Error(
+      `[Normalize] Missing required payment fields: ${JSON.stringify(data)}`,
+    );
   }
 
   const customerEmail = data.customerEmail || "";
@@ -16,5 +18,6 @@ export function normalizeToCPaymentData(data: PaymentData): CPaymentData {
     order_currency: data.currency,
     order_id: data.receipt,
     customer_id,
+    order_status: "created",
   };
 }
